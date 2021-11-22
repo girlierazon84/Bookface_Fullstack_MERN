@@ -1,2 +1,3 @@
 # Bookface_Fullstack_MERN
-Fullstack MERN final assignment to be submitted on December 31, 2021
+### Fullstack MERN final inlämningsuppgift
+#### Inlämningsdatum: 2021-12-31
