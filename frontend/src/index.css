@@ -1,0 +1,38 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --primary-color: #E6E6E6;
+  --secondary-color: #000099;
+  --thirdly-color: #E1D5E7;
+  --fourthly-color: #1A1A1A;
+}
+
+body {
+  background-color: var(--primary-color);
+  font-family: 'Oxygen - Regular', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--secondary-color);
+}
+
+@font-face {
+  font-family: 'Oxygen - Regular';
+  src: local('Oxygen-Regular'),
+  url(./utils/global/fonts/OxygenRegular/Oxygen-Regular.ttf)
+  format('truetype');
+}
+
+@font-face {
+  font-family: 'Oleo Script';
+  src: local('Oleo-Script'),
+  url(./utils/global/fonts/OleoScript/OleoScript-Regular.ttf)
+  format('truetype');
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
