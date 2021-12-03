@@ -16,7 +16,8 @@
     "MongoDB",
     "Express",
     "React",
-    "NodeJS"
+    "NodeJS",
+    "TypeScript"
   ],
   "author": "Girlie Razon",
   "license": "ISC",
