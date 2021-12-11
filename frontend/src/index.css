@@ -1,42 +1,41 @@
 * {
-  margin: 0;
-  padding: 0;
-  outline: 0;
-  box-sizing: border-box;
-  font-family: 'Oxygen - Regular', sans-serif;
+    box-sizing: border-box;
 }
-:root {
-  margin: 0 auto;
-  --primary-color: #E6E6E6;
-  --secondary-color: #000099;
-  --thirdly-color: #E1D5E7;
-  --fourthly-color: #1A1A1A;
+
+#root {
+;
+    --primary-color: #CFD8DC;
+    --secondary-color: #000099;
+    --thirdly-color: #E1D5E7;
+    --fourthly-color: #616161;
+    --fifthly-color: #E6E6E6;
 }
 
 @font-face {
-  font-family: 'Oxygen - Regular';
-  src: local('Oxygen-Regular'),
-  url(./utils/global/fonts/OxygenRegular/Oxygen-Regular.ttf)
-  format('truetype');
+    font-family: 'Oxygen - Regular';
+    src: local('Oxygen-Regular'),
+    url(./utils/global/fonts/OxygenRegular/Oxygen-Regular.ttf) format('truetype');
 }
 
 @font-face {
-  font-family: 'Oleo Script';
-  src: local('Oleo-Script'),
-  url(./utils/global/fonts/OleoScript/OleoScript-Regular.ttf)
-  format('truetype');
+    font-family: 'Oleo Script';
+    src: local('Oleo-Script'),
+    url(./utils/global/fonts/OleoScript/OleoScript-Regular.ttf) format('truetype');
 }
 
 body {
-  margin: 0;
-  background-color: var(--primary-color);
-  color: var(--fourthly-color);
-  font-family: 'Oxygen', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    background-color: var(--primary-color);
+    color: var(--fourthly-color);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', 'Oxygen - Regular', 'Oleo Script',
+    sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-  monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
 }

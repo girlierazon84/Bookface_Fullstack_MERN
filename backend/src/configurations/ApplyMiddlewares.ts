@@ -1,5 +1,5 @@
 import cors from 'cors'
-import express from 'express'
+import express, { Express } from 'express'
 import helmet from 'helmet'
 import { errorHandler } from '../middlewares/Middleware'
 import MorganMiddleware from '../middlewares/MorganMiddleware'
@@ -15,8 +15,8 @@ const options: cors.CorsOptions = {
 }
 
 const ApplyMiddlewares = (app: express.Application) => {
-    app.use(cors(options))
     app.use(helmet())
+    app.use(cors(options))
     app.use(express.urlencoded({extended: false}))
     app.use(express.json())
     app.use(MorganMiddleware)
