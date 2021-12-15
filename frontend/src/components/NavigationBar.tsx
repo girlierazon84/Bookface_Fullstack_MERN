@@ -12,8 +12,6 @@ import BookfaceLogo from '../utils/images/Bookface_circle_logo.png'
 import RoutingPath from '../routes/RoutingPath'
 import {useUserContext} from '../utils/global/provider/UserProvider'
 import Profile from './Profile'
-import Alive from '../components/users/Alive'
-
 
 
 export const NavigationBar = () => {
@@ -31,7 +29,7 @@ export const NavigationBar = () => {
             <Nav>
                 <Ul>
                     <LiLeft><Link to={RoutingPath.apiAliveView}><Img src={BookfaceLogo}
-                                                                 alt='Bookface Logo'/></Link></LiLeft>
+                                                                     alt='Bookface Logo'/></Link></LiLeft>
                     <Li><Input type='text' placeholder='Search Bookface'/></Li>
                     <Li><SearchIcon color='action' fontSize='large'/></Li>
                     <LiRight><Link to={RoutingPath.homeView}><ListItemIcon><ListItemText
@@ -57,13 +55,20 @@ export const NavigationBar = () => {
 export default NavigationBar
 
 const Nav = styled.nav`;
+  width: 100%;
+  height: 55px;
   background-color: var(--primary-color);
-  border: 2px solid var(--fifthly-color);
+  border-bottom: 2px solid var(--fifthly-color);
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
   overflow: hidden;
 `
 
 const Ul = styled.ul`
   list-style-type: none;
+  display: flex;
+  flex-flow: row nowrap;
   margin: 0;
   padding: 0;
 `
@@ -105,7 +110,7 @@ const LiRight = styled.li`
     padding: 0 1em 1em 0;
     text-decoration: none;
   }
-  
+
   a:hover {
     background-color: var(--fifthly-color);
     margin: 0;

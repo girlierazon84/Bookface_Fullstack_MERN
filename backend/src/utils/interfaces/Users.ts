@@ -1,4 +1,9 @@
-export interface User {
-    username: string;
-    password: string;
+export interface CreateNewUser {
+    firstname: string
+    lastname: string
+    email: string
+    username: string
+    password: string
+    gender: string
+    birthdate: string
 }

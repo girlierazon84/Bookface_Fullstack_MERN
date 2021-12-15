@@ -1,11 +1,11 @@
 .profileDropdown {
     display: none;
     position: absolute;
-    background-color: #f1f1f1;
+    background-color: var(--thirdly-color);
     min-width: 200px;
-    padding: 12px 16px;
+    padding: 20px 16px 0 0;
     z-index: 10;
-    margin-top: 65px;
+    margin-top: 70px;
 }
 
 .profileWrapper:hover .profileDropdown {

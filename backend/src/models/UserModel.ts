@@ -1,15 +1,20 @@
 import { Schema, model } from 'mongoose'
-import { User } from '../utils/interfaces/Users'
+import { CreateNewUser } from '../utils/interfaces/Users'
 
 const dbCollection = process.env.MONGODB_COLLECTION
 
-const schema = new Schema<User>({
+const schema = new Schema<CreateNewUser>({
+        firstname: {type: String, required: true},
+        lastname: {type: String, required: true},
+        email: {type: String, required: true},
         username: {type: String, required: true},
         password: {type: String, required: true},
+        gender: {type: String, required: true},
+        birthdate: {type: String, required: true},
     },
     {timestamps: true}
 )
 
-const UserModel = model<User>(dbCollection, schema)
+const UserModel = model<CreateNewUser>(dbCollection, schema)
 
 export default UserModel

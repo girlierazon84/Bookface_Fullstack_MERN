@@ -5,30 +5,20 @@ import {PrimaryButton} from '../components/CustomButtonComponent'
 import RoutingPath from '../routes/RoutingPath'
 import UserService from '../utils/api/service/UserService'
 import {useUserContext} from '../utils/global/provider/UserProvider'
-import {CreateUserObject} from '../utils/interface/UsersInterfaces'
+import { LogInDataObject } from '../utils/interface/UsersInterfaces'
 
-export const SignInView = () => {
-    const [firstName] = useState<string>('')
-    const [lastName] = useState<string>('')
-    const [email] = useState<string>('')
+export const LogInView = () => {
     const [userName, setUserName] = useState<string>('')
     const [passWord, setPassWord] = useState<string>('')
-    const [gender] = useState<string>('')
-    const [birthDate] = useState<string>('')
     const [loginText, setLoginText] = useState<string>('')
     const {authenticatedUser, setAuthenticatedUser} = useUserContext()
 
     const navigate = useNavigate()
 
     const verifyUser = () => {
-        const payload: CreateUserObject = {
-            firstname: firstName,
-            lastname: lastName,
-            email: email,
+        const payload: LogInDataObject = {
             username: userName,
             password: passWord,
-            gender: gender,
-            birthdate: birthDate
         }
 
         UserService.verifyUser(payload)
@@ -45,7 +35,7 @@ export const SignInView = () => {
         if (apiResponse) {
             setAuthenticatedUser(userName)
             localStorage.setItem('username', userName)
-            navigate(RoutingPath.homeView)
+            navigate(RoutingPath.profileView)
         } else {
             setLoginText('Wrong username or password')
         }
@@ -55,55 +45,64 @@ export const SignInView = () => {
         <Wrapper>
             <h1>Bookface</h1>
             <GridContainer>
-                <h4>Log in</h4>
-                <br/>
-                <br/>
-                <br/>
-                <Span>Username: </Span>
-                <input type='text' onChange={event => setUserName(event.target.value)}/>
-                <Span>Password: </Span>
-                <input type='password' onChange={event => setPassWord(event.target.value)}/>
+                <h4>Log in here...</h4>
+                <input type='text' placeholder='Username' onChange={event => setUserName(event.target.value)}/>
+                <input type='password' placeholder='Password' onChange={event => setPassWord(event.target.value)}/>
             </GridContainer>
             <br/>
             <H3>{loginText}</H3>
             <PrimaryButton onClick={() => verifyUser()} children={'Log In'}/>
-            <PrimaryButton onClick={() => alert(authenticatedUser)} children={'Show user'}/>
-            <br/>
+            {/*<PrimaryButton onClick={() => alert(authenticatedUser)} children={'Show user'}/>*/}
+            {/*<br/>*/}
             <br/>
         </Wrapper>
     )
 }
 
-export default SignInView
+export default LogInView
 
 const Wrapper = styled.section`
   background-color: var(--primary-color);
   text-align: center;
-  padding: 25% 0 25% 0;
-  
+  padding: 5em 0 10em 0;
+
   h1 {
     font-weight: bold;
+    font-size: 3.7em;
+    font-family: 'Oxygen - Regular', sans-serif;
+    color: var(--secondary-color);
   }
 `
 
 const GridContainer = styled.div`
   display: grid;
-  grid-template-columns: 1fr 2fr;
   background-color: var(--fifthly-color);
   border: 1px solid var(--fifthly-color);
+  box-shadow: 5px 10px 8px 5px var(--fourthly-color);
   border-radius: 20px;
-  padding-top: 1em;
-  width: 300px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 1em;
-  grid-gap: 5px;
+  padding: 0 2em 2em 2em;
+  width: 50%;
+  margin: auto;
+  grid-gap: 20px;
+  
+  h4 {
+    color: var(--fourthly-color);
+    font-family: "Lucida Calligraphy", sans-serif;
+    font-weight: bold;
+    width: 100%;
+    text-align: left;
+  }
+  
+  input {
+    width: 100%;
+    height: 8vh;
+    border: none;
+    box-shadow: 2px 4px 3px 2px var(--fourthly-color);
+    border-radius: 10px;
+    padding-left: 20px;
+    font-size: 1em;
+  }
 `
-
-const Span = styled.span`
-
-`
-
 const H3 = styled.h3`
   color: red;
   font-weight: bold;

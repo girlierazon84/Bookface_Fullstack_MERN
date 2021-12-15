@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import StatusCode from '../configurations/StatusCode'
 import UserModel from '../models/UserModel'
-import { User } from '../utils/interfaces/Users'
+import { CreateNewUser } from '../utils/interfaces/Users'
 import Logger from '../utils/Logger'
 import { Request, Response } from 'express'
 
@@ -18,14 +18,25 @@ const encryptPassword = async (password: string) => {
 
 const createUser = async (req: Request, res: Response) => {
     Logger.http(req.body)
-    let {username, password}: User = req.body
+    let {firstname,
+        lastname,
+        email,
+        username,
+        password,
+        gender,
+        birthdate}: CreateNewUser = req.body
 
     // Bcrypt
     password = await encryptPassword(password)
 
     const user = new UserModel({
+        firstname,
+        lastname,
+        email,
         username,
-        password
+        password,
+        gender,
+        birthdate
     })
     Logger.debug(user)
     try {
@@ -130,7 +141,13 @@ const updateUser = async (req: Request, res: Response) => {
     try {
         const {userId} = req.params
         Logger.http(`userId: ${ userId }`)
-        let {username, password} = req.body
+        let {firstname,
+            lastname,
+            email,
+            username,
+            password,
+            gender,
+            birthdate} = req.body
         Logger.http(`req.body: ${ req.body }`)
         if (!req.body) {
             res.status(StatusCode.BAD_REQUEST)
@@ -141,8 +158,13 @@ const updateUser = async (req: Request, res: Response) => {
         password = await encryptPassword(password)
 
         const response = await UserModel.findByIdAndUpdate(userId, {
+            firstname,
+            lastname,
+            email,
             username,
-            password
+            password,
+            gender,
+            birthdate
         }, {new: true})
         Logger.debug(response)
         res.status(StatusCode.OK).send(response)

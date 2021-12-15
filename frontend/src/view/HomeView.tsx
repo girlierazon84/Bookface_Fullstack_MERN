@@ -78,8 +78,8 @@ const GridContainer = styled.div`
 
   button {
     background-color: var(--secondary-color);
-    border: 1px solid var(--fifthly-color);
-    border-radius: 20px;
+    border: 2px solid var(--fifthly-color);
+    border-radius: 10px;
     box-shadow: 1.5px 2px 1.5px 2px var(--fourthly-color);
     padding: 1.5em;
     width: 90%;

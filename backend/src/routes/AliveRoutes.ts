@@ -4,7 +4,7 @@ import StatusCode from '../configurations/StatusCode'
 
 const routes = (app: Express) => {
     app.get('/', (req, res) => {
-        res.status(StatusCode.OK).send('API is Alive with TypeScript!')
+        res.status(StatusCode.OK).send('My API is Alive!')
     })
 }
 

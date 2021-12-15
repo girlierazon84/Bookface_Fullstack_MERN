@@ -20,3 +20,8 @@ export interface UserDataObject {
     createdAt: string
     updatedAt: string
 }
+
+export interface LogInDataObject {
+    username: string
+    password: string
+}

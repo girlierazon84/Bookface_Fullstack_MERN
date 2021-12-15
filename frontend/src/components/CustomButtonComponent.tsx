@@ -30,16 +30,19 @@ export {
 const ButtonPrimary = styled.button`
   background-color: var(--secondary-color);
   border-radius: 5px;
-  padding: 2px 20px;
-  border: 1px solid var(--fifthly-color);
-  box-shadow: 45px 50px 40px 50px var(--thirdly-color);
-  color: var(--fourthly-color);
+  padding: 10px 20px;
+  border: 2px solid var(--fifthly-color);
+  box-shadow: 1.5px 2px 1.5px 2px var(--fourthly-color);
+  color: var(--fifthly-color);
   font-size: 1.25em;
   text-transform: uppercase;
+  font-weight: 700;
+  width: 50%;
+  cursor: pointer;
 
   &:hover {
     background-color: var(--fifthly);
-    color: var(--fourthly-color);
+    color: var(--secondary-color);
   }
 `
 

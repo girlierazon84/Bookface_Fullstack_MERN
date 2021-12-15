@@ -1,9 +1,12 @@
 import React from 'react'
 import './Profile.css'
-import { useNavigate } from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import styled from 'styled-components'
 import RoutingPath from '../routes/RoutingPath'
 import { useUserContext } from '../utils/global/provider/UserProvider'
+import {ListItemIcon} from "@mui/material";
+import ListItemText from "@mui/material/ListItemText";
+import ForumSharpIcon from "@mui/icons-material/ForumSharp";
 
 const Profile = () => {
     const navigate = useNavigate()
@@ -20,7 +23,6 @@ const Profile = () => {
         <ProfileWrapper className='profileWrapper'>
             <Img src={ imgUrl }/>
             <SpanUserName>{ authenticatedUser }</SpanUserName>
-
             <div className='profileDropdown'>
                 <Span onClick={ () => navigate(RoutingPath.settingsView) }>Settings</Span>
                 <Span onClick={ () => navigate(RoutingPath.profileView) }>Profile</Span>
@@ -36,13 +38,14 @@ export default Profile
 const ProfileWrapper = styled.section`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  height: 64px;
+  height: 10px;
 `
 
 const Img = styled.img`
   align-self: center;
-  width: 50px;
   border-radius: 50%;
+  width: 4em;
+  border: 1px solid gold;
 `
 
 const Span = styled.span`

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { UserContext } from './utils/global/provider/UserProvider';
-import NavigationBar from "./components/NavigationBar";
+// import NavigationBar from "./components/NavigationBar";
 import { Routing } from "./routes/Routing";
+import Navbar from "./components/Nav/Navbar";
 
 
 function App() {
@@ -21,7 +22,8 @@ function App() {
     return (
         <UserContext.Provider value={{ authenticatedUser, setAuthenticatedUser }}>
             <Routing>
-                <NavigationBar/>
+                {/*<NavigationBar/>*/}
+                <Navbar />
             </Routing>
         </UserContext.Provider>
     )

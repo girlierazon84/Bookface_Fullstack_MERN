@@ -10,6 +10,7 @@ import FooterContainer from "../components/FooterContainer"
 import PrivateMessageView from "../view/PrivateMessageView";
 import SignUpFormView from "../view/SignUpFormView";
 import Alive from '../components/users/Alive'
+import ProfileView from "../view/ProfileView";
 
 
 
@@ -22,6 +23,7 @@ export const Routing = (props: { children?: React.ReactChild }) => {
                 <Route path={ RoutingPath.wildCardView } element={ <Navigate to={ RoutingPath.pageNotFoundView }/> }/>
                 <Route path={ RoutingPath.logInView } element={ <LogInView/> }/>
                 <Route path={ RoutingPath.signUpFormView } element={ <SignUpFormView/> }/>
+                <Route path={ RoutingPath.profileView } element={ <ProfileView/> }/>
                 <Route path={ RoutingPath.privateMessageView } element={ <PrivateMessageView/> }/>
                 <Route path={ RoutingPath.friendsListView } element={ <FriendsListView/> }/>
                 <Route path={ RoutingPath.homeView } element={ <HomeView/> }/>
