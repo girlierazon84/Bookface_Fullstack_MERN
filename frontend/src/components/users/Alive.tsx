@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import http from '../../utils/api/UsersApi'
 
@@ -22,16 +22,54 @@ function Alive() {
     }
 
     return (
-        <Wrapper>
-            <Article>
-                <H1>Alive function</H1>
-                <h2>{ text }</h2>
-                <Button onClick={ alive }>alive</Button>
-                <Button onClick={ () => {
-                    setText(initialServerStatus)
-                } }>clear</Button>
-            </Article>
-        </Wrapper>
+        <>
+            <Wrapper>
+                <Article>
+                    <H1>Alive function</H1>
+                    <h2>{ text }</h2>
+                    <Button onClick={ alive }>alive</Button>
+                    <Button onClick={ () => {
+                        setText(initialServerStatus)
+                    } }>clear</Button>
+                </Article>
+            </Wrapper>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+        </>
+
     )
 }
 

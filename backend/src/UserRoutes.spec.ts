@@ -3,18 +3,24 @@ import 'mocha'
 import StatusCode from './configurations/StatusCode'
 import app from './Server'
 import chaiHttp from 'chai-http'
-import { User } from './utils/interfaces/Users'
+import { CreateNewUser } from './utils/interfaces/Users'
 
 Chai.use(chaiHttp)
 const expect = Chai.expect
 
 const randomString = Math.random().toString(36).substring(7)
 let userId: string = '616718bda4ab77e25e33ec5b'
-const user: User = {
+const user: CreateNewUser = {
+    firstname: randomString,
+    lastname: randomString,
+    email: randomString,
     username: randomString,
     password: randomString,
 }
-const updatedUser: User = {
+const updatedUser: CreateNewUser = {
+    firstname: randomString + randomString,
+    lastname: randomString + randomString,
+    email: randomString + randomString,
     username: randomString + randomString,
     password: randomString + randomString,
 }

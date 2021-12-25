@@ -3,6 +3,7 @@ import { UserContext } from './utils/global/provider/UserProvider';
 // import NavigationBar from "./components/NavigationBar";
 import { Routing } from "./routes/Routing";
 import Navbar from "./components/Nav/Navbar";
+import FooterContainer from "./components/FooterContainer";
 
 
 function App() {
@@ -25,6 +26,8 @@ function App() {
                 {/*<NavigationBar/>*/}
                 <Navbar />
             </Routing>
+
+            <FooterContainer/>
         </UserContext.Provider>
     )
 }

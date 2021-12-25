@@ -4,8 +4,6 @@ export interface CreateUserObject {
     email: string
     username: string
     password: string
-    gender: string
-    birthdate: string
 }
 
 export interface UserDataObject {
@@ -15,8 +13,6 @@ export interface UserDataObject {
     email: string
     username: string
     password: string
-    gender: string
-    birthdate: string
     createdAt: string
     updatedAt: string
 }

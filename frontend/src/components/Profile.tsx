@@ -1,12 +1,9 @@
 import React from 'react'
 import './Profile.css'
-import {Link, useNavigate} from 'react-router-dom'
+import {useNavigate} from 'react-router-dom'
 import styled from 'styled-components'
 import RoutingPath from '../routes/RoutingPath'
 import { useUserContext } from '../utils/global/provider/UserProvider'
-import {ListItemIcon} from "@mui/material";
-import ListItemText from "@mui/material/ListItemText";
-import ForumSharpIcon from "@mui/icons-material/ForumSharp";
 
 const Profile = () => {
     const navigate = useNavigate()
@@ -14,10 +11,14 @@ const Profile = () => {
     const imgUrl = 'https://thispersondoesnotexist.com/image'
 
     const logout = () => {
-        localStorage.removeItem('username')
+        // localStorage.removeItem('username')
         setAuthenticatedUser('')
         navigate(RoutingPath.homeView)
     }
+
+    // localStorage.removeItem('username')
+    // setAuthenticatedUser('')
+    // navigate(RoutingPath.homeView)
 
     return (
         <ProfileWrapper className='profileWrapper'>

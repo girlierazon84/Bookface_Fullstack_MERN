@@ -1,5 +1,3 @@
-// noinspection DuplicatedCode
-
 import { useState } from 'react'
 import { JsonToTable } from 'react-json-to-table'
 import styled from 'styled-components'
@@ -15,8 +13,6 @@ function UpdateUser() {
     const [email, setEmail] = useState<string>('')
     const [userName, setUserName] = useState<string>('')
     const [passWord, setPassWord] = useState<string>('')
-    const [gender, setGender] = useState<string>('')
-    const [birthDate, setBirthDate] = useState<string>('')
 
     function updateUser() {
         const payload: CreateUserObject = {
@@ -24,9 +20,7 @@ function UpdateUser() {
             lastname: lastName,
             email: email,
             username: userName,
-            password: passWord,
-            gender: gender,
-            birthdate: birthDate
+            password: passWord
         }
         UserService.updateUser(id, payload)
             .then(function (response) {
@@ -82,20 +76,6 @@ function UpdateUser() {
                 <Input type='password'
                        value={ passWord }
                        onChange={ event => setPassWord(event.target.value) }/>
-            </div>
-
-            <div>
-                Gender:
-                <Input type='text'
-                       value={ gender }
-                       onChange={ event => setGender(event.target.value) }/>
-            </div>
-
-            <div>
-                Birthdate:
-                <Input type='date'
-                       value={ birthDate }
-                       onChange={ event => setBirthDate(event.target.value) }/>
             </div>
 
             <div>

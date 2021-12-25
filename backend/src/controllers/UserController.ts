@@ -22,9 +22,7 @@ const createUser = async (req: Request, res: Response) => {
         lastname,
         email,
         username,
-        password,
-        gender,
-        birthdate}: CreateNewUser = req.body
+        password}: CreateNewUser = req.body
 
     // Bcrypt
     password = await encryptPassword(password)
@@ -34,9 +32,7 @@ const createUser = async (req: Request, res: Response) => {
         lastname,
         email,
         username,
-        password,
-        gender,
-        birthdate
+        password
     })
     Logger.debug(user)
     try {
@@ -145,9 +141,7 @@ const updateUser = async (req: Request, res: Response) => {
             lastname,
             email,
             username,
-            password,
-            gender,
-            birthdate} = req.body
+            password} = req.body
         Logger.http(`req.body: ${ req.body }`)
         if (!req.body) {
             res.status(StatusCode.BAD_REQUEST)
@@ -162,9 +156,7 @@ const updateUser = async (req: Request, res: Response) => {
             lastname,
             email,
             username,
-            password,
-            gender,
-            birthdate
+            password
         }, {new: true})
         Logger.debug(response)
         res.status(StatusCode.OK).send(response)

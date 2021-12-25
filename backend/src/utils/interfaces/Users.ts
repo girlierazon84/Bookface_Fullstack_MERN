@@ -4,6 +4,4 @@ export interface CreateNewUser {
     email: string
     username: string
     password: string
-    gender: string
-    birthdate: string
 }

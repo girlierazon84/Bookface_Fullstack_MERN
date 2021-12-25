@@ -15,4 +15,4 @@ const MorganMiddleware = morgan(
     ":method :url :status :res[content-length] - :response-time ms", {stream, skip}
 );
 
-export default MorganMiddleware;
+export default MorganMiddleware;1

@@ -6,11 +6,11 @@ import LogInView from "../view/LogInView"
 import FriendsListView from "../view/FriendsListView"
 import HomeView from "../view/HomeView"
 import PageNotFoundView from "../view/PageNotFoundView"
-import FooterContainer from "../components/FooterContainer"
 import PrivateMessageView from "../view/PrivateMessageView";
 import SignUpFormView from "../view/SignUpFormView";
 import Alive from '../components/users/Alive'
 import ProfileView from "../view/ProfileView";
+import AdminView from "../view/AdminView";
 
 
 
@@ -27,11 +27,10 @@ export const Routing = (props: { children?: React.ReactChild }) => {
                 <Route path={ RoutingPath.privateMessageView } element={ <PrivateMessageView/> }/>
                 <Route path={ RoutingPath.friendsListView } element={ <FriendsListView/> }/>
                 <Route path={ RoutingPath.homeView } element={ <HomeView/> }/>
+                <Route path={ RoutingPath.adminView } element={ <AdminView/> }/>
                 <Route path={ RoutingPath.apiAliveView} element={ <Alive/> }/>
                 <Route path={ RoutingPath.pageNotFoundView } element={ <PageNotFoundView/> }/>
             </Routes>
-
-            <FooterContainer/>
         </BrowserRouter>
     )
 }
