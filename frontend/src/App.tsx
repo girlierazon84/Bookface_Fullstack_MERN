@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { UserContext } from './utils/global/provider/UserProvider';
-// import NavigationBar from "./components/NavigationBar";
 import { Routing } from "./routes/Routing";
-import Navbar from "./components/Nav/Navbar";
 import FooterContainer from "./components/FooterContainer";
+import NavigationBar from "./components/nav/NavigationBar";
 
 
 function App() {
@@ -11,7 +10,7 @@ function App() {
 
     const checkIfUserIsAuthenticatedInBrowser = () => {
         const username = localStorage.getItem('username')
-        if (typeof username === 'string') {
+        if (username === 'string') {
             setAuthenticatedUser(username)
         }
     }
@@ -23,10 +22,8 @@ function App() {
     return (
         <UserContext.Provider value={{ authenticatedUser, setAuthenticatedUser }}>
             <Routing>
-                {/*<NavigationBar/>*/}
-                <Navbar />
+                <NavigationBar />
             </Routing>
-
             <FooterContainer/>
         </UserContext.Provider>
     )

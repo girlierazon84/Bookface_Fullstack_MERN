@@ -2,12 +2,19 @@
     display: none;
     position: absolute;
     background-color: var(--thirdly-color);
-    min-width: 200px;
-    padding: 20px 16px 0 0;
+    min-width: 150px;
+    padding: 22px 16px;
     z-index: 10;
-    margin-top: 70px;
+    margin-top: 59px;
+    border-radius: 10px;
 }
 
 .profileWrapper:hover .profileDropdown {
     display: block;
+}
+
+@media (max-width: 768px) {
+    .profileDropdown  {
+        margin-top: 28%;
+    }
 }

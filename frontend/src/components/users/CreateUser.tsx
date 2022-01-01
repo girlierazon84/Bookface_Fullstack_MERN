@@ -1,12 +1,12 @@
-import { useState } from 'react'
-// import { JsonToTable } from 'react-json-to-table'
+import React, { useState } from 'react'
 import styled from 'styled-components'
 import UsersService from '../../utils/api/service/UserService'
-import { CreateUserObject, UserDataObject } from '../../utils/interface/UsersInterfaces'
+import {CreateUserObject} from '../../utils/interface/UsersInterfaces'
+import {PrimaryButton} from "../CustomButtonComponent"
+import {Link} from "react-router-dom"
 
 
 function CreateUser() {
-    const [userObject, setUserObject] = useState<UserDataObject>()
     const [firstName, setFirstName] = useState<string>('')
     const [lastName, setLastName] = useState<string>('')
     const [email, setEmail] = useState<string>('')
@@ -24,11 +24,20 @@ function CreateUser() {
         UsersService.createUser(payload)
             .then(function (response) {
                 console.log(response.data)
-                setUserObject(response.data)
+                alert('Congratulations you are successfully registered!')
+                clearInputs()
             })
             .catch(function (error) {
                 console.log(error)
             })
+    }
+
+    function clearInputs() {
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setUserName('');
+        setPassWord('');
     }
 
     return (
@@ -51,7 +60,7 @@ function CreateUser() {
 
                 <div>
                     Email:
-                    <Input type='email'
+                    <Input type='text'
                            value={ email }
                            onChange={ event => setEmail(event.target.value) }/>
                 </div>
@@ -67,17 +76,24 @@ function CreateUser() {
                     Password:
                     <Input type='password'
                            value={ passWord }
-                           onChange={ event => setPassWord(event.target.value) }/>
+                           onChange={ event => setPassWord(event.target.value) } />
                 </div>
-
-                <div>
-                    <Button onClick={ createUsers }>Submit</Button>
-                    <Button onClick={ () => setUserObject(undefined) }>clear</Button>
-                </div>
-                {/*<JsonToTable json={ userObject }/>*/}
             </Article>
-        </>
+            <br/>
+            <br/>
+            <GridContainer>
+                <div className='submit__btn'>
+                    <Link to={'/log_in'}>
+                        <PrimaryButton onClick={() => createUsers()} children={'Submit'}/>
+                    </Link>
+                </div>
+                <div className='clear__btn'>
+                    <PrimaryButton onClick={() => clearInputs()} children={'Clear'}/>
+                </div>
+            </GridContainer>
 
+            <H4>Already have an account?  <Link to='/log_in'>Log in</Link>  here!...</H4>
+        </>
     )
 }
 
@@ -85,11 +101,10 @@ const Article = styled.article`
   padding: 5%;
   border: 1px solid var(--thirdly-color);
   box-shadow: 5px 10px 8px 5px var(--fourthly-color);
-  border-radius: 2em;
+  border-radius: 1em;
   background-color: var(--thirdly-color);
   align-self: center;
   width: 100%;
-  height: 50%;
 `
 
 const H1 = styled.h1`
@@ -107,28 +122,25 @@ const Input = styled.input`
   margin-bottom: 2em;
   border-radius: 5px;
   border: 1px solid var(--fifthly-color);
-  
 `
 
-const Button = styled.button`
-  cursor: pointer;
-  padding: 3% 4%;
-  border: none;
-  border-radius: 0.5em;
-  background-color: var(--secondary-color);
-  font-family: 'Oxygen - Regular', sans-serif;
-  font-size: 1em;
-  font-weight: 700;
-  color: var(--fifthly-color);
-  margin-top: 10%;
-  margin-left: 20.5%;
-  text-transform: uppercase;
+const GridContainer = styled.div`
+  display: inline-block;
+  width: 100%;
   
-
-  &:hover {
-    background-color: var(--fifthly-color);
-    color: var(--secondary-color);
+  .submit__btn {
+    float: left;
   }
+  
+  .clear__btn {
+    float: right;
+  }
+`
+
+const H4 = styled.h4`
+  color: var(--fourthly-color);
+  font-weight: 700;
+  text-align: center;
 `
 
 export default CreateUser

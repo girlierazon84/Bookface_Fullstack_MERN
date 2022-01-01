@@ -11,14 +11,10 @@ const Profile = () => {
     const imgUrl = 'https://thispersondoesnotexist.com/image'
 
     const logout = () => {
-        // localStorage.removeItem('username')
+        localStorage.removeItem('username')
         setAuthenticatedUser('')
         navigate(RoutingPath.homeView)
     }
-
-    // localStorage.removeItem('username')
-    // setAuthenticatedUser('')
-    // navigate(RoutingPath.homeView)
 
     return (
         <ProfileWrapper className='profileWrapper'>
@@ -37,29 +33,37 @@ const Profile = () => {
 export default Profile
 
 const ProfileWrapper = styled.section`
-  display: grid;
+  display: flex;
   grid-template-columns: repeat(2, 1fr);
-  height: 10px;
+  height: 4.8vh;
+
+  @media (max-width: 768px) {
+    height: 18vh;
+  }
 `
 
 const Img = styled.img`
+  display: inline-block;
+  cursor: pointer;
   align-self: center;
   border-radius: 50%;
   width: 4em;
-  border: 1px solid gold;
+  border: 1px solid var(--thirdly-color);
 `
 
 const Span = styled.span`
   display: block;
   align-self: center;
   cursor: pointer;
-  padding: 5px 10px;
+  padding: 10px 15px;
 `
 
 const SpanUserName = styled.span`
   display: block;
   align-self: center;
   cursor: pointer;
-  padding: 5px 10px;
-  color: yellowgreen;
+  padding-left: 10px;
+  color: var(--secondary-color);
+  font-family: "Oleo Script", sans-serif;
+  font-weight: bold;
 `

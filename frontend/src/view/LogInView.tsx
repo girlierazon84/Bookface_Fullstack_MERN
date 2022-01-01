@@ -1,5 +1,5 @@
-import React, {useState} from 'react'
-import {useNavigate} from 'react-router-dom'
+import React, {useEffect, useState} from 'react'
+import {Link, useNavigate} from 'react-router-dom'
 import styled from 'styled-components'
 import {PrimaryButton} from '../components/CustomButtonComponent'
 import RoutingPath from '../routes/RoutingPath'
@@ -11,7 +11,7 @@ export const LogInView = () => {
     const [userName, setUserName] = useState<string>('')
     const [passWord, setPassWord] = useState<string>('')
     const [loginText, setLoginText] = useState<string>('')
-    const {authenticatedUser, setAuthenticatedUser} = useUserContext()
+    const {setAuthenticatedUser} = useUserContext()
 
     const navigate = useNavigate()
 
@@ -52,9 +52,8 @@ export const LogInView = () => {
             <br/>
             <H3>{loginText}</H3>
             <PrimaryButton onClick={() => verifyUser()} children={'Log In'}/>
-            {/*<PrimaryButton onClick={() => alert(authenticatedUser)} children={'Show user'}/>*/}
-            {/*<br/>*/}
             <br/>
+            <H4>No account yet?  <Link to='/sign_up'>Sign Up</Link>  here!...</H4>
         </Wrapper>
     )
 }
@@ -64,7 +63,7 @@ export default LogInView
 const Wrapper = styled.section`
   background-color: var(--primary-color);
   text-align: center;
-  padding: 5em 0 10em 0;
+  padding: 5% 5% 20% 5%;
 
   h1 {
     font-weight: bold;
@@ -80,10 +79,8 @@ const GridContainer = styled.div`
   border: 1px solid var(--fifthly-color);
   box-shadow: 5px 10px 8px 5px var(--fourthly-color);
   border-radius: 20px;
-  padding: 0 2em 2em 2em;
-  width: 50%;
-  margin: auto;
-  grid-gap: 20px;
+  padding: 0 2em 3.5em 2em;
+  grid-gap: 2.5em;
   
   h4 {
     color: var(--fourthly-color);
@@ -95,7 +92,7 @@ const GridContainer = styled.div`
   
   input {
     width: 100%;
-    height: 8vh;
+    height: 6.5vh;
     border: none;
     box-shadow: 2px 4px 3px 2px var(--fourthly-color);
     border-radius: 10px;
@@ -103,7 +100,13 @@ const GridContainer = styled.div`
     font-size: 1em;
   }
 `
+
 const H3 = styled.h3`
   color: red;
   font-weight: bold;
+`
+
+const H4 = styled.h4`
+  color: var(--fourthly-color);
+  font-weight: 700;
 `

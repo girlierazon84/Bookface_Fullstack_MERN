@@ -4,11 +4,13 @@ import styled from 'styled-components'
 interface ButtonProps {
     children: React.ReactNode;
     onClick: () => void;
+    type?: 'reset';
 }
 
 const PrimaryButton: React.FC<ButtonProps> = ({children, onClick}) => {
+    let reset;
     return (
-        <ButtonPrimary onClick={ onClick }>
+        <ButtonPrimary onClick={ onClick } type={reset}>
             { children }
         </ButtonPrimary>
     )
@@ -34,10 +36,10 @@ const ButtonPrimary = styled.button`
   border: 2px solid var(--fifthly-color);
   box-shadow: 1.5px 2px 1.5px 2px var(--fourthly-color);
   color: var(--fifthly-color);
-  font-size: 1.25em;
+  font-size: 1em;
   text-transform: uppercase;
   font-weight: 700;
-  width: 50%;
+  width: 100%;
   cursor: pointer;
 
   &:hover {

@@ -3,7 +3,7 @@ import { CreateNewUser } from '../utils/interfaces/Users'
 
 const dbCollection = process.env.MONGODB_COLLECTION
 
-const schema = new Schema<CreateNewUser>({
+const newUserSchema = new Schema<CreateNewUser>({
         firstname: {type: String, required: true},
         lastname: {type: String, required: true},
         email: {type: String, required: true},
@@ -13,6 +13,6 @@ const schema = new Schema<CreateNewUser>({
     {timestamps: true}
 )
 
-const UserModel = model<CreateNewUser>(dbCollection, schema)
+const UserModel = model<CreateNewUser>(dbCollection, newUserSchema)
 
 export default UserModel

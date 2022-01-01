@@ -11,11 +11,11 @@ const HomeView = () => {
                 <p>Det är vårt slutprojekt med MERN stack, TypeScript och Bcrypt.</p>
                 <GridContainer>
                     <div>
-                        <button><Link to='/log_in'>Log In</Link></button>
+                        <Button><Link to='/log_in'>Log In</Link></Button>
                     </div>
                     <h3>OR</h3>
                     <div>
-                        <button><Link to='/sign_up'>Sign Up</Link></button>
+                        <Button><Link to='/sign_up'>Sign Up</Link></Button>
                     </div>
                 </GridContainer>
             </Article>
@@ -70,39 +70,62 @@ const GridContainer = styled.div`
   border-radius: 20px;
   //box-shadow: 5px 10px 8px 5px var(--fourthly-color);
   display: grid;
-  width: 50%;
+  width: 90%;
+  height: 60%;
   text-align: center;
-  margin-left: 25%;
-  margin-top: 3em;
+  margin: 5% 0 5% 5%;
   padding: 4% 0 4% 0;
 
-  button {
-    background-color: var(--secondary-color);
-    border: 2px solid var(--fifthly-color);
-    border-radius: 10px;
-    box-shadow: 1.5px 2px 1.5px 2px var(--fourthly-color);
-    padding: 1.5em;
-    width: 90%;
-    text-align: center;
-  }
+  //button {
+  //  background-color: var(--secondary-color);
+  //  border: 2px solid var(--fifthly-color);
+  //  border-radius: 10px;
+  //  box-shadow: 1.5px 2px 1.5px 2px var(--fourthly-color);
+  //  padding: 1.5em;
+  //  width: 90%;
+  //  text-align: center;
+  //}
 
-  button:hover,
-  button:focus {
-    background-color: var(--secondary-color);
-    color: var(--fifthly-color);
-  }
+  //button:hover,
+  //button:focus {
+  //  background-color: var(--secondary-color);
+  //  color: var(--fifthly-color);
+  //}
 
+  //a {
+  //  color: var(--fifthly-color);
+  //  text-decoration: none;
+  //  text-transform: uppercase;
+  //  font-size: 150%;
+  //  font-weight: bold;
+  //}
+
+  h3 {
+    font-family: "Lucida Calligraphy", sans-serif;
+    font-size: 2em;
+    color: var(--fourthly-color);
+  }
+`
+
+const Button = styled.button`
+  background-color: var(--secondary-color);
+  border: 2px solid var(--fifthly-color);
+  border-radius: 10px;
+  box-shadow: 1.5px 2px 1.5px 2px var(--fourthly-color);
+  padding: 1.5em;
+  width: 90%;
+  text-align: center;
+
+  &:hover {
+    background-color: var(--fourthly-color);
+    //color: var(--secondary-color);
+  }
+  
   a {
     color: var(--fifthly-color);
     text-decoration: none;
     text-transform: uppercase;
     font-size: 150%;
     font-weight: bold;
-  }
-
-  h3 {
-    font-family: "Lucida Calligraphy", sans-serif;
-    font-size: 2em;
-    color: var(--fourthly-color);
   }
 `
