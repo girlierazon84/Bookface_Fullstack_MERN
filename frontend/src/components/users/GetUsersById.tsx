@@ -21,45 +21,74 @@ function GetUsersById() {
 
     return (
         <Article>
-            <H1>Get users by id</H1>
-            Id: <Input type='text'
+            <H1>Get User by ID</H1>
+            <Input type='text'
+                       placeholder='ID'
                        value={ id }
                        onChange={ event => setId(event.target.value) }/>
-            <Button onClick={ getUsers }>getUser</Button>
-            <Button onClick={ () => setOneUser(undefined) }>clear</Button>
             <JsonToTable json={ oneUser }/>
+            <br/>
+            <GridContainer>
+                <Button className='getUserById__btn' onClick={ getUsers }>Get User By ID</Button>
+                <Button className='clear__btn' onClick={ () => setOneUser(undefined) }>Clear</Button>
+            </GridContainer>
         </Article>
     )
 }
 
 const Article = styled.article`
   padding: 1em;
-  border: 1px solid black;
+  border: 1px solid var(--thirdly-color);
+  box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
-  background-color: cadetblue;
+  background-color: var(--thirdly-color);
+  margin-top: 2em;
 `
 
 const H1 = styled.h1`
   font-size: 2em;
+  color: var(--fourthly-color);
+  font-family: "Oxygen - Regular", sans-serif;
 `
 
 const Input = styled.input`
-  width: 200px;
+  background-color: var(--fifthly-color);
+  width: 100%;
   margin-bottom: 1em;
+  padding: 1em;
+  border-radius: 10px;
+  font-size: 1em;
+`
+
+const GridContainer = styled.div`
+  display: inline-block;
+  width: 100%;
+
+  .getUserById__btn {
+    float: left;
+
+  }
+
+  .clear__btn {
+    float: right;
+  }
 `
 
 const Button = styled.button`
-  padding: 0.75em 3em;
-  border-radius: 1em;
-  background-color: greenyellow;
-  color: blueviolet;
-  border-color: blueviolet;
-  margin-right: 1em;
+  width: 50%;
+  text-transform: uppercase;
+  font-family: "Oxygen - Regular", sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 0.8em;
+  background-color: var(--secondary-color);
+  color: var(--fifthly-color);
+  border-color: var(--fifthly-color);
 
   &:hover {
-    background-color: blueviolet;
-    color: greenyellow;
-    border-color: greenyellow;
+    background-color: var(--fifthly-color);
+    color: var(--secondary-color);
   }
 `
 

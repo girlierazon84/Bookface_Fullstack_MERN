@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import UserService from '../../utils/api/service/UserService'
 import { UserDataObject } from '../../utils/interface/UsersInterfaces'
 
-function GetUsers() {
+function GetAllUsers() {
     const initialState: Array<UserDataObject> = []
     const [allUsersInDatabase, setAllUsersInDatabase] = useState<Array<UserDataObject>>(initialState)
 
@@ -21,39 +21,62 @@ function GetUsers() {
 
     return (
         <Article>
-            <H1>Get users</H1>
-            <h2>From database</h2>
-            <Button onClick={ getUsers }>getUsers</Button>
-            <Button onClick={ () => setAllUsersInDatabase(initialState) }>clear</Button>
-            <JsonToTable json={ allUsersInDatabase }/>
+            <H1>Get All Users from Database</H1>
+            <JsonToTable json={ allUsersInDatabase } max-width="100%" />
+            <br/>
+            <GridContainer>
+                <Button className='getAllUsers__btn' onClick={ getUsers }>Get All Users</Button>
+                <Button className='clear__btn' onClick={ () => setAllUsersInDatabase(initialState) }>Clear</Button>
+            </GridContainer>
         </Article>
     )
 }
 
 const Article = styled.article`
   padding: 1em;
-  border: 1px solid black;
+  border: 1px solid var(--thirdly-color);
+  box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
-  background-color: cornflowerblue;
+  background-color: var(--thirdly-color);
+  margin-top: 2em;
 `
 
 const H1 = styled.h1`
   font-size: 2em;
+  color: var(--fourthly-color);
+  font-family: 'Oxygen - Regular', sans-serif;
 `
 
-const Button = styled.button`
-  padding: 0.75em 3em;
-  border-radius: 1em;
-  background-color: greenyellow;
-  color: blueviolet;
-  border-color: blueviolet;
-  margin-right: 1em;
+const GridContainer = styled.div`
+  display: inline-block;
+  width: 100%;
 
-  &:hover {
-    background-color: blueviolet;
-    color: greenyellow;
-    border-color: greenyellow;
+  .getAllUsers__btn {
+    float: left;
+
+  }
+
+  .clear__btn {
+    float: right;
   }
 `
 
-export default GetUsers
+const Button = styled.button`
+  width: 50%;
+  text-transform: uppercase;
+  font-family: "Oxygen - Regular", sans-serif;
+  font-size: 1em;
+  font-weight: bold;
+  padding: 10px;
+  border-radius: 0.8em;
+  background-color: var(--secondary-color);
+  color: var(--fifthly-color);
+  border-color: var(--fifthly-color);
+
+  &:hover {
+    background-color: var(--fifthly-color);
+    color: var(--secondary-color);
+  }
+`
+
+export default GetAllUsers
