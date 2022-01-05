@@ -4,13 +4,12 @@ import styled from 'styled-components'
 interface ButtonProps {
     children: React.ReactNode;
     onClick: () => void;
-    type?: 'reset';
 }
 
 const PrimaryButton: React.FC<ButtonProps> = ({children, onClick}) => {
     let reset;
     return (
-        <ButtonPrimary onClick={ onClick } type={reset}>
+        <ButtonPrimary onClick={ onClick }>
             { children }
         </ButtonPrimary>
     )

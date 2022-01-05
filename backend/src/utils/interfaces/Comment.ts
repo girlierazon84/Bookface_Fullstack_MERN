@@ -1,6 +1,6 @@
 export interface CreateComment {
-    content: string;
-    likes: object[];
-    post: object;
-    author: object;
+    content: string
+    likes: object[]
+    post: object
+    author: object
 }

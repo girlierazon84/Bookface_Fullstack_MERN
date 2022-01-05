@@ -1,9 +1,13 @@
 import React from 'react'
-import './Profile.css'
-import {useNavigate} from 'react-router-dom'
+import {Link, useNavigate} from 'react-router-dom'
 import styled from 'styled-components'
+import LogoutSharpIcon from '@mui/icons-material/LogoutSharp';
+import {ListItemIcon} from "@mui/material";
+import ListItemText from "@mui/material/ListItemText";
+import ForumSharpIcon from "@mui/icons-material/ForumSharp";
 import RoutingPath from '../routes/RoutingPath'
 import { useUserContext } from '../utils/global/provider/UserProvider'
+import './Profile.css'
 
 const Profile = () => {
     const navigate = useNavigate()
@@ -17,16 +21,33 @@ const Profile = () => {
     }
 
     return (
-        <ProfileWrapper className='profileWrapper'>
-            <Img src={ imgUrl }/>
-            <SpanUserName>{ authenticatedUser }</SpanUserName>
-            <div className='profileDropdown'>
-                <Span onClick={ () => navigate(RoutingPath.settingsView) }>Settings</Span>
-                <Span onClick={ () => navigate(RoutingPath.profileView) }>Profile</Span>
-                <hr/>
-                <Span onClick={ () => logout() }>Logout</Span>
-            </div>
-        </ProfileWrapper>
+        <>
+            <LiRight>
+                <Link to={RoutingPath.privateMessageView}>
+                    <ListItemIcon>
+                        <ListItemText primary='Messages'/>
+                        <ForumSharpIcon color='primary'
+                                        fontSize='small'
+                                        padding-top='inherit'/>
+                    </ListItemIcon>
+                </Link>
+            </LiRight>
+
+            <ProfileWrapper className='profileWrapper'>
+                <Img src={ imgUrl }/>
+                <SpanUserName>{ authenticatedUser }</SpanUserName>
+
+                <div className='profileDropdown'>
+                    <Span onClick={ () => navigate(RoutingPath.settingsView) }>Settings</Span>
+                    <Span onClick={ () => navigate(RoutingPath.profileView) }>Profile</Span>
+                    <hr/>
+                    <Span onClick={ () => logout() }>
+                        <LogoutSharpIcon color='action' fontSize='medium' />
+                        Logout
+                    </Span>
+                </div>
+            </ProfileWrapper>
+        </>
     )
 }
 
@@ -38,7 +59,7 @@ const ProfileWrapper = styled.section`
   height: 4.8vh;
 
   @media (max-width: 768px) {
-    height: 18vh;
+    height: 40vh;
   }
 `
 
@@ -50,14 +71,6 @@ const Img = styled.img`
   width: 4em;
   border: 1px solid var(--thirdly-color);
 `
-
-const Span = styled.span`
-  display: block;
-  align-self: center;
-  cursor: pointer;
-  padding: 10px 15px;
-`
-
 const SpanUserName = styled.span`
   display: block;
   align-self: center;
@@ -67,3 +80,38 @@ const SpanUserName = styled.span`
   font-family: "Oleo Script", sans-serif;
   font-weight: bold;
 `
+
+const LiRight = styled.li`
+  float: right;
+
+  a {
+    display: block;
+    color: var(--fourthly-color);
+    margin-left: 30px;
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  a:hover {
+    border-bottom: 3px solid var(--secondary-color);
+  }
+
+  @media (max-width: 768px) {
+    a {
+      margin-right: 184px;
+      padding-top: 30px;
+    }
+
+    a:hover {
+      width: 95px;
+    }
+  }
+`
+
+const Span = styled.span`
+  display: block;
+  align-self: center;
+  cursor: pointer;
+  padding: 10px 15px;
+`
+

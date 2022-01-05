@@ -17,7 +17,7 @@ export interface UserDataObject {
     updatedAt: string
 }
 
-export interface LogInDataObject {
+export interface UsersLogInDataObject {
     username: string
     password: string
 }

@@ -1,4 +1,4 @@
 export interface CreateFriendRequest {
-   sender: object;
-   receiver: object;
+   sender: object
+   receiver: object
 }

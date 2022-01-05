@@ -1,6 +1,6 @@
 const RoutingPath = {
     wildCardView: '*',
-    logInView: '/log_in',
+    usersLogInView: '/log_in',
     signUpFormView: '/sign_up',
     profileView: '/profile',
     settingsView:'/settings',

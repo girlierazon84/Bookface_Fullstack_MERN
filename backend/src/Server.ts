@@ -11,6 +11,7 @@ ApplyMiddlewares(app)
 
 AliveRoutes.routes(app)
 UserRoutes.routes(app)
+
 app.use(notFound)
 
 Configuration.connectToPort(app)

@@ -1,16 +1,12 @@
 import { Schema, model } from 'mongoose'
 import dotenv from 'dotenv'
+import {CreateFriendRequest} from "../utils/interfaces/FriendRequest";
 
 // 1. .env
 dotenv.config()
 const dbCollection = process.env.MONGODB_COLLECTION
 
-interface FriendRequest {
-    sender: object;
-    receiver: object;
-}
-
-const friendRequestSchema = new Schema<FriendRequest>({
+const friendRequestSchema = new Schema<CreateFriendRequest>({
         sender: {
             type: Schema.Types.ObjectId,
             ref: 'User',
@@ -26,6 +22,6 @@ const friendRequestSchema = new Schema<FriendRequest>({
 )
 
 // 4. Create a Model.
-const FriendRequestModel = model<FriendRequest>(dbCollection, friendRequestSchema)
+const FriendRequestModel = model<CreateFriendRequest>(dbCollection, friendRequestSchema)
 
 export default FriendRequestModel

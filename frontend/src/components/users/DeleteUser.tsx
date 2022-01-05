@@ -47,7 +47,7 @@ const Article = styled.article`
   margin: 2em 0 5em 0;
   
   h3 {
-    color: var(--secondary-color);
+    color: green;
     font-family: "Oleo Script", sans-serif;
   }
 `

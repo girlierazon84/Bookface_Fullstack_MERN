@@ -1,4 +1,4 @@
-import { CreateUserObject, LogInDataObject, UserDataObject } from '../../interface/UsersInterfaces'
+import { CreateUserObject, UsersLogInDataObject, UserDataObject } from '../../interface/UsersInterfaces'
 import http from '../UsersApi'
 
 const usersUrl = '/users'
@@ -9,7 +9,7 @@ const UserService = {
         return http.post(usersUrl, newUserPayload)
     },
 
-    verifyUser: (payload: LogInDataObject) => {
+    verifyUser: (payload: UsersLogInDataObject) => {
         return http.post(verifyUserUrl, payload)
     },
 

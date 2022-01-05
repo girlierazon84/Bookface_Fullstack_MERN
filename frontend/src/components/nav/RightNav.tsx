@@ -9,7 +9,6 @@ import ListItemText from "@mui/material/ListItemText";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import ForumSharpIcon from "@mui/icons-material/ForumSharp";
 
 interface Props {
     open: boolean
@@ -21,32 +20,41 @@ const RightNav: React.FC<Props> = ({open}) => {
     const displayUserIfAuthenticated = () => {
         return (authenticatedUser)
             ? <LiLeft><Profile/></LiLeft>
-            : <LiLeft><Link to={RoutingPath.logInView}><ListItemIcon><ListItemText primary='Log in'/><LoginSharpIcon
-                color='action' fontSize='medium'/></ListItemIcon></Link></LiLeft>
+            : <LiLeft>
+                <Link to={RoutingPath.usersLogInView}>
+                    <ListItemIcon>
+                        <ListItemText primary='Log in'/>
+                        <LoginSharpIcon color='action'
+                                        fontSize='medium'/>
+                    </ListItemIcon>
+                </Link>
+            </LiLeft>
     }
 
     return (
         <>
-            <Ul open={ open }>
-                <LiRight><Link to={RoutingPath.homeView}><ListItemIcon><ListItemText
-                    primary='Home'/><HomeSharpIcon
-                    color='primary'
-                    fontSize='medium'
-                    padding-top='inherit'/></ListItemIcon></Link></LiRight>
+            <Ul open={open}>
+                <LiRight>
+                    <Link to={RoutingPath.homeView}>
+                        <ListItemIcon>
+                            <ListItemText primary='Home'/>
+                            <HomeSharpIcon color='primary'
+                                           fontSize='medium'
+                                           padding-top='inherit'/>
+                        </ListItemIcon>
+                    </Link>
+                </LiRight>
 
-                <LiRight><Link to={RoutingPath.adminView}><ListItemIcon>
-                    <ListItemText primary='Admin'/>
-                    <AdminPanelSettingsIcon color='primary'
-                                            fontSize='small'
-                                            padding-top='inherit'/></ListItemIcon>
-                </Link></LiRight>
-
-                <LiRight><Link to={RoutingPath.privateMessageView}><ListItemIcon>
-                    <ListItemText primary='Messages'/>
-                    <ForumSharpIcon color='primary'
-                                    fontSize='small'
-                                    padding-top='inherit'/></ListItemIcon>
-                </Link></LiRight>
+                <LiRight>
+                    <Link to={RoutingPath.adminView}>
+                        <ListItemIcon>
+                            <ListItemText primary='Admin'/>
+                            <AdminPanelSettingsIcon color='primary'
+                                                    fontSize='small'
+                                                    padding-top='inherit'/>
+                        </ListItemIcon>
+                    </Link>
+                </LiRight>
 
                 {displayUserIfAuthenticated()}
             </Ul>
@@ -67,7 +75,7 @@ const Ul = styled.ul<Props>`
     flex-flow: column nowrap;
     background-color: var(--fifthly-color);
     position: fixed;
-    transform: ${({ open }) => open ? 'translateX(0)' : 'translateX(100%)'};
+    transform: ${({open}) => open ? 'translateX(0)' : 'translateX(100%)'};
     margin-top: 0;
     top: 0;
     right: 0;
@@ -80,7 +88,7 @@ const Ul = styled.ul<Props>`
 
 const LiLeft = styled.li`
   float: left;
-  
+
   a {
     display: block;
     color: var(--fourthly-color);
@@ -95,9 +103,9 @@ const LiLeft = styled.li`
   @media (max-width: 768px) {
 
     a {
-      padding-top: 30px;  
+      padding-top: 30px;
     }
-    
+
     a:hover {
       width: 70px;
     }
@@ -120,7 +128,6 @@ const LiRight = styled.li`
   }
 
   @media (max-width: 768px) {
-    
     a {
       margin-left: 0;
       padding-top: 30px;

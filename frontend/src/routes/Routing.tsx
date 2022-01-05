@@ -2,7 +2,7 @@ import React from 'react'
 import { BrowserRouter, Navigate, Routes } from "react-router-dom"
 import RoutingPath from "./RoutingPath"
 import { Route } from "react-router"
-import LogInView from "../view/LogInView"
+import UsersLogInView from "../view/UsersLogInView"
 import FriendsListView from "../view/FriendsListView"
 import HomeView from "../view/HomeView"
 import PageNotFoundView from "../view/PageNotFoundView"
@@ -21,7 +21,7 @@ export const Routing = (props: { children?: React.ReactChild }) => {
             { props.children }
             <Routes>
                 <Route path={ RoutingPath.wildCardView } element={ <Navigate to={ RoutingPath.pageNotFoundView }/> }/>
-                <Route path={ RoutingPath.logInView } element={ <LogInView/> }/>
+                <Route path={ RoutingPath.usersLogInView } element={ <UsersLogInView/> }/>
                 <Route path={ RoutingPath.signUpFormView } element={ <SignUpFormView/> }/>
                 <Route path={ RoutingPath.profileView } element={ <ProfileView/> }/>
                 <Route path={ RoutingPath.privateMessageView } element={ <PrivateMessageView/> }/>

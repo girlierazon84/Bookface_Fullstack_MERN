@@ -7,6 +7,8 @@ import { UserDataObject } from '../../utils/interface/UsersInterfaces'
 function GetAllUsers() {
     const initialState: Array<UserDataObject> = []
     const [allUsersInDatabase, setAllUsersInDatabase] = useState<Array<UserDataObject>>(initialState)
+    const [text, setText] = useState<string>('')
+
 
     function getUsers() {
         UserService.getAllUsers()

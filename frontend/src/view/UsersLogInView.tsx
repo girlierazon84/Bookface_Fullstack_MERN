@@ -1,13 +1,13 @@
-import React, {useEffect, useState} from 'react'
+import React, {useState} from 'react'
 import {Link, useNavigate} from 'react-router-dom'
 import styled from 'styled-components'
 import {PrimaryButton} from '../components/CustomButtonComponent'
 import RoutingPath from '../routes/RoutingPath'
 import UserService from '../utils/api/service/UserService'
 import {useUserContext} from '../utils/global/provider/UserProvider'
-import { LogInDataObject } from '../utils/interface/UsersInterfaces'
+import { UsersLogInDataObject } from '../utils/interface/UsersInterfaces'
 
-export const LogInView = () => {
+export const UsersLogInView = () => {
     const [userName, setUserName] = useState<string>('')
     const [passWord, setPassWord] = useState<string>('')
     const [loginText, setLoginText] = useState<string>('')
@@ -16,7 +16,7 @@ export const LogInView = () => {
     const navigate = useNavigate()
 
     const verifyUser = () => {
-        const payload: LogInDataObject = {
+        const payload: UsersLogInDataObject = {
             username: userName,
             password: passWord,
         }
@@ -58,7 +58,7 @@ export const LogInView = () => {
     )
 }
 
-export default LogInView
+export default UsersLogInView
 
 const Wrapper = styled.section`
   background-color: var(--primary-color);
