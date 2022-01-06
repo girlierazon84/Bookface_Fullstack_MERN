@@ -10,6 +10,7 @@ const ProfileView = () => {
             <br/>
             <br/>
             <br/>
+            <br/>
         </Article>
     )
 }
