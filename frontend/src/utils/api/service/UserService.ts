@@ -1,4 +1,8 @@
-import { CreateUserObject, UsersLogInDataObject, UserDataObject } from '../../interface/UsersInterfaces'
+import {
+    CreateUserObject,
+    UsersLogInDataObject,
+    UserDataObject
+} from '../../interface/UsersInterfaces'
 import http from '../UsersApi'
 
 const usersUrl = '/users'

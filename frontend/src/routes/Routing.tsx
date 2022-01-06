@@ -11,6 +11,7 @@ import SignUpFormView from "../view/SignUpFormView";
 import Alive from '../components/users/Alive'
 import ProfileView from "../view/ProfileView";
 import AdminView from "../view/AdminView";
+import SettingsView from "../view/SettingsView";
 
 
 
@@ -29,6 +30,7 @@ export const Routing = (props: { children?: React.ReactChild }) => {
                 <Route path={ RoutingPath.homeView } element={ <HomeView/> }/>
                 <Route path={ RoutingPath.adminView } element={ <AdminView/> }/>
                 <Route path={ RoutingPath.apiAliveView} element={ <Alive/> }/>
+                <Route path={ RoutingPath.settingsView} element={ <SettingsView/> }/>
                 <Route path={ RoutingPath.pageNotFoundView } element={ <PageNotFoundView/> }/>
             </Routes>
         </BrowserRouter>
