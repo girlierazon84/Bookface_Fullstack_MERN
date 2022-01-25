@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose'
 import { CreateNewUser } from '../utils/interfaces/Users'
 
-const dbCollection = process.env.MONGODB_COLLECTION
+const dbCollection = process.env.MONGODB_COLLECTION_USER
 
 
 const newUserSchema = new Schema<CreateNewUser>({

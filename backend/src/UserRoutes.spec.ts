@@ -102,7 +102,7 @@ const deleteUser = () => {
     })
 }
 
-describe('TESTING THE USER_API ROTE', () => {
+describe('TESTING THE USER_API ROUTE', () => {
     testingNonExistingRoute()
     createUser()
     getAllUsers()

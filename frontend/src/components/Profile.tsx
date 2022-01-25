@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import LogoutSharpIcon from '@mui/icons-material/LogoutSharp';
 import {ListItemIcon} from "@mui/material";
 import ListItemText from "@mui/material/ListItemText";
-import ForumSharpIcon from "@mui/icons-material/ForumSharp";
+import PostAddSharpIcon from '@mui/icons-material/PostAddSharp';
 import RoutingPath from '../routes/RoutingPath'
 import { useUserContext } from '../utils/global/provider/UserProvider'
 import './Profile.css'
@@ -23,12 +23,12 @@ const Profile = () => {
     return (
         <>
             <LiRight>
-                <Link to={RoutingPath.privateMessageView}>
+                <Link to={RoutingPath.createPostView}>
                     <ListItemIcon>
-                        <ListItemText primary='Messages'/>
-                        <ForumSharpIcon color='primary'
-                                        fontSize='small'
-                                        padding-top='inherit'/>
+                        <ListItemText primary='Add Post'/>
+                        <PostAddSharpIcon color='primary'
+                                          fontSize='medium'
+                                          padding-top='inherit'/>
                     </ListItemIcon>
                 </Link>
             </LiRight>
@@ -98,8 +98,9 @@ const LiRight = styled.li`
 
   @media (max-width: 768px) {
     a {
-      margin-right: 184px;
+      margin-right: 215px;
       padding-top: 30px;
+      width: 95px;
     }
 
     a:hover {

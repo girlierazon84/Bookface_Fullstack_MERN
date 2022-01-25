@@ -1,7 +1,5 @@
-export interface CreatePost {
+export interface CreateNewPost {
+    author: string
+    title: string
     content: string
-    likes: object[]
-    author: object
-    timestamp: Date
-    photo: string
 }

@@ -32,6 +32,16 @@ function UpdateUser() {
             })
     }
 
+    function clearInputs() {
+        setId('')
+        setFirstName('');
+        setLastName('');
+        setEmail('');
+        setUserName('');
+        setPassWord('');
+        setUserObject(undefined);
+    }
+
     return (
         <Article>
             <H1>Update User</H1>
@@ -81,7 +91,7 @@ function UpdateUser() {
             <br/>
             <GridContainer>
                 <Button className='update__btn' onClick={ updateUser }>Update User</Button>
-                <Button className='clear__btn' onClick={ () => setUserObject(undefined) }>Clear</Button>
+                <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
             </GridContainer>
         </Article>
     )

@@ -17,10 +17,6 @@ const UserService = {
         return http.post(verifyUserUrl, payload)
     },
 
-    deleteUserById: (id: string) => {
-        return http.delete(`${ usersUrl }/${ id }`)
-    },
-
     getAllUsers: () => {
         return http.get<UserDataObject[]>(usersUrl)
     },
@@ -31,7 +27,12 @@ const UserService = {
 
     updateUser: (id: string, payload: CreateUserObject) => {
         return http.put(`${ usersUrl }/${ id }`, payload)
-    }
+    },
+
+    deleteUserById: (id: string) => {
+        return http.delete(`${ usersUrl }/${ id }`)
+    },
+
 }
 
 export default UserService

@@ -1,47 +1,38 @@
 import { useState } from 'react'
 import styled from 'styled-components'
-import UsersService from '../../utils/api/service/UserService'
+import { JsonToTable } from 'react-json-to-table'
+import {PostDataObject} from "../../utils/interface/PostInterface";
+import PostService from "../../utils/api/service/PostService";
 
-function DeleteUser() {
-    const [text, setText] = useState<string>('')
-    const [id, setId] = useState<string>('')
+function GetAllPosts() {
+    const initialState: Array<PostDataObject> = []
+    const [allPostsInDatabase, setAllPostsInDatabase] = useState<Array<PostDataObject>>(initialState)
 
-    function deleteUser() {
-        UsersService.deleteUserById(id)
+
+
+    function getPosts() {
+        PostService.getAllPosts()
             .then(function (response) {
                 console.log(response.data)
-                setText(response.data.message)
+                setAllPostsInDatabase(response.data)
             })
             .catch(function (error) {
                 console.log(error)
             })
     }
 
-    function clearInputs() {
-        setId('');
-        setText('');
-    }
-
     return (
         <Article>
-            <H1>Delete User</H1>
-
-            <div>
-                <Input type='text'
-                       placeholder='ID'
-                       value={ id }
-                       onChange={ event => setId(event.target.value) }/>
-            </div>
-
-            <h3>{ text }</h3>
+            <H1>Get All Posts from Database</H1>
+            <JsonToTable json={ allPostsInDatabase }/>
+            <br/>
             <GridContainer>
-                <Button className='delete__btn' onClick={ deleteUser }>Delete User</Button>
-                <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
+                <Button className='getAllPosts__btn' onClick={ getPosts }>Get All Posts</Button>
+                <Button className='clear__btn' onClick={ () => setAllPostsInDatabase(initialState) }>Clear</Button>
             </GridContainer>
         </Article>
     )
 }
-
 
 const Article = styled.article`
   padding: 1em;
@@ -49,34 +40,20 @@ const Article = styled.article`
   box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  margin: 2em 0 5em 0;
-  
-  h3 {
-    color: green;
-    font-family: "Oleo Script", sans-serif;
-  }
+  margin-top: 2em;
 `
 
 const H1 = styled.h1`
   font-size: 2em;
   color: var(--fourthly-color);
-  font-family: "Oxygen - Regular", sans-serif;
-`
-
-const Input = styled.input`
-  background-color: var(--fifthly-color);
-  width: 100%;
-  padding: 1em;
-  border-radius: 10px;
-  margin-bottom: 1em;
-  font-size: 1em;
+  font-family: 'Oxygen - Regular', sans-serif;
 `
 
 const GridContainer = styled.div`
   display: inline-block;
   width: 100%;
 
-  .getUserById__btn {
+  .getAllPosts__btn {
     float: left;
 
   }
@@ -104,4 +81,4 @@ const Button = styled.button`
   }
 `
 
-export default DeleteUser
+export default GetAllPosts

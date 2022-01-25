@@ -1,6 +1,7 @@
 import dotenv from 'dotenv'
 import StatusCode from '../configurations/StatusCode'
 
+
 dotenv.config()
 const env = process.env.NODE_ENV
 
@@ -21,7 +22,8 @@ const errorHandler = (error: any, req: any, res: any, next: any) => {
     })
 }
 
+
 export {
     notFound,
-    errorHandler
+    errorHandler,
 }

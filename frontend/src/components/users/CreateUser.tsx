@@ -25,7 +25,6 @@ function CreateUser() {
             .then(function (response) {
                 console.log(response.data)
                 alert('Congratulations you are successfully registered!')
-                clearInputs()
             })
             .catch(function (error) {
                 console.log(error)

@@ -10,7 +10,7 @@ export const StyledBurger = styled.div<Props>`
   cursor: pointer;
   width: 2rem;
   height: 2rem;
-  position: fixed;
+  position: absolute;
   top: 25px;
   right: 20px;
   @media (max-width: 768px) {

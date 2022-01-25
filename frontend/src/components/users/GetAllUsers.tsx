@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { JsonToTable } from 'react-json-to-table'
 import styled from 'styled-components'
 import UserService from '../../utils/api/service/UserService'
@@ -7,7 +7,7 @@ import { UserDataObject } from '../../utils/interface/UsersInterfaces'
 function GetAllUsers() {
     const initialState: Array<UserDataObject> = []
     const [allUsersInDatabase, setAllUsersInDatabase] = useState<Array<UserDataObject>>(initialState)
-    const [text, setText] = useState<string>('')
+
 
 
     function getUsers() {
@@ -24,7 +24,7 @@ function GetAllUsers() {
     return (
         <Article>
             <H1>Get All Users from Database</H1>
-            <JsonToTable json={ allUsersInDatabase } max-width="100%" />
+                <JsonToTable json={ allUsersInDatabase }/>
             <br/>
             <GridContainer>
                 <Button className='getAllUsers__btn' onClick={ getUsers }>Get All Users</Button>

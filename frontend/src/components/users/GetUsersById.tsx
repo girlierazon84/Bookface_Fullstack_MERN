@@ -6,7 +6,7 @@ import { UserDataObject } from '../../utils/interface/UsersInterfaces'
 
 function GetUsersById() {
     const [oneUser, setOneUser] = useState<UserDataObject>()
-    const [id, setId] = useState<string>('616718bda4ab77e25e33ec5b')
+    const [id, setId] = useState<string>('')
 
     function getUsers() {
         UserService.getUserById(id)
@@ -19,18 +19,23 @@ function GetUsersById() {
             })
     }
 
+    function clearInputs() {
+        setId('');
+        setOneUser(undefined);
+    }
+
     return (
         <Article>
             <H1>Get User by ID</H1>
             <Input type='text'
-                       placeholder='ID'
-                       value={ id }
-                       onChange={ event => setId(event.target.value) }/>
+                   placeholder='ID'
+                   value={ id }
+                   onChange={ event => setId(event.target.value) }/>
             <JsonToTable json={ oneUser }/>
             <br/>
             <GridContainer>
                 <Button className='getUserById__btn' onClick={ getUsers }>Get User By ID</Button>
-                <Button className='clear__btn' onClick={ () => setOneUser(undefined) }>Clear</Button>
+                <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
             </GridContainer>
         </Article>
     )

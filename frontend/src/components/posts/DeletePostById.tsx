@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import styled from 'styled-components'
-import UsersService from '../../utils/api/service/UserService'
+import PostService from "../../utils/api/service/PostService";
 
-function DeleteUser() {
+function DeletePostById() {
     const [text, setText] = useState<string>('')
     const [id, setId] = useState<string>('')
 
-    function deleteUser() {
-        UsersService.deleteUserById(id)
+    function deletePost() {
+        PostService.deletePostById(id)
             .then(function (response) {
                 console.log(response.data)
                 setText(response.data.message)
@@ -24,7 +24,7 @@ function DeleteUser() {
 
     return (
         <Article>
-            <H1>Delete User</H1>
+            <H1>Delete Post</H1>
 
             <div>
                 <Input type='text'
@@ -35,7 +35,7 @@ function DeleteUser() {
 
             <h3>{ text }</h3>
             <GridContainer>
-                <Button className='delete__btn' onClick={ deleteUser }>Delete User</Button>
+                <Button className='delete__btn' onClick={ deletePost }>Delete Post</Button>
                 <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
             </GridContainer>
         </Article>
@@ -104,4 +104,4 @@ const Button = styled.button`
   }
 `
 
-export default DeleteUser
+export default DeletePostById

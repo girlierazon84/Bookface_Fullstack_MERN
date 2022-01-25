@@ -1,24 +1,21 @@
 import React from 'react'
 import styled from "styled-components";
+import CreateNewPost from "../components/posts/CreateNewPost";
 
 
-const PrivateMessageView = () => {
+const CreatePostView = () => {
+
     return (
         <Article>
-            <h1>Private Message</h1>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
+            <CreateNewPost/>
         </Article>
     )
 }
 
-export default PrivateMessageView
+export default CreatePostView
 
 
 const Article = styled.article`
   background-color: var(--primary-color);
   padding: 0.1em 0 18em 0;
 `
-

@@ -1,9 +1,8 @@
 import cors from 'cors'
-import express, { Express } from 'express'
+import express from 'express'
 import helmet from 'helmet'
 import { errorHandler } from '../middlewares/Middleware'
 import MorganMiddleware from '../middlewares/MorganMiddleware'
-import passport from "passport";
 
 // Middlewares
 const allowedOrigins = ['http://localhost:3000']

@@ -1,13 +1,13 @@
 import bcrypt from 'bcrypt'
 import StatusCode from '../configurations/StatusCode'
 import UserModel from '../models/UserModel'
-import {CreateNewUser} from '../utils/interfaces/Users'
+import { CreateNewUser } from '../utils/interfaces/Users'
 import Logger from '../utils/Logger'
 import {Request, Response} from 'express'
 
 const saltRounds: number = 10
 
-const encryptPassword = async (password: string) => {
+export const encryptPassword = async (password: string) => {
     let newPassword: string = ''
     await bcrypt.hash(password, saltRounds)
         .then(function (hash) {
