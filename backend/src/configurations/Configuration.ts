@@ -1,13 +1,11 @@
 import type { Express } from "express";
 import { connect } from "mongoose";
-import Logger from "../utils/logger"; // <-- keep this consistent everywhere (see note below)
+import Logger from "../utils/Logger";
 
 
 const getRequiredEnv = (key: string): string => {
     const value = process.env[key];
-    if (!value) {
-        throw new Error(`Missing required environment variable: ${key}`);
-    }
+    if (!value) throw new Error(`Missing required environment variable: ${key}`);
     return value;
 };
 
@@ -34,7 +32,7 @@ const connectToDatabase = async () => {
     try {
         await connect(uri);
         Logger.info("Successfully connected to the Database");
-    } catch (error) {
+    } catch (error: unknown) {
         Logger.error("ERROR WHILE CONNECTING TO DATABASE", error);
         process.exit(1);
     }
@@ -43,13 +41,8 @@ const connectToDatabase = async () => {
 const connectToPort = (app: Express) => {
     app.listen(port, () => {
         Logger.info(`Server started at http://localhost:${port}`);
-        if (env === "development") {
-            Logger.warn("SERVER RUNNING IN DEVELOPMENT MODE!");
-        }
+        if (env === "development") Logger.warn("SERVER RUNNING IN DEVELOPMENT MODE!");
     });
 };
 
-export default {
-    connectToPort,
-    connectToDatabase
-};
+export default { connectToPort, connectToDatabase };
