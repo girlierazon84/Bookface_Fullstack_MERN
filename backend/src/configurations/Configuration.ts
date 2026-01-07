@@ -1,33 +1,55 @@
-import { Express } from 'express'
-import {connect} from 'mongoose'
-import Logger from '../utils/Logger'
+import type { Express } from "express";
+import { connect } from "mongoose";
+import Logger from "../utils/logger"; // <-- keep this consistent everywhere (see note below)
 
-const port: number = Number(process.env.SERVER_PORT)
-const env: string = process.env.NODE_ENV
-const mongodbUrl: string = process.env.MONGODB_URL
-const dbName: string = process.env.MONGODB_DB_NAME
+
+const getRequiredEnv = (key: string): string => {
+    const value = process.env[key];
+    if (!value) {
+        throw new Error(`Missing required environment variable: ${key}`);
+    }
+    return value;
+};
+
+const getPort = (key: string, fallback: number): number => {
+    const raw = process.env[key];
+    if (!raw) return fallback;
+
+    const port = Number(raw);
+    if (!Number.isInteger(port) || port < 0 || port > 65535) {
+        throw new Error(`Invalid ${key} value: "${raw}"`);
+    }
+    return port;
+};
+
+const port = getPort("SERVER_PORT", 4000);
+const env = process.env.NODE_ENV ?? "development";
+
+const mongodbUrl = getRequiredEnv("MONGODB_URL");
+const dbName = getRequiredEnv("MONGODB_DB_NAME");
 
 const connectToDatabase = async () => {
-    const uri = mongodbUrl + dbName
+    const uri = `${mongodbUrl}${dbName}`;
+
     try {
-        await connect(uri)
-        Logger.info('Successfully connected to the Database')
+        await connect(uri);
+        Logger.info("Successfully connected to the Database");
     } catch (error) {
-        Logger.error('Error while connecting to Database'.toUpperCase(), error)
-        process.exit()
+        Logger.error("ERROR WHILE CONNECTING TO DATABASE", error);
+        process.exit(1);
     }
-}
+};
 
 const connectToPort = (app: Express) => {
     app.listen(port, () => {
-        Logger.info(`server started at http://localhost:${ port }`)
-        if (env === 'development') {
-            Logger.warn('Server running in development mode!'.toUpperCase())
+        Logger.info(`Server started at http://localhost:${port}`);
+        if (env === "development") {
+            Logger.warn("SERVER RUNNING IN DEVELOPMENT MODE!");
         }
-    })
-}
+    });
+};
 
 export default {
     connectToPort,
     connectToDatabase
-}
+};
