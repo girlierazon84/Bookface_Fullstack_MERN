@@ -23,14 +23,15 @@ const getPort = (key: string, fallback: number): number => {
 const port = getPort("SERVER_PORT", 4000);
 const env = process.env.NODE_ENV ?? "development";
 
-const mongodbUrl = getRequiredEnv("MONGODB_URL");
-const dbName = getRequiredEnv("MONGODB_DB_NAME");
+const mongoUri = getRequiredEnv("MONGO_URI");
+const dbName = getRequiredEnv("DB_NAME");
+
+// Ensure we don't end up with missing or double slashes
+const mongodbUri = mongoUri.endsWith("/") ? `${mongoUri}${dbName}` : `${mongoUri}/${dbName}`;
 
 const connectToDatabase = async () => {
-    const uri = `${mongodbUrl}${dbName}`;
-
     try {
-        await connect(uri);
+        await connect(mongodbUri);
         Logger.info("Successfully connected to the Database");
     } catch (error: unknown) {
         Logger.error("ERROR WHILE CONNECTING TO DATABASE", error);
@@ -41,7 +42,9 @@ const connectToDatabase = async () => {
 const connectToPort = (app: Express) => {
     app.listen(port, () => {
         Logger.info(`Server started at http://localhost:${port}`);
-        if (env === "development") Logger.warn("SERVER RUNNING IN DEVELOPMENT MODE!");
+        if (env === "development") {
+            Logger.warn("SERVER RUNNING IN DEVELOPMENT MODE!");
+        }
     });
 };
 
