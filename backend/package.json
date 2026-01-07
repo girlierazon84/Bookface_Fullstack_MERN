@@ -8,7 +8,7 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node .",
-    "startts": "ts-node-dev src/Server.ts",
+    "startts": "tsx watch src/Server.ts",
     "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
     "test": "ts-mocha -p tsconfig.json \"src/**/*.spec.ts\""
   },
@@ -50,8 +50,8 @@
     "nodemon": "^2.0.15",
     "ts-mocha": "^11.1.0",
     "ts-node": "^10.4.0",
-    "ts-node-dev": "^1.1.8",
     "tslint": "^6.1.3",
+    "tsx": "^4.21.0",
     "typescript": "^4.5.2"
   }
 }
