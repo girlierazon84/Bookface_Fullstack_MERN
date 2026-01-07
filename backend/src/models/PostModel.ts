@@ -1,8 +1,11 @@
-import { Schema, model } from 'mongoose'
+import mongoose, { Schema } from "mongoose";
 import { CreateNewPost } from "../utils/interfaces/Posts";
-const dbCollection = process.env.MONGODB_COLLECTION_POST
 
-const newPostSchema = new Schema<CreateNewPost>({
+
+const MODEL_NAME = process.env.MONGODB_COLLECTION_POST || "Post";
+
+const newPostSchema = new Schema<CreateNewPost>(
+    {
         author: String,
         title: String,
         content: String
@@ -10,7 +13,8 @@ const newPostSchema = new Schema<CreateNewPost>({
     { timestamps: true }
 );
 
+const PostModel =
+    (mongoose.models[MODEL_NAME] as mongoose.Model<CreateNewPost>) ||
+    mongoose.model<CreateNewPost>(MODEL_NAME, newPostSchema);
 
-const PostModel = model<CreateNewPost>(dbCollection, newPostSchema)
-
-export default PostModel
+export default PostModel;
