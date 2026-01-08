@@ -1,38 +1,44 @@
-import { useState } from 'react'
-import styled from 'styled-components'
-import { JsonToTable } from 'react-json-to-table'
-import {PostDataObject} from "../../utils/interface/PostInterface";
+// frontend/src/components/posts/GetAllPosts.tsx
+
+import { useState } from "react";
+import styled from "styled-components";
+import { JsonToTable } from "react-json-to-table";
+
+import type { PostDataObject } from "../../utils/interface/PostInterface";
 import PostService from "../../utils/api/service/PostService";
 
-function GetAllPosts() {
-    const initialState: Array<PostDataObject> = []
-    const [allPostsInDatabase, setAllPostsInDatabase] = useState<Array<PostDataObject>>(initialState)
 
+const GetAllPosts: React.FC = () => {
+  const [allPostsInDatabase, setAllPostsInDatabase] = useState<PostDataObject[]>([]);
 
-
-    function getPosts() {
-        PostService.getAllPosts()
-            .then(function (response) {
-                console.log(response.data)
-                setAllPostsInDatabase(response.data)
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
+  const getPosts = async () => {
+    try {
+      const res = await PostService.getAllPosts();
+      setAllPostsInDatabase(res.data);
+    } catch {
+      setAllPostsInDatabase([]);
     }
+  };
 
-    return (
-        <Article>
-            <H1>Get All Posts from Database</H1>
-            <JsonToTable json={ allPostsInDatabase }/>
-            <br/>
-            <GridContainer>
-                <Button className='getAllPosts__btn' onClick={ getPosts }>Get All Posts</Button>
-                <Button className='clear__btn' onClick={ () => setAllPostsInDatabase(initialState) }>Clear</Button>
-            </GridContainer>
-        </Article>
-    )
-}
+  return (
+    <Article>
+      <H1>Get All Posts from Database</H1>
+
+      <JsonToTable json={allPostsInDatabase} />
+
+      <GridContainer>
+        <Button type="button" onClick={getPosts}>
+          Get All Posts
+        </Button>
+        <Button type="button" onClick={() => setAllPostsInDatabase([])}>
+          Clear
+        </Button>
+      </GridContainer>
+    </Article>
+  );
+};
+
+export default GetAllPosts;
 
 const Article = styled.article`
   padding: 1em;
@@ -40,31 +46,22 @@ const Article = styled.article`
   box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  margin-top: 2em;
-`
+`;
 
 const H1 = styled.h1`
   font-size: 2em;
   color: var(--fourthly-color);
-  font-family: 'Oxygen - Regular', sans-serif;
-`
+  font-family: "Oxygen - Regular", sans-serif;
+`;
 
 const GridContainer = styled.div`
-  display: inline-block;
-  width: 100%;
-
-  .getAllPosts__btn {
-    float: left;
-
-  }
-
-  .clear__btn {
-    float: right;
-  }
-`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+`;
 
 const Button = styled.button`
-  width: 50%;
+  width: 100%;
   text-transform: uppercase;
   font-family: "Oxygen - Regular", sans-serif;
   font-size: 1em;
@@ -73,12 +70,11 @@ const Button = styled.button`
   border-radius: 0.8em;
   background-color: var(--secondary-color);
   color: var(--fifthly-color);
-  border-color: var(--fifthly-color);
+  border: 1px solid var(--fifthly-color);
+  cursor: pointer;
 
   &:hover {
     background-color: var(--fifthly-color);
     color: var(--secondary-color);
   }
-`
-
-export default GetAllPosts
+`;
