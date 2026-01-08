@@ -7,44 +7,32 @@ import styled from "styled-components";
 import RoutingPath from "../routes/RoutingPath";
 import UserService from "../utils/api/service/UserService";
 import { useUserContext } from "../utils/global/provider/UserProvider";
-import type { UsersLogInDataObject } from "../utils/interface/UsersInterfaces";
 import { PrimaryButton } from "../components/CustomButtonComponent";
 
 
 const UsersLogInView: React.FC = () => {
-  const { authenticatedUser, setAuthenticatedUser } = useUserContext();
+  const { token, setAuth } = useUserContext();
   const navigate = useNavigate();
 
   const [userName, setUserName] = useState("");
   const [passWord, setPassWord] = useState("");
   const [loginText, setLoginText] = useState("");
 
-  // If already logged in, go to feed
-  if (authenticatedUser) {
-    return <Navigate to={RoutingPath.homeView} replace />;
-  }
+  if (token) return <Navigate to={RoutingPath.homeView} replace />;
 
-  const verifyUser = async () => {
+  const login = async () => {
     setLoginText("");
 
-    const payload: UsersLogInDataObject = {
-      username: userName.trim(),
-      password: passWord
-    };
-
     try {
-      const res = await UserService.verifyUser(payload);
+      const res = await UserService.login({
+        username: userName.trim(),
+        password: passWord
+      });
 
-      if (res.data.message) {
-        setAuthenticatedUser(payload.username);
-        localStorage.setItem("username", payload.username);
-        navigate(RoutingPath.homeView);
-        return;
-      }
-
-      setLoginText("Wrong username or password");
+      setAuth(res.data.token, res.data.user);
+      navigate(RoutingPath.homeView, { replace: true });
     } catch {
-      setLoginText("Login failed. Please try again.");
+      setLoginText("Wrong username or password");
     }
   };
 
@@ -75,7 +63,7 @@ const UsersLogInView: React.FC = () => {
 
             <ErrorText>{loginText}</ErrorText>
 
-            <PrimaryButton onClick={verifyUser}>Log In</PrimaryButton>
+            <PrimaryButton onClick={login}>Log In</PrimaryButton>
 
             <Divider />
 
@@ -89,6 +77,7 @@ const UsersLogInView: React.FC = () => {
 
 export default UsersLogInView;
 
+/* styles unchanged from your version */
 const Page = styled.main`
   background: var(--primary-color);
   min-height: calc(100vh - 85px);
