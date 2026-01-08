@@ -1,13 +1,16 @@
-import { createContext, useContext } from 'react'
+// frontend/src/utils/global/provider/UserProvider.tsx
 
-export type AuthenticatedContent = {
+import React, { createContext, useContext } from "react";
+
+
+export type AuthenticatedContextValue = {
     authenticatedUser: string;
-    setAuthenticatedUser: (username: string) => void
-}
+    setAuthenticatedUser: React.Dispatch<React.SetStateAction<string>>;
+};
 
-export const UserContext = createContext<AuthenticatedContent>({
-    authenticatedUser: '',
-    setAuthenticatedUser: () => {}
-})
+export const UserContext = createContext<AuthenticatedContextValue>({
+    authenticatedUser: "",
+    setAuthenticatedUser: () => undefined
+});
 
-export const useUserContext = () => useContext(UserContext)
+export const useUserContext = () => useContext(UserContext);
