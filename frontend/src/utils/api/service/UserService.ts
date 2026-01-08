@@ -1,33 +1,31 @@
 // frontend/src/utils/api/service/UserService.ts
 
-import type {
-    CreateUserObject,
-    UpdateUserObject,
-    UsersLogInDataObject,
-    UserDataObject
-} from "../../interface/UsersInterfaces";
 import http from "../http";
+import type { AuthUser } from "../../auth/authStorage";
 
 
-const usersUrl = "/users";
-const verifyUserUrl = "/verifyUser";
+export type RegisterPayload = {
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+    password: string;
+};
 
-export type VerifyUserResponse = { message: boolean };
+export type LoginPayload = {
+    username: string;
+    password: string;
+};
+
+export type AuthResponse = {
+    token: string;
+    user: AuthUser;
+};
 
 const UserService = {
-    createUser: (payload: CreateUserObject) => http.post<UserDataObject>(usersUrl, payload),
-
-    verifyUser: (payload: UsersLogInDataObject) =>
-        http.post<VerifyUserResponse>(verifyUserUrl, payload),
-
-    getAllUsers: () => http.get<UserDataObject[]>(usersUrl),
-
-    getUserById: (id: string) => http.get<UserDataObject>(`${usersUrl}/${id}`),
-
-    updateUser: (id: string, payload: UpdateUserObject) =>
-        http.put<UserDataObject>(`${usersUrl}/${id}`, payload),
-
-    deleteUserById: (id: string) => http.delete(`${usersUrl}/${id}`)
+    register: (payload: RegisterPayload) => http.post<AuthResponse>("/auth/register", payload),
+    login: (payload: LoginPayload) => http.post<AuthResponse>("/auth/login", payload),
+    me: () => http.get<AuthUser>("/auth/me")
 };
 
 export default UserService;
