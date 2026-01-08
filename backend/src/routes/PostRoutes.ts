@@ -1,16 +1,20 @@
+// backend/src/routes/PostRoutes.ts
+
 import type { Express } from "express";
-import PostController from "../controllers/PostController";
+import { requireAuth } from "../middlewares/AuthMiddleware";
+import * as PostController from "../controllers/PostController";
 
 
 const postUrl = "/posts";
-const postUrlWithId = `${postUrl}/:postId`;
 
 const routes = (app: Express) => {
-    app.post(postUrl, PostController.createPost);
+    app.post(postUrl, requireAuth, PostController.createPost);
     app.get(postUrl, PostController.getAllPosts);
-    app.get(postUrlWithId, PostController.getPostById);
-    app.put(postUrlWithId, PostController.updatePost);
-    app.delete(postUrlWithId, PostController.deletePost);
+
+    app.get(`${postUrl}/:postId`, PostController.getPostById);
+    app.delete(`${postUrl}/:postId`, requireAuth, PostController.deletePost);
+
+    app.post(`${postUrl}/:postId/like`, requireAuth, PostController.toggleLike);
 };
 
 export default { routes };
