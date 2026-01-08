@@ -15,10 +15,14 @@ const Burger: React.FC<Props> = ({ open, setOpen }) => {
         <>
             <StyledBurger
                 open={open}
-                type="button"
+                role="button"
+                tabIndex={0}
                 aria-label="Toggle navigation menu"
                 aria-expanded={open}
                 onClick={() => setOpen((prev) => !prev)}
+                onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") setOpen((prev) => !prev);
+                }}
             >
                 <div />
                 <div />
