@@ -9,11 +9,10 @@ import RoutingPath from "../routes/RoutingPath";
 
 
 const SettingsView: React.FC = () => {
-    const { authenticatedUser } = useUserContext();
+    const { token, user } = useUserContext();
 
-    if (!authenticatedUser) {
-        return <Navigate to={RoutingPath.usersLogInView} replace />;
-    }
+    if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
+    if (!user) return <Navigate to={RoutingPath.homeView} replace />;
 
     return (
         <Page>
@@ -23,7 +22,12 @@ const SettingsView: React.FC = () => {
 
                 <Row>
                     <Label>Account</Label>
-                    <Value>{authenticatedUser}</Value>
+                    <Value>{user.username}</Value>
+                </Row>
+
+                <Row>
+                    <Label>Email</Label>
+                    <Value>{user.email || "—"}</Value>
                 </Row>
 
                 <Row>
