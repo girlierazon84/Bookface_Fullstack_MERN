@@ -1,6 +1,6 @@
 // frontend/src/view/ProfileView.tsx
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -10,33 +10,38 @@ import PostService, { type PostDTO } from "../utils/api/service/PostService";
 import CreateNewPost from "../components/posts/CreateNewPost";
 
 
+// ✅ local guard to handle "string | AuthUser" situations safely
+const isAuthUser = (value: unknown): value is { _id: string; username: string; firstname: string; lastname: string; email?: string; avatarUrl?: string; bio?: string } => {
+  return !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
+};
+
 const ProfileView: React.FC = () => {
   const { token, user } = useUserContext();
+
+  const me = useMemo(() => (isAuthUser(user) ? user : null), [user]);
 
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
   const loadMyTimeline = useCallback(async () => {
-    if (!token || !user) return;
+    if (!token || !me) return;
 
     setLoading(true);
     try {
       const res = await PostService.getFeed();
-      const mine = res.data.filter((p) => p.author?._id === user._id);
-      setPosts(mine);
+      setPosts(res.data.filter((p) => p.author?._id === me._id));
     } finally {
       setLoading(false);
     }
-  }, [token, user]);
+  }, [token, me]);
 
   useEffect(() => {
-    if (!token || !user) return;
     loadMyTimeline();
-  }, [token, user, loadMyTimeline]);
+  }, [loadMyTimeline]);
 
   // redirects AFTER hooks
   if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
-  if (!user) return <Navigate to={RoutingPath.homeView} replace />;
+  if (!me) return <Navigate to={RoutingPath.usersLogInView} replace />;
 
   return (
     <Page>
@@ -45,15 +50,12 @@ const ProfileView: React.FC = () => {
           <Cover />
 
           <HeaderRow>
-            <Avatar
-              src={user.avatarUrl || "https://thispersondoesnotexist.com/image"}
-              alt="Profile avatar"
-            />
+            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Profile avatar" />
             <HeaderText>
-              <Name>{user.username}</Name>
+              <Name>{me.username}</Name>
               <SubText>
-                {user.bio?.trim()
-                  ? user.bio
+                {me.bio?.trim()
+                  ? me.bio
                   : "Welcome to your profile. Add a bio later (backend update endpoint coming soon)."}
               </SubText>
             </HeaderText>
@@ -61,9 +63,9 @@ const ProfileView: React.FC = () => {
 
           <ActionRow>
             <SmallPill>
-              {user.firstname} {user.lastname}
+              {me.firstname} {me.lastname}
             </SmallPill>
-            {user.email ? <SmallPill>{user.email}</SmallPill> : null}
+            {me.email ? <SmallPill>{me.email}</SmallPill> : null}
           </ActionRow>
         </ProfileCard>
 
@@ -93,18 +95,14 @@ const ProfileView: React.FC = () => {
                 {posts.map((p) => (
                   <PostCard key={p._id}>
                     <PostTop>
-                      <PostAvatar
-                        src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
-                        alt="Author"
-                      />
+                      <PostAvatar src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Author" />
                       <div>
-                        <PostName>{p.author?.username}</PostName>
+                        <PostName>{p.author?.username ?? "Unknown"}</PostName>
                         <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
                       </div>
                     </PostTop>
 
                     <PostContent>{p.content}</PostContent>
-
                     {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
                   </PostCard>
                 ))}
@@ -130,8 +128,7 @@ const ProfileView: React.FC = () => {
 
 export default ProfileView;
 
-/* ---------- styles (same as yours) ---------- */
-
+/* styles unchanged from yours */
 const Page = styled.main`
   background: var(--primary-color);
   min-height: calc(100vh - 85px);
@@ -337,4 +334,3 @@ const EmptyState = styled.div`
   color: var(--fourthly-color);
   font-weight: 800;
 `;
-/* ---------- end styles ---------- */
