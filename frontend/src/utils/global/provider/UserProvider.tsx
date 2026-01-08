@@ -1,8 +1,7 @@
 // frontend/src/utils/global/provider/UserProvider.tsx
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import type { AuthUser } from "../../../utils/auth/authStorage";
-import { clearAuthStorage, readAuthStorage, writeAuthStorage } from "../../../utils/auth/authStorage";
+import React, { createContext, useContext, useMemo, useState } from "react";
+import { authStorage, type AuthUser } from "../../auth/authStorage";
 
 
 export type AuthContextValue = {
@@ -21,37 +20,26 @@ export const UserContext = createContext<AuthContextValue>({
 
 export const useUserContext = () => useContext(UserContext);
 
-type Props = { children: React.ReactNode };
+export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const [token, setToken] = useState<string | null>(() => authStorage.getToken());
+    const [user, setUser] = useState<AuthUser | null>(() => authStorage.getUser());
 
-export const UserProvider: React.FC<Props> = ({ children }) => {
-    const [token, setToken] = useState<string | null>(null);
-    const [user, setUser] = useState<AuthUser | null>(null);
-
-    // Load persisted auth once
-    useEffect(() => {
-        const saved = readAuthStorage();
-        if (saved?.token && saved?.user) {
-            setToken(saved.token);
-            setUser(saved.user);
-        }
-    }, []);
-
-    const setAuth = useCallback((newToken: string, newUser: AuthUser) => {
-        setToken(newToken);
-        setUser(newUser);
-        writeAuthStorage(newToken, newUser);
-    }, []);
-
-    const logout = useCallback(() => {
-        setToken(null);
-        setUser(null);
-        clearAuthStorage();
-    }, []);
-
-    const value = useMemo<AuthContextValue>(
-        () => ({ token, user, setAuth, logout }),
-        [token, user, setAuth, logout]
-    );
+    const value = useMemo<AuthContextValue>(() => {
+        return {
+            token,
+            user,
+            setAuth: (newToken, newUser) => {
+                authStorage.setAuth(newToken, newUser);
+                setToken(newToken);
+                setUser(newUser);
+            },
+            logout: () => {
+                authStorage.clear(); // ✅ now valid
+                setToken(null);
+                setUser(null);
+            }
+        };
+    }, [token, user]);
 
     return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };
