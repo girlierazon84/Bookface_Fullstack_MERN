@@ -5,7 +5,7 @@ import { Link, useNavigate, Navigate } from "react-router-dom";
 import styled from "styled-components";
 
 import RoutingPath from "../routes/RoutingPath";
-import UserService from "../utils/api/service/UserService";
+import AuthService from "../utils/api/service/AuthService";
 import { useUserContext } from "../utils/global/provider/UserProvider";
 import { PrimaryButton } from "../components/CustomButtonComponent";
 
@@ -24,7 +24,7 @@ const UsersLogInView: React.FC = () => {
     setLoginText("");
 
     try {
-      const res = await UserService.login({
+      const res = await AuthService.login({
         username: userName.trim(),
         password: passWord
       });
