@@ -1,38 +1,33 @@
-import {
+// frontend/src/utils/api/service/UserService.ts
+
+import type {
     CreateUserObject,
+    UpdateUserObject,
     UsersLogInDataObject,
     UserDataObject
-} from '../../interface/UsersInterfaces'
-import http from '../UsersApi'
+} from "../../interface/UsersInterfaces";
+import http from "../http";
 
-const usersUrl = '/users'
-const verifyUserUrl = '/verifyUser'
+
+const usersUrl = "/users";
+const verifyUserUrl = "/verifyUser";
+
+export type VerifyUserResponse = { message: boolean };
 
 const UserService = {
-    createUser: (newUserPayload: CreateUserObject) => {
-        return http.post(usersUrl, newUserPayload)
-    },
+    createUser: (payload: CreateUserObject) => http.post<UserDataObject>(usersUrl, payload),
 
-    verifyUser: (payload: UsersLogInDataObject) => {
-        return http.post(verifyUserUrl, payload)
-    },
+    verifyUser: (payload: UsersLogInDataObject) =>
+        http.post<VerifyUserResponse>(verifyUserUrl, payload),
 
-    getAllUsers: () => {
-        return http.get<UserDataObject[]>(usersUrl)
-    },
+    getAllUsers: () => http.get<UserDataObject[]>(usersUrl),
 
-    getUserById: (id: string) => {
-        return http.get<UserDataObject>(`${ usersUrl }/${ id }`)
-    },
+    getUserById: (id: string) => http.get<UserDataObject>(`${usersUrl}/${id}`),
 
-    updateUser: (id: string, payload: CreateUserObject) => {
-        return http.put(`${ usersUrl }/${ id }`, payload)
-    },
+    updateUser: (id: string, payload: UpdateUserObject) =>
+        http.put<UserDataObject>(`${usersUrl}/${id}`, payload),
 
-    deleteUserById: (id: string) => {
-        return http.delete(`${ usersUrl }/${ id }`)
-    },
+    deleteUserById: (id: string) => http.delete(`${usersUrl}/${id}`)
+};
 
-}
-
-export default UserService
+export default UserService;
