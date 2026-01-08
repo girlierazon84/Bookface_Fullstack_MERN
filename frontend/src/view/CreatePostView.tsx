@@ -1,21 +1,21 @@
-import React from 'react'
+// frontend/src/view/CreatePostView.tsx
+
+import React from "react";
 import styled from "styled-components";
 import CreateNewPost from "../components/posts/CreateNewPost";
 
 
-const CreatePostView = () => {
-
+const CreatePostView: React.FC = () => {
     return (
         <Article>
-            <CreateNewPost/>
+            <CreateNewPost />
         </Article>
-    )
-}
+    );
+};
 
-export default CreatePostView
-
+export default CreatePostView;
 
 const Article = styled.article`
-  background-color: var(--primary-color);
-  padding: 0.1em 0 18em 0;
-`
+    background-color: var(--primary-color);
+    padding: 2rem 0 18rem 0;
+`;
