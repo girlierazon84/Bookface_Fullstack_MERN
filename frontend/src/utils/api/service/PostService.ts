@@ -1,32 +1,23 @@
-import {
-    CreatePostObject,
-    PostDataObject
-} from '../../interface/PostInterface'
-import http from '../PostsApi'
+// frontend/src/utils/api/service/PostService.ts
 
-const postUrl = '/posts'
+import type { CreatePostObject, PostDataObject } from "../../interface/PostInterface";
+import http from "../http";
+
+
+const postUrl = "/posts";
+export type UpdatePostObject = Partial<CreatePostObject>;
 
 const PostService = {
-    createPost: (newPostPayload: CreatePostObject) => {
-        return http.post(postUrl, newPostPayload)
-    },
+    createPost: (payload: CreatePostObject) => http.post<PostDataObject>(postUrl, payload),
 
-    getAllPosts: () => {
-        return http.get<PostDataObject[]>(postUrl)
-    },
+    getAllPosts: () => http.get<PostDataObject[]>(postUrl),
 
-    getPostById: (id: string) => {
-        return http.get<PostDataObject>(`${ postUrl }/${ id }`)
-    },
+    getPostById: (id: string) => http.get<PostDataObject>(`${postUrl}/${id}`),
 
-    updatePost: (id: string, payload: CreatePostObject) => {
-        return http.put(`${ postUrl }/${ id }`, payload)
-    },
+    updatePost: (id: string, payload: UpdatePostObject) =>
+        http.put<PostDataObject>(`${postUrl}/${id}`, payload),
 
-    deletePostById: (id: string) => {
-        return http.delete(`${ postUrl }/${ id }`)
-    },
+    deletePostById: (id: string) => http.delete(`${postUrl}/${id}`)
+};
 
-}
-
-export default PostService
+export default PostService;
