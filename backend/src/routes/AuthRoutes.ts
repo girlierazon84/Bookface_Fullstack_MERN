@@ -1,6 +1,7 @@
 // backend/src/routes/AuthRoutes.ts
 
 import type { Express } from "express";
+
 import { register, login, me } from "../controllers/AuthController";
 import { requireAuth } from "../middlewares/AuthMiddleware";
 
