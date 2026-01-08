@@ -1,36 +1,30 @@
+// backend/src/Server.ts
+
 import "dotenv/config";
 import express from "express";
-
 import ApplyMiddlewares from "./configurations/ApplyMiddlewares";
 import Configuration from "./configurations/Configuration";
-import { notFound, errorHandler } from "./middlewares/ErrorMiddleware";
-
 import AliveRoutes from "./routes/AliveRoutes";
 import UserRoutes from "./routes/UserRoutes";
 import PostRoutes from "./routes/PostRoutes";
-
+import AuthRoutes from "./routes/AuthRoutes";
+import FeedRoutes from "./routes/FeedRoutes";
+import CommentRoutes from "./routes/CommentRoutes";
+import FriendRoutes from "./routes/FriendRoutes";
 
 const app = express();
 
 ApplyMiddlewares(app);
 
 AliveRoutes.routes(app);
+AuthRoutes.routes(app);
+FeedRoutes.routes(app);
 UserRoutes.routes(app);
 PostRoutes.routes(app);
+CommentRoutes.routes(app);
+FriendRoutes.routes(app);
 
-app.use(notFound);
-app.use(errorHandler);
-
-const start = async () => {
-  await Configuration.connectToDatabase();
-  Configuration.connectToPort(app);
-};
-
-start().catch((err) => {
-  // last resort if startup fails
-  // eslint-disable-next-line no-console
-  console.error("Failed to start server", err);
-  process.exit(1);
-});
+Configuration.connectToPort(app);
+Configuration.connectToDatabase().then();
 
 export default app;
