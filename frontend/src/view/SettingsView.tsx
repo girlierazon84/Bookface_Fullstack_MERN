@@ -1,21 +1,24 @@
-import React from 'react';
+// frontend/src/view/SettingsView.tsx
+
+import React from "react";
 import styled from "styled-components";
 
-const SettingsView = () => {
+
+const SettingsView: React.FC = () => {
     return (
         <Article>
             <h1>Settings View</h1>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
         </Article>
-    )
-}
+    );
+};
 
-export default SettingsView
+export default SettingsView;
 
 const Article = styled.article`
-  background-color: var(--primary-color);
-  padding: 0.1em 0 18em 0;
-`
+    background-color: var(--primary-color);
+    padding: 2rem 0 18rem 0;
+
+    h1 {
+        text-align: center;
+    }
+`;
