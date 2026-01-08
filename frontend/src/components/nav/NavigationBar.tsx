@@ -3,6 +3,7 @@
 import React from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
+
 import Burger from "./Burger";
 import RoutingPath from "../../routes/RoutingPath";
 import BookfaceLogo from "../../utils/images/Bookface_circle_logo.png";
@@ -13,11 +14,15 @@ const NavigationBar: React.FC = () => {
 
   return (
     <Nav>
-      <Link to={RoutingPath.homeView} aria-label="Go to home">
-        <img className="bookface__logo" src={BookfaceLogo} alt="Bookface Logo" />
-      </Link>
+      <Left>
+        <Link to={RoutingPath.homeView} aria-label="Go to home">
+          <img className="bookface__logo" src={BookfaceLogo} alt="Bookface Logo" />
+        </Link>
+      </Left>
 
-      <Burger open={open} setOpen={setOpen} />
+      <Right>
+        <Burger open={open} setOpen={setOpen} />
+      </Right>
     </Nav>
   );
 };
@@ -30,11 +35,15 @@ const Nav = styled.nav`
   background-color: var(--primary-color);
   border-bottom: 2px solid var(--fifthly-color);
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  overflow: hidden;
-  padding: 10px;
+  justify-content: space-between;
+  padding: 10px 14px;
   position: relative;
+`;
+
+const Left = styled.div`
+  display: flex;
+  align-items: center;
 
   .bookface__logo {
     width: 4em;
@@ -42,4 +51,9 @@ const Nav = styled.nav`
     border-radius: 50px;
     display: block;
   }
+`;
+
+const Right = styled.div`
+  display: flex;
+  align-items: center;
 `;
