@@ -1,23 +1,27 @@
+// frontend/src/components/CustomButtonComponent.tsx
+
 import React from "react";
 import styled from "styled-components";
 
-interface ButtonProps {
-  children: React.ReactNode;
-  onClick: () => void;
-  type?: "button" | "submit" | "reset";
-}
 
-const PrimaryButton: React.FC<ButtonProps> = ({ children, onClick, type = "button" }) => {
+type ButtonProps = {
+  children: React.ReactNode;
+  onClick?: () => void;
+  type?: "button" | "submit" | "reset";
+  disabled?: boolean;
+};
+
+const PrimaryButton: React.FC<ButtonProps> = ({ children, onClick, type = "button", disabled }) => {
   return (
-    <ButtonPrimary type={type} onClick={onClick}>
+    <ButtonPrimary type={type} onClick={onClick} disabled={disabled}>
       {children}
     </ButtonPrimary>
   );
 };
 
-const SecondaryButton: React.FC<ButtonProps> = ({ children, onClick, type = "button" }) => {
+const SecondaryButton: React.FC<ButtonProps> = ({ children, onClick, type = "button", disabled }) => {
   return (
-    <ButtonSecondary type={type} onClick={onClick}>
+    <ButtonSecondary type={type} onClick={onClick} disabled={disabled}>
       {children}
     </ButtonSecondary>
   );
@@ -39,8 +43,12 @@ const ButtonPrimary = styled.button`
   cursor: pointer;
 
   &:hover {
-    background-color: var(--fifthly);
-    color: var(--secondary-color);
+    background-color: var(--fourthly-color);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 
@@ -56,5 +64,10 @@ const ButtonSecondary = styled.button`
   &:hover {
     background-color: #111;
     color: chocolate;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
