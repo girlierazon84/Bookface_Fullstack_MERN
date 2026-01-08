@@ -1,31 +1,25 @@
+// backend/src/utils/crypt.ts
+
 import bcrypt from "bcrypt";
-import Logger from "./logger";
+import Logger from "./Logger";
 
 
 const saltRounds = 10;
 
-const createPassword = async (plaintextPassword: string): Promise<string> => {
+export const hashPassword = async (plaintext: string): Promise<string> => {
     try {
-        return await bcrypt.hash(plaintextPassword, saltRounds);
-    } catch (error) {
-        Logger.error("Failed to hash password", error);
-        throw error;
+        return await bcrypt.hash(plaintext, saltRounds);
+    } catch (err) {
+        Logger.error("Failed to hash password", err);
+        throw err;
     }
 };
 
-const comparePassword = async (
-    plaintextPassword: string,
-    hashedPassword: string
-): Promise<boolean> => {
+export const comparePassword = async (plaintext: string, hash: string): Promise<boolean> => {
     try {
-        return await bcrypt.compare(plaintextPassword, hashedPassword);
-    } catch (error) {
-        Logger.error("Failed to compare password", error);
-        throw error;
+        return await bcrypt.compare(plaintext, hash);
+    } catch (err) {
+        Logger.error("Failed to compare password", err);
+        throw err;
     }
-};
-
-export default {
-    createPassword,
-    comparePassword
 };
