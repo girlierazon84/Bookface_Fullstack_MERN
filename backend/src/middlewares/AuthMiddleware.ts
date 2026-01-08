@@ -7,19 +7,10 @@ import StatusCode from "../configurations/StatusCode";
 import Logger from "../utils/Logger";
 
 
-type JwtUserPayload = {
+type JwtPayload = {
     id: string;
     username?: string;
 };
-
-// Extend Express Request type so req.user is recognized everywhere
-declare global {
-    namespace Express {
-        interface Request {
-            user?: { id: string; username?: string };
-        }
-    }
-}
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
     const auth = req.headers.authorization;
@@ -28,7 +19,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
         return res.status(StatusCode.UNAUTHORIZED).send({ message: "Missing Bearer token" });
     }
 
-    const token = auth.slice("Bearer ".length);
+    const token = auth.slice("Bearer ".length).trim();
     const secret = process.env.JWT_SECRET;
 
     if (!secret) {
@@ -39,7 +30,7 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
     }
 
     try {
-        const payload = jwt.verify(token, secret) as JwtUserPayload;
+        const payload = jwt.verify(token, secret) as JwtPayload;
 
         if (!payload?.id) {
             return res.status(StatusCode.UNAUTHORIZED).send({ message: "Invalid token payload" });
