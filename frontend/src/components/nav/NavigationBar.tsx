@@ -1,26 +1,28 @@
-import React from 'react';
-import styled from 'styled-components';
-import Burger from './Burger';
-import {Link} from "react-router-dom";
+// frontend/src/components/nav/NavigationBar.tsx
+
+import React from "react";
+import styled from "styled-components";
+import { Link } from "react-router-dom";
+import Burger from "./Burger";
 import RoutingPath from "../../routes/RoutingPath";
 import BookfaceLogo from "../../utils/images/Bookface_circle_logo.png";
 
 
 const NavigationBar: React.FC = () => {
-    const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(false);
 
-    return (
-        <Nav>
-            <Link to={RoutingPath.homeView}>
-                <img className="bookface__logo" src={BookfaceLogo}
-                     alt='Bookface Logo'/>
-            </Link>
-            <Burger open={open} setOpen={setOpen} />
-        </Nav>
-    )
-}
+  return (
+    <Nav>
+      <Link to={RoutingPath.homeView} aria-label="Go to home">
+        <img className="bookface__logo" src={BookfaceLogo} alt="Bookface Logo" />
+      </Link>
 
-export default NavigationBar
+      <Burger open={open} setOpen={setOpen} />
+    </Nav>
+  );
+};
+
+export default NavigationBar;
 
 const Nav = styled.nav`
   width: 100%;
@@ -29,12 +31,15 @@ const Nav = styled.nav`
   border-bottom: 2px solid var(--fifthly-color);
   display: flex;
   justify-content: space-between;
+  align-items: center;
   overflow: hidden;
   padding: 10px;
+  position: relative;
 
   .bookface__logo {
     width: 4em;
     border: 1px solid var(--fifthly-color);
     border-radius: 50px;
+    display: block;
   }
-`
+`;
