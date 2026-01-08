@@ -48,7 +48,6 @@ const RightNav: React.FC<Props> = ({ open }) => {
 
 export default RightNav;
 
-/* styles mostly same */
 const Ul = styled.ul<Props>`
   list-style: none;
   display: flex;
