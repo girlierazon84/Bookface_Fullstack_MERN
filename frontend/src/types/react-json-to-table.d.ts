@@ -1,3 +1,5 @@
+// frontend/src/types/react-json-to-table.d.ts
+
 declare module "react-json-to-table" {
     import * as React from "react";
 
@@ -6,4 +8,5 @@ declare module "react-json-to-table" {
     }
 
     export const JsonToTable: React.FC<JsonToTableProps>;
+    export default JsonToTable;
 }
