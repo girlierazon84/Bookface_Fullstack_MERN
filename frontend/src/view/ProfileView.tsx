@@ -1,6 +1,6 @@
 // frontend/src/view/ProfileView.tsx
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import styled from "styled-components";
 
@@ -9,31 +9,34 @@ import RoutingPath from "../routes/RoutingPath";
 import PostService, { type PostDTO } from "../utils/api/service/PostService";
 import CreateNewPost from "../components/posts/CreateNewPost";
 
+
 const ProfileView: React.FC = () => {
   const { token, user } = useUserContext();
+
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
-  if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
-  if (!user) return <Navigate to={RoutingPath.homeView} replace />;
+  const loadMyTimeline = useCallback(async () => {
+    if (!token || !user) return;
 
-  const loadMyTimeline = async () => {
     setLoading(true);
     try {
-      // For now: use feed endpoint.
-      // Later: add backend route like GET /users/:id/posts or /posts?author=...
       const res = await PostService.getFeed();
       const mine = res.data.filter((p) => p.author?._id === user._id);
       setPosts(mine);
     } finally {
       setLoading(false);
     }
-  };
+  }, [token, user]);
 
   useEffect(() => {
+    if (!token || !user) return;
     loadMyTimeline();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [token, user, loadMyTimeline]);
+
+  // redirects AFTER hooks
+  if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
+  if (!user) return <Navigate to={RoutingPath.homeView} replace />;
 
   return (
     <Page>
@@ -42,7 +45,10 @@ const ProfileView: React.FC = () => {
           <Cover />
 
           <HeaderRow>
-            <Avatar src={user.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Profile avatar" />
+            <Avatar
+              src={user.avatarUrl || "https://thispersondoesnotexist.com/image"}
+              alt="Profile avatar"
+            />
             <HeaderText>
               <Name>{user.username}</Name>
               <SubText>
@@ -65,9 +71,7 @@ const ProfileView: React.FC = () => {
           <Left>
             <Card>
               <CardTitle>Intro</CardTitle>
-              <Muted>
-                This section can later show: city, school, relationship, friends count, etc.
-              </Muted>
+              <Muted>This section can later show: city, school, relationship, friends count, etc.</Muted>
             </Card>
           </Left>
 
@@ -115,9 +119,7 @@ const ProfileView: React.FC = () => {
           <Right>
             <Card>
               <CardTitle>Friends</CardTitle>
-              <Muted>
-                Coming soon: friends list + friend requests (backend FriendRequestModel).
-              </Muted>
+              <Muted>Coming soon: friends list + friend requests (backend FriendRequestModel).</Muted>
             </Card>
           </Right>
         </Grid>
@@ -128,7 +130,7 @@ const ProfileView: React.FC = () => {
 
 export default ProfileView;
 
-/* ---------- styles ---------- */
+/* ---------- styles (same as yours) ---------- */
 
 const Page = styled.main`
   background: var(--primary-color);
@@ -335,3 +337,4 @@ const EmptyState = styled.div`
   color: var(--fourthly-color);
   font-weight: 800;
 `;
+/* ---------- end styles ---------- */
