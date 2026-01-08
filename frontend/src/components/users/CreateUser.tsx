@@ -1,145 +1,152 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import UsersService from '../../utils/api/service/UserService'
-import {CreateUserObject} from '../../utils/interface/UsersInterfaces'
-import {PrimaryButton} from "../CustomButtonComponent"
-import {Link} from "react-router-dom"
+// frontend/src/components/users/CreateUser.tsx
+
+import React, { useState } from "react";
+import styled from "styled-components";
+import { Link, useNavigate } from "react-router-dom";
+
+import UserService from "../../utils/api/service/UserService";
+import type { CreateUserObject } from "../../utils/interface/UsersInterfaces";
+import { PrimaryButton } from "../CustomButtonComponent";
+import RoutingPath from "../../routes/RoutingPath";
 
 
-function CreateUser() {
-    const [firstName, setFirstName] = useState<string>('')
-    const [lastName, setLastName] = useState<string>('')
-    const [email, setEmail] = useState<string>('')
-    const [userName, setUserName] = useState<string>('')
-    const [passWord, setPassWord] = useState<string>('')
+const CreateUser: React.FC = () => {
+    const navigate = useNavigate();
 
-    function createUsers() {
+    const [firstName, setFirstName] = useState("");
+    const [lastName, setLastName] = useState("");
+    const [email, setEmail] = useState("");
+    const [userName, setUserName] = useState("");
+    const [passWord, setPassWord] = useState("");
+    const [status, setStatus] = useState<string>("");
+
+    const createUser = async () => {
         const payload: CreateUserObject = {
             firstname: firstName,
             lastname: lastName,
-            email: email,
+            email,
             username: userName,
-            password: passWord,
-        }
-        UsersService.createUser(payload)
-            .then(function (response) {
-                console.log(response.data)
-                alert('Congratulations you are successfully registered!')
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
-    }
+            password: passWord
+        };
 
-    function clearInputs() {
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setUserName('');
-        setPassWord('');
-    }
+        try {
+            await UserService.createUser(payload);
+            setStatus("✅ Successfully registered!");
+            navigate(RoutingPath.usersLogInView);
+        } catch {
+            setStatus("❌ Registration failed");
+        }
+    };
+
+    const clearInputs = () => {
+        setFirstName("");
+        setLastName("");
+        setEmail("");
+        setUserName("");
+        setPassWord("");
+        setStatus("");
+    };
 
     return (
         <>
             <H1>Sign Up</H1>
+
             <Article>
-                <div>
+                <label>
                     Firstname:
-                    <Input type='text'
-                           value={ firstName }
-                           onChange={ event => setFirstName(event.target.value) }/>
-                </div>
+                    <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+                </label>
 
-                <div>
+                <label>
                     Lastname:
-                    <Input type='text'
-                           value={ lastName }
-                           onChange={ event => setLastName(event.target.value) }/>
-                </div>
+                    <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                </label>
 
-                <div>
+                <label>
                     Email:
-                    <Input type='text'
-                           value={ email }
-                           onChange={ event => setEmail(event.target.value) }/>
-                </div>
+                    <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+                </label>
 
-                <div>
+                <label>
                     Username:
-                    <Input type='text'
-                           value={ userName }
-                           onChange={ event => setUserName(event.target.value) }/>
-                </div>
+                    <Input value={userName} onChange={(e) => setUserName(e.target.value)} />
+                </label>
 
-                <div>
+                <label>
                     Password:
-                    <Input type='password'
-                           value={ passWord }
-                           onChange={ event => setPassWord(event.target.value) } />
-                </div>
+                    <Input type="password" value={passWord} onChange={(e) => setPassWord(e.target.value)} />
+                </label>
             </Article>
-            <br/>
-            <br/>
+
+            <StatusText>{status}</StatusText>
+
             <GridContainer>
-                <div className='submit__btn'>
-                    <Link to={'/log_in'}>
-                        <PrimaryButton onClick={() => createUsers()} children={'Submit'}/>
-                    </Link>
+                <div className="submit__btn">
+                    <PrimaryButton onClick={createUser}>Submit</PrimaryButton>
                 </div>
-                <div className='clear__btn'>
-                    <PrimaryButton onClick={() => clearInputs()} children={'Clear'}/>
+                <div className="clear__btn">
+                    <PrimaryButton onClick={clearInputs} type="reset">
+                        Clear
+                    </PrimaryButton>
                 </div>
             </GridContainer>
 
-            <H4>Already have an account?  <Link to='/log_in'>Log in</Link>  here!...</H4>
+            <H4>
+                Already have an account? <Link to={RoutingPath.usersLogInView}>Log in</Link>
+            </H4>
         </>
-    )
-}
+    );
+};
+
+export default CreateUser;
 
 const Article = styled.article`
-  padding: 5%;
-  border: 1px solid var(--thirdly-color);
-  box-shadow: 5px 10px 8px 5px var(--fourthly-color);
-  border-radius: 1em;
-  background-color: var(--thirdly-color);
-  align-self: center;
-  width: 100%;
-`
+    padding: 5%;
+    border: 1px solid var(--thirdly-color);
+    box-shadow: 5px 10px 8px 5px var(--fourthly-color);
+    border-radius: 1em;
+    background-color: var(--thirdly-color);
+    width: 100%;
+
+    label {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 16px;
+        color: var(--fourthly-color);
+        font-weight: 600;
+    }
+`;
 
 const H1 = styled.h1`
-  font-size: 2em;
-  font-family: 'Oxygen - Regular', sans-serif;
-  color: var(--fourthly-color);
-  text-align: center;
-`
+    font-size: 2em;
+    font-family: "Oxygen - Regular", sans-serif;
+    color: var(--fourthly-color);
+    text-align: center;
+`;
 
 const Input = styled.input`
-  padding: 0.75em 3em;
-  font-family: 'Oxygen - Regular', sans-serif;
-  font-size: 1em;
-  width: 100%;
-  margin-bottom: 2em;
-  border-radius: 5px;
-  border: 1px solid var(--fifthly-color);
-`
+    padding: 0.75em 1em;
+    font-family: "Oxygen - Regular", sans-serif;
+    font-size: 1em;
+    width: 100%;
+    border-radius: 5px;
+    border: 1px solid var(--fifthly-color);
+`;
 
 const GridContainer = styled.div`
-  display: inline-block;
-  width: 100%;
-  
-  .submit__btn {
-    float: left;
-  }
-  
-  .clear__btn {
-    float: right;
-  }
-`
+    display: flex;
+    gap: 12px;
+    width: 100%;
+`;
+
+const StatusText = styled.p`
+    text-align: center;
+    font-weight: 700;
+    min-height: 24px;
+`;
 
 const H4 = styled.h4`
-  color: var(--fourthly-color);
-  font-weight: 700;
-  text-align: center;
-`
-
-export default CreateUser
+    color: var(--fourthly-color);
+    font-weight: 700;
+    text-align: center;
+`;
