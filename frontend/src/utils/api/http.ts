@@ -1,7 +1,7 @@
 // frontend/src/utils/api/http.ts
 
 import axios from "axios";
-import { authStorage } from "../auth/authStorage";
+import { authStorage } from "../../utils/auth/authStorage";
 
 
 const serverUrl = process.env.REACT_APP_SERVER_URL ?? "http://localhost";
