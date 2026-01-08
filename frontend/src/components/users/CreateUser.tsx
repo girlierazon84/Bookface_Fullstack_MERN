@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 
-import UserService from "../../utils/api/service/UserService";
+import AuthService from "../../utils/api/service/AuthService";
 import { PrimaryButton } from "../CustomButtonComponent";
 import RoutingPath from "../../routes/RoutingPath";
 import { useUserContext } from "../../utils/global/provider/UserProvider";
@@ -41,7 +41,7 @@ const CreateUser: React.FC = () => {
         setStatus("");
 
         try {
-            const res = await UserService.register({
+            const res = await AuthService.register({
                 firstname: firstname.trim(),
                 lastname: lastname.trim(),
                 email: email.trim().toLowerCase(),
@@ -58,55 +58,54 @@ const CreateUser: React.FC = () => {
         }
     };
 
+    const clear = () => {
+        setFirstname("");
+        setLastname("");
+        setEmail("");
+        setUsername("");
+        setPassword("");
+        setStatus("");
+    };
+
     return (
         <>
             <Article>
                 <FieldRow>
                     <label>
                         First name
-                        <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} />
+                        <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} autoComplete="given-name" />
                     </label>
 
                     <label>
                         Last name
-                        <Input value={lastname} onChange={(e) => setLastname(e.target.value)} />
+                        <Input value={lastname} onChange={(e) => setLastname(e.target.value)} autoComplete="family-name" />
                     </label>
                 </FieldRow>
 
                 <label>
                     Email
-                    <Input value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <Input value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
                 </label>
 
                 <label>
                     Username
-                    <Input value={username} onChange={(e) => setUsername(e.target.value)} />
+                    <Input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
                 </label>
 
                 <label>
                     Password
-                    <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+                    <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
                 </label>
             </Article>
 
             <StatusText role="status">{status}</StatusText>
 
             <GridContainer>
-                <PrimaryButton onClick={register} type="submit">
+                <PrimaryButton onClick={register} type="button">
                     {isSubmitting ? "Creating..." : "Sign Up"}
                 </PrimaryButton>
 
-                <PrimaryButton
-                    onClick={() => {
-                        setFirstname("");
-                        setLastname("");
-                        setEmail("");
-                        setUsername("");
-                        setPassword("");
-                        setStatus("");
-                    }}
-                    type="reset"
-                >
+                <PrimaryButton onClick={clear} type="button">
                     Clear
                 </PrimaryButton>
             </GridContainer>
@@ -120,6 +119,7 @@ const CreateUser: React.FC = () => {
 
 export default CreateUser;
 
+/* styles unchanged */
 const Article = styled.article`
     padding: 14px;
     border: 1px solid rgba(97, 97, 97, 0.25);
