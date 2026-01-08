@@ -1,5 +1,7 @@
+// frontend/src/routes/Routing.tsx
+
 import React from "react";
-import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import RoutingPath from "./RoutingPath";
 
 import UsersLogInView from "../view/UsersLogInView";
@@ -22,19 +24,18 @@ export const Routing: React.FC<RoutingProps> = ({ children }) => {
         <BrowserRouter>
             {children}
             <Routes>
-                <Route
-                    path={RoutingPath.wildCardView}
-                    element={<Navigate to={RoutingPath.pageNotFoundView} />}
-                />
+                <Route path={RoutingPath.homeView} element={<HomeView />} />
                 <Route path={RoutingPath.usersLogInView} element={<UsersLogInView />} />
                 <Route path={RoutingPath.signUpFormView} element={<SignUpFormView />} />
                 <Route path={RoutingPath.profileView} element={<ProfileView />} />
                 <Route path={RoutingPath.createPostView} element={<CreatePostView />} />
-                <Route path={RoutingPath.homeView} element={<HomeView />} />
                 <Route path={RoutingPath.adminView} element={<AdminView />} />
                 <Route path={RoutingPath.apiAliveView} element={<Alive />} />
                 <Route path={RoutingPath.settingsView} element={<SettingsView />} />
                 <Route path={RoutingPath.pageNotFoundView} element={<PageNotFoundView />} />
+
+                {/* Catch-all */}
+                <Route path={RoutingPath.wildCardView} element={<PageNotFoundView />} />
             </Routes>
         </BrowserRouter>
     );
