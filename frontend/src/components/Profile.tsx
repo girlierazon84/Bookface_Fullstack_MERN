@@ -13,14 +13,7 @@ import { useUserContext } from "../utils/global/provider/UserProvider";
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
-  const { authenticatedUser, setAuthenticatedUser } = useUserContext();
-  const imgUrl = "https://thispersondoesnotexist.com/image";
-
-  const logout = () => {
-    localStorage.removeItem("username");
-    setAuthenticatedUser("");
-    navigate(RoutingPath.homeView);
-  };
+  const { user, logout } = useUserContext();
 
   return (
     <Wrapper>
@@ -34,14 +27,19 @@ const Profile: React.FC = () => {
       </AddPostLink>
 
       <ProfileWrapper>
-        <Img src={imgUrl} alt="Profile avatar" />
-        <SpanUserName>{authenticatedUser}</SpanUserName>
+        <Img src={user?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Profile avatar" />
+        <SpanUserName>{user?.username}</SpanUserName>
 
         <Dropdown className="profileDropdown">
           <DropdownItem onClick={() => navigate(RoutingPath.settingsView)}>Settings</DropdownItem>
           <DropdownItem onClick={() => navigate(RoutingPath.profileView)}>Profile</DropdownItem>
           <Hr />
-          <DropdownItem onClick={logout}>
+          <DropdownItem
+            onClick={() => {
+              logout();
+              navigate(RoutingPath.usersLogInView, { replace: true });
+            }}
+          >
             <LogoutSharpIcon color="action" fontSize="small" />
             Logout
           </DropdownItem>
@@ -53,6 +51,7 @@ const Profile: React.FC = () => {
 
 export default Profile;
 
+/* styles unchanged from your version */
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
