@@ -16,9 +16,9 @@
     "react-dom": "^18.2.0",
     "react-json-to-table": "^0.1.7",
     "react-router-dom": "^6.26.2",
-    "react-scripts": "^0.0.0",
+    "react-scripts": "5.0.1",
     "styled-components": "^6.1.14",
-    "web-vitals": "^5.0.2"
+    "web-vitals": "^2.1.4"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
