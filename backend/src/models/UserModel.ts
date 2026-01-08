@@ -1,22 +1,50 @@
-import mongoose, { Schema } from "mongoose";
-import { CreateNewUser } from "../utils/interfaces/Users";
+// backend/src/models/UserModel.ts
+
+import { Schema, model, type Types } from "mongoose";
 
 
-const MODEL_NAME = process.env.MONGODB_COLLECTION_USER || "User";
+export interface IUser {
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+    passwordHash: string;
 
-const newUserSchema = new Schema<CreateNewUser>(
+    avatarUrl?: string;
+    bio?: string;
+
+    friends: Types.ObjectId[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const userSchema = new Schema<IUser>(
     {
-        firstname: { type: String, required: true },
-        lastname: { type: String, required: true },
-        email: { type: String, required: true },
-        username: { type: String, unique: true, required: true },
-        password: { type: String, required: true }
+        firstname: { type: String, required: true, trim: true, maxlength: 60 },
+        lastname: { type: String, required: true, trim: true, maxlength: 60 },
+        email: { type: String, required: true, unique: true, lowercase: true, trim: true, maxlength: 320 },
+        username: { type: String, required: true, unique: true, trim: true, maxlength: 40 },
+
+        passwordHash: { type: String, required: true },
+
+        avatarUrl: { type: String, default: "" },
+        bio: { type: String, default: "", maxlength: 280 },
+
+        friends: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }]
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+        toJSON: {
+            transform: (_doc, ret) => {
+                delete ret.passwordHash;
+                return ret;
+            }
+        }
+    }
 );
 
-const UserModel =
-    (mongoose.models[MODEL_NAME] as mongoose.Model<CreateNewUser>) ||
-    mongoose.model<CreateNewUser>(MODEL_NAME, newUserSchema);
+userSchema.index({ username: 1 }, { unique: true });
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ friends: 1 });
 
-export default UserModel;
+export default model<IUser>("User", userSchema);
