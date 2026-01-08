@@ -1,29 +1,21 @@
-import React from 'react'
-import CreateUser from "../components/users/CreateUser";
+// frontend/src/view/SignUpFormView.tsx
+
+import React from "react";
 import styled from "styled-components";
+import CreateUser from "../components/users/CreateUser";
 
 
-
-const SignUpFormView = () => {
+const SignUpFormView: React.FC = () => {
     return (
         <Article>
-            <CreateUser/>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
-            <br/>
+            <CreateUser />
         </Article>
-    )
-}
+    );
+};
 
-export default SignUpFormView
+export default SignUpFormView;
 
 const Article = styled.article`
-background-color: var(--primary-color);
-padding: 100px 60px;
-`
+    background-color: var(--primary-color);
+    padding: 100px 60px;
+`;
