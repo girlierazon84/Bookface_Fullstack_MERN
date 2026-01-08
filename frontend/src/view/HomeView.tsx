@@ -1,24 +1,34 @@
 // frontend/src/view/HomeView.tsx
 
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
-import { Navigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../utils/global/provider/UserProvider";
+import PostService, { type PostDTO } from "../utils/api/service/PostService";
 
-// Feed widgets
 import CreateNewPost from "../components/posts/CreateNewPost";
-import GetAllPosts from "../components/posts/GetAllPosts";
 
 
 const HomeView: React.FC = () => {
-  const { authenticatedUser } = useUserContext();
+  const { user } = useUserContext();
+  const [posts, setPosts] = useState<PostDTO[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  // Home should be visible ONLY after login
-  if (!authenticatedUser) {
-    return <Navigate to={RoutingPath.usersLogInView} replace />;
-  }
+  const loadFeed = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await PostService.getFeed();
+      setPosts(res.data);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadFeed();
+  }, [loadFeed]);
 
   return (
     <Page>
@@ -30,9 +40,9 @@ const HomeView: React.FC = () => {
           </Brand>
 
           <UserCard>
-            <Avatar src="https://thispersondoesnotexist.com/image" alt="Avatar" />
+            <Avatar src={user?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Avatar" />
             <div>
-              <Name>{authenticatedUser}</Name>
+              <Name>{user?.username}</Name>
               <MiniLinks>
                 <Link to={RoutingPath.profileView}>Profile</Link>
                 <span>·</span>
@@ -43,25 +53,47 @@ const HomeView: React.FC = () => {
         </LeftColumn>
 
         <CenterColumn>
-          <ComposerCard>
-            <CreateNewPost />
-          </ComposerCard>
+          <Card style={{ padding: 14 }}>
+            <CreateNewPost onCreated={loadFeed} />
+          </Card>
 
-          <FeedCard>
-            <FeedTitle>Feed</FeedTitle>
-            <GetAllPosts />
-          </FeedCard>
+          <Card style={{ padding: 14, marginTop: 18 }}>
+            <FeedHeader>
+              <FeedTitle>Feed</FeedTitle>
+              <Refresh onClick={loadFeed} type="button">
+                {loading ? "Loading..." : "Refresh"}
+              </Refresh>
+            </FeedHeader>
+
+            <FeedList>
+              {posts.map((p) => (
+                <PostCard key={p._id}>
+                  <PostTop>
+                    <PostAvatar src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Author" />
+                    <div>
+                      <PostName>{p.author?.username}</PostName>
+                      <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
+                    </div>
+                  </PostTop>
+
+                  <PostContent>{p.content}</PostContent>
+
+                  {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
+                </PostCard>
+              ))}
+
+              {!loading && posts.length === 0 ? (
+                <EmptyState>No posts yet. Create the first one ✨</EmptyState>
+              ) : null}
+            </FeedList>
+          </Card>
         </CenterColumn>
 
         <RightColumn>
-          <RightCard>
+          <Card style={{ padding: 14 }}>
             <RightTitle>Tips</RightTitle>
-            <RightText>
-              Post something positive ✨
-              <br />
-              Keep it short and friendly.
-            </RightText>
-          </RightCard>
+            <RightText>Post something positive ✨</RightText>
+          </Card>
         </RightColumn>
       </Shell>
     </Page>
@@ -70,6 +102,7 @@ const HomeView: React.FC = () => {
 
 export default HomeView;
 
+/* styles */
 const Page = styled.main`
   background: var(--primary-color);
   min-height: calc(100vh - 85px);
@@ -171,24 +204,84 @@ const MiniLinks = styled.div`
   }
 `;
 
-const ComposerCard = styled(Card)`
-  padding: 14px;
-`;
-
-const FeedCard = styled(Card)`
-  margin-top: 18px;
-  padding: 14px;
+const FeedHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
 `;
 
 const FeedTitle = styled.h2`
-  margin: 0 0 10px;
+  margin: 0;
   color: var(--fourthly-color);
   font-size: 1.1rem;
   font-weight: 900;
 `;
 
-const RightCard = styled(Card)`
-  padding: 14px;
+const Refresh = styled.button`
+  border: 1px solid rgba(97, 97, 97, 0.25);
+  background: white;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: 800;
+  color: var(--fourthly-color);
+
+  &:hover {
+    border-color: var(--secondary-color);
+    color: var(--secondary-color);
+  }
+`;
+
+const FeedList = styled.div`
+  display: grid;
+  gap: 12px;
+`;
+
+const PostCard = styled.div`
+  background: white;
+  border: 1px solid rgba(97, 97, 97, 0.15);
+  border-radius: 14px;
+  padding: 12px;
+`;
+
+const PostTop = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
+
+const PostAvatar = styled.img`
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--thirdly-color);
+  object-fit: cover;
+`;
+
+const PostName = styled.div`
+  font-weight: 900;
+  color: var(--secondary-color);
+`;
+
+const PostTime = styled.div`
+  font-size: 0.85rem;
+  color: var(--fourthly-color);
+`;
+
+const PostContent = styled.p`
+  margin: 10px 0 0;
+  color: var(--fourthly-color);
+  line-height: 1.4;
+  white-space: pre-wrap;
+`;
+
+const PostImage = styled.img`
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(97, 97, 97, 0.15);
 `;
 
 const RightTitle = styled.h3`
@@ -202,4 +295,11 @@ const RightText = styled.p`
   margin: 0;
   color: var(--fourthly-color);
   line-height: 1.4;
+`;
+
+const EmptyState = styled.div`
+  padding: 14px;
+  text-align: center;
+  color: var(--fourthly-color);
+  font-weight: 800;
 `;
