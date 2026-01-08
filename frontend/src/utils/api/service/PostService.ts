@@ -1,23 +1,34 @@
 // frontend/src/utils/api/service/PostService.ts
 
-import type { CreatePostObject, PostDataObject } from "../../interface/PostInterface";
 import http from "../http";
 
 
-const postUrl = "/posts";
-export type UpdatePostObject = Partial<CreatePostObject>;
+export type FeedAuthor = {
+    _id: string;
+    username: string;
+    firstname?: string;
+    lastname?: string;
+    avatarUrl?: string;
+};
+
+export type PostDTO = {
+    _id: string;
+    author: FeedAuthor;
+    content: string;
+    imageUrl?: string;
+    likes: string[];
+    createdAt: string;
+    updatedAt: string;
+};
+
+export type CreatePostPayload = {
+    content: string;
+    imageUrl?: string;
+};
 
 const PostService = {
-    createPost: (payload: CreatePostObject) => http.post<PostDataObject>(postUrl, payload),
-
-    getAllPosts: () => http.get<PostDataObject[]>(postUrl),
-
-    getPostById: (id: string) => http.get<PostDataObject>(`${postUrl}/${id}`),
-
-    updatePost: (id: string, payload: UpdatePostObject) =>
-        http.put<PostDataObject>(`${postUrl}/${id}`, payload),
-
-    deletePostById: (id: string) => http.delete(`${postUrl}/${id}`)
+    getFeed: () => http.get<PostDTO[]>("/feed"),
+    createPost: (payload: CreatePostPayload) => http.post<PostDTO>("/posts", payload)
 };
 
 export default PostService;
