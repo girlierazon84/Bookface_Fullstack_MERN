@@ -1,81 +1,67 @@
-import { useState } from 'react'
-import { JsonToTable } from 'react-json-to-table'
-import styled from 'styled-components'
-import {CreatePostObject, PostDataObject} from "../../utils/interface/PostInterface";
+// frontend/src/components/posts/UpdatePost.tsx
+
+import { useState } from "react";
+import { JsonToTable } from "react-json-to-table";
+import styled from "styled-components";
+
+import type { CreatePostObject, PostDataObject } from "../../utils/interface/PostInterface";
 import PostService from "../../utils/api/service/PostService";
 
 
-function UpdatePost() {
-    const [postObject, setPostObject] = useState<PostDataObject>()
-    const [id, setId] = useState<string>('')
-    const [author, setAuthor] = useState<string>('')
-    const [title, setTitle] = useState<string>('')
-    const [content, setContent] = useState<string>('')
+const UpdatePost: React.FC = () => {
+  const [postObject, setPostObject] = useState<PostDataObject | null>(null);
+  const [id, setId] = useState("");
+  const [author, setAuthor] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
-    function updatePost() {
-        const payload: CreatePostObject = {
-            author: author,
-            title: title,
-            content: content
-        }
-        PostService.updatePost(id, payload)
-            .then(function (response) {
-                console.log(response.data)
-                setPostObject(response.data)
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
+  const updatePost = async () => {
+    const payload: Partial<CreatePostObject> = {
+      ...(author ? { author } : {}),
+      ...(title ? { title } : {}),
+      ...(content ? { content } : {})
+    };
+
+    try {
+      const res = await PostService.updatePost(id, payload);
+      setPostObject(res.data);
+    } catch {
+      setPostObject(null);
     }
+  };
 
-    function clearInputs() {
-        setId('');
-        setAuthor('');
-        setTitle('');
-        setContent('');
-        setPostObject(undefined);
-    }
+  const clearInputs = () => {
+    setId("");
+    setAuthor("");
+    setTitle("");
+    setContent("");
+    setPostObject(null);
+  };
 
-    return (
-        <Article>
-            <H1>Update Post</H1>
+  return (
+    <Article>
+      <H1>Update Post</H1>
 
-            <div>
-                ID:
-                <Input type='text'
-                       value={ id }
-                       onChange={ event => setId(event.target.value) }/>
-            </div>
+      <Input placeholder="ID" value={id} onChange={(e) => setId(e.target.value)} />
+      <Input placeholder="Author" value={author} onChange={(e) => setAuthor(e.target.value)} />
+      <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <TextArea placeholder="Content" value={content} onChange={(e) => setContent(e.target.value)} />
 
-            <div>
-                Author:
-                <Input type='text'
-                       value={ author }
-                       onChange={ event => setAuthor(event.target.value) }/>
-            </div>
+      <JsonToTable json={postObject ?? {}} />
 
-            <div>
-                Title:
-                <Input type='text'
-                       value={ title }
-                       onChange={ event => setTitle(event.target.value) }/>
-            </div>
+      <GridContainer>
+        <Button type="button" onClick={updatePost}>
+          Update Post
+        </Button>
+        <Button type="button" onClick={clearInputs}>
+          Clear
+        </Button>
+      </GridContainer>
+    </Article>
+  );
+};
 
-            <div>
-                Content:
-                <TextArea value={ content }
-                          onChange={ event => setContent(event.target.value) }/>
-            </div>
-            <JsonToTable json={ postObject } />
-            <br/>
-            <GridContainer>
-                <Button className='update__btn' onClick={ updatePost }>Update Post</Button>
-                <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
-            </GridContainer>
-        </Article>
-    )
-}
-
+export default UpdatePost;
 
 const Article = styled.article`
   padding: 1em;
@@ -83,14 +69,13 @@ const Article = styled.article`
   box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  margin-top: 2em;
-`
+`;
 
 const H1 = styled.h1`
   font-size: 2em;
   color: var(--fourthly-color);
   font-family: "Oxygen - Regular", sans-serif;
-`
+`;
 
 const Input = styled.input`
   background-color: var(--fifthly-color);
@@ -99,7 +84,8 @@ const Input = styled.input`
   border-radius: 10px;
   margin-bottom: 1em;
   font-size: 1em;
-`
+  border: 1px solid var(--fifthly-color);
+`;
 
 const TextArea = styled.textarea`
   background-color: var(--fifthly-color);
@@ -108,24 +94,17 @@ const TextArea = styled.textarea`
   border-radius: 10px;
   margin-bottom: 1em;
   font-size: 1em;
-`
+  border: 1px solid var(--fifthly-color);
+  min-height: 120px;
+`;
 
 const GridContainer = styled.div`
-  display: inline-block;
+  display: flex;
+  gap: 10px;
+`;
+
+const Button = styled.button`
   width: 100%;
-
-  .update__btn {
-    float: left;
-
-  }
-
-  .clear__btn {
-    float: right;
-  }
-`
-
-const Button = styled.button` 
-  width: 50%;
   text-transform: uppercase;
   font-family: "Oxygen - Regular", sans-serif;
   font-size: 1em;
@@ -134,12 +113,11 @@ const Button = styled.button`
   border-radius: 0.8em;
   background-color: var(--secondary-color);
   color: var(--fifthly-color);
-  border-color: var(--fifthly-color);
+  border: 1px solid var(--fifthly-color);
+  cursor: pointer;
 
   &:hover {
     background-color: var(--fifthly-color);
     color: var(--secondary-color);
   }
-`
-
-export default UpdatePost
+`;
