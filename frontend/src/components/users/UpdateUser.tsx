@@ -1,102 +1,75 @@
-import { useState } from 'react'
-import { JsonToTable } from 'react-json-to-table'
-import styled from 'styled-components'
-import UserService from '../../utils/api/service/UserService'
-import { CreateUserObject, UserDataObject } from '../../utils/interface/UsersInterfaces'
+// frontend/src/components/users/UpdateUser.tsx
+
+import { useState } from "react";
+import { JsonToTable } from "react-json-to-table";
+import styled from "styled-components";
+import UserService from "../../utils/api/service/UserService";
+import type { UpdateUserObject, UserDataObject } from "../../utils/interface/UsersInterfaces";
 
 
-function UpdateUser() {
-    const [userObject, setUserObject] = useState<UserDataObject>()
-    const [id, setId] = useState<string>('')
-    const [firstName, setFirstName] = useState<string>('')
-    const [lastName, setLastName] = useState<string>('')
-    const [email, setEmail] = useState<string>('')
-    const [userName, setUserName] = useState<string>('')
-    const [passWord, setPassWord] = useState<string>('')
+const UpdateUser: React.FC = () => {
+  const [userObject, setUserObject] = useState<UserDataObject | null>(null);
+  const [id, setId] = useState("");
 
-    function updateUser() {
-        const payload: CreateUserObject = {
-            firstname: firstName,
-            lastname: lastName,
-            email: email,
-            username: userName,
-            password: passWord
-        }
-        UserService.updateUser(id, payload)
-            .then(function (response) {
-                console.log(response.data)
-                setUserObject(response.data)
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
+  const [firstname, setFirstName] = useState("");
+  const [lastname, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [username, setUserName] = useState("");
+  const [password, setPassWord] = useState("");
+
+  const updateUser = async () => {
+    const payload: UpdateUserObject = {
+      ...(firstname ? { firstname } : {}),
+      ...(lastname ? { lastname } : {}),
+      ...(email ? { email } : {}),
+      ...(username ? { username } : {}),
+      ...(password ? { password } : {})
+    };
+
+    try {
+      const res = await UserService.updateUser(id, payload);
+      setUserObject(res.data);
+    } catch {
+      setUserObject(null);
     }
+  };
 
-    function clearInputs() {
-        setId('')
-        setFirstName('');
-        setLastName('');
-        setEmail('');
-        setUserName('');
-        setPassWord('');
-        setUserObject(undefined);
-    }
+  const clearInputs = () => {
+    setId("");
+    setFirstName("");
+    setLastName("");
+    setEmail("");
+    setUserName("");
+    setPassWord("");
+    setUserObject(null);
+  };
 
-    return (
-        <Article>
-            <H1>Update User</H1>
+  return (
+    <Article>
+      <H1>Update User</H1>
 
-            <div>
-                ID:
-                <Input type='text'
-                       value={ id }
-                       onChange={ event => setId(event.target.value) }/>
-            </div>
+      <Input placeholder="ID" value={id} onChange={(e) => setId(e.target.value)} />
+      <Input placeholder="Firstname" value={firstname} onChange={(e) => setFirstName(e.target.value)} />
+      <Input placeholder="Lastname" value={lastname} onChange={(e) => setLastName(e.target.value)} />
+      <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+      <Input placeholder="Username" value={username} onChange={(e) => setUserName(e.target.value)} />
+      <Input type="password" placeholder="Password" value={password} onChange={(e) => setPassWord(e.target.value)} />
 
-            <div>
-                Firstname:
-                <Input type='text'
-                       value={ firstName }
-                       onChange={ event => setFirstName(event.target.value) }/>
-            </div>
+      <JsonToTable json={userObject ?? {}} />
 
-            <div>
-                Lastname:
-                <Input type='text'
-                       value={ lastName }
-                       onChange={ event => setLastName(event.target.value) }/>
-            </div>
+      <GridContainer>
+        <Button type="button" onClick={updateUser}>
+          Update User
+        </Button>
+        <Button type="button" onClick={clearInputs}>
+          Clear
+        </Button>
+      </GridContainer>
+    </Article>
+  );
+};
 
-            <div>
-                Email:
-                <Input type='email'
-                       value={ email }
-                       onChange={ event => setEmail(event.target.value) }/>
-            </div>
-
-            <div>
-                Username:
-                <Input type='text'
-                       value={ userName }
-                       onChange={ event => setUserName(event.target.value) }/>
-            </div>
-
-            <div>
-                Password:
-                <Input type='password'
-                       value={ passWord }
-                       onChange={ event => setPassWord(event.target.value) }/>
-            </div>
-            <JsonToTable json={ userObject } />
-            <br/>
-            <GridContainer>
-                <Button className='update__btn' onClick={ updateUser }>Update User</Button>
-                <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
-            </GridContainer>
-        </Article>
-    )
-}
-
+export default UpdateUser;
 
 const Article = styled.article`
   padding: 1em;
@@ -104,14 +77,13 @@ const Article = styled.article`
   box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  margin-top: 2em;
-`
+`;
 
 const H1 = styled.h1`
   font-size: 2em;
   color: var(--fourthly-color);
   font-family: "Oxygen - Regular", sans-serif;
-`
+`;
 
 const Input = styled.input`
   background-color: var(--fifthly-color);
@@ -120,24 +92,16 @@ const Input = styled.input`
   border-radius: 10px;
   margin-bottom: 1em;
   font-size: 1em;
-`
+  border: 1px solid var(--fifthly-color);
+`;
 
 const GridContainer = styled.div`
-  display: inline-block;
+  display: flex;
+  gap: 10px;
+`;
+
+const Button = styled.button`
   width: 100%;
-
-  .update__btn {
-    float: left;
-
-  }
-
-  .clear__btn {
-    float: right;
-  }
-`
-
-const Button = styled.button` 
-  width: 50%;
   text-transform: uppercase;
   font-family: "Oxygen - Regular", sans-serif;
   font-size: 1em;
@@ -146,12 +110,11 @@ const Button = styled.button`
   border-radius: 0.8em;
   background-color: var(--secondary-color);
   color: var(--fifthly-color);
-  border-color: var(--fifthly-color);
+  border: 1px solid var(--fifthly-color);
+  cursor: pointer;
 
   &:hover {
     background-color: var(--fifthly-color);
     color: var(--secondary-color);
   }
-`
-
-export default UpdateUser
+`;
