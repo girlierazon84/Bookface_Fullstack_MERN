@@ -2,11 +2,11 @@
 
 import type { Express } from "express";
 import { requireAuth } from "../middlewares/AuthMiddleware";
-import { getFeed } from "../controllers/FeedController";
+import FeedController from "../controllers/FeedController";
 
 
 const routes = (app: Express) => {
-    app.get("/feed", requireAuth, getFeed);
+    app.get("/feed", requireAuth, FeedController.getFeed);
 };
 
 export default { routes };
