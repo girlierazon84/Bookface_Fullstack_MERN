@@ -1,20 +1,39 @@
-import mongoose, { Schema } from "mongoose";
-import { CreateNewPost } from "../utils/interfaces/Posts";
+// backend/src/models/PostModel.ts
+
+import { Schema, model, type Types } from "mongoose";
 
 
-const MODEL_NAME = process.env.MONGODB_COLLECTION_POST || "Post";
+export interface IPost {
+    author: Types.ObjectId;
+    content: string;
+    imageUrl?: string;
 
-const newPostSchema = new Schema<CreateNewPost>(
+    likes: Types.ObjectId[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+const postSchema = new Schema<IPost>(
     {
-        author: String,
-        title: String,
-        content: String
+        author: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+        content: { type: String, required: true, trim: true, maxlength: 5000 },
+        imageUrl: { type: String, default: "", trim: true },
+
+        likes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }]
     },
-    { timestamps: true }
+    {
+        timestamps: true,
+        toJSON: {
+            transform: (_doc, ret) => {
+                delete ret.__v;
+                return ret;
+            }
+        }
+    }
 );
 
-const PostModel =
-    (mongoose.models[MODEL_NAME] as mongoose.Model<CreateNewPost>) ||
-    mongoose.model<CreateNewPost>(MODEL_NAME, newPostSchema);
+postSchema.index({ createdAt: -1 });
+postSchema.index({ author: 1, createdAt: -1 });
+postSchema.index({ likes: 1 });
 
-export default PostModel;
+export default model<IPost>("Post", postSchema);
