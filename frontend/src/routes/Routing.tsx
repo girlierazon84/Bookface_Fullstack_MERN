@@ -12,6 +12,7 @@ import ProfileView from "../view/ProfileView";
 import AdminView from "../view/AdminView";
 import SettingsView from "../view/SettingsView";
 
+
 type RoutingProps = {
     children?: React.ReactNode;
 };
