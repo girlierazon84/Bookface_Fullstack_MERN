@@ -1,102 +1,85 @@
-import React, { useState } from 'react'
-import styled from 'styled-components'
-import {PrimaryButton} from "../CustomButtonComponent"
-import {CreatePostObject, PostDataObject} from "../../utils/interface/PostInterface";
+// frontend/src/components/posts/CreateNewPost.tsx
+
+import React, { useState } from "react";
+import styled from "styled-components";
+import { TextField } from "@mui/material";
+import { JsonToTable } from "react-json-to-table";
+
+import { PrimaryButton } from "../CustomButtonComponent";
 import PostService from "../../utils/api/service/PostService";
-import {JsonToTable} from "react-json-to-table";
-import {TextField} from "@mui/material";
-import {useUserContext} from "../../utils/global/provider/UserProvider";
+import type { CreatePostObject, PostDataObject } from "../../utils/interface/PostInterface";
+import { useUserContext } from "../../utils/global/provider/UserProvider";
 
 
-const CreateNewPost = () =>  {
-    const [author, setAuthor] = useState<string>('')
-    const [title, setTitle] = useState<string>('')
-    const [content, setContent] = useState<string>('')
-    const [postObject, setPostObject] = useState<PostDataObject>()
-    const {authenticatedUser} = useUserContext()
-    const imgUrl = 'https://thispersondoesnotexist.com/image'
+const CreateNewPost: React.FC = () => {
+  const { authenticatedUser } = useUserContext();
+  const imgUrl = "https://thispersondoesnotexist.com/image";
 
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [postObject, setPostObject] = useState<PostDataObject | null>(null);
 
-    function createPosts() {
-        const payload: CreatePostObject = {
-            author: author,
-            title: title,
-            content: content,
-        }
-        PostService.createPost(payload)
-            .then(function (response) {
-                console.log(response.data)
-                setPostObject(response.data)
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
+  const createPost = async () => {
+    const payload: CreatePostObject = {
+      author: authenticatedUser || "anonymous",
+      title,
+      content
+    };
+
+    try {
+      const res = await PostService.createPost(payload);
+      setPostObject(res.data);
+    } catch {
+      setPostObject(null);
     }
+  };
 
-    function clearInputs() {
-        setAuthor('');
-        setTitle('');
-        setContent('');
-        setPostObject(undefined);
-    }
+  const clearInputs = () => {
+    setTitle("");
+    setContent("");
+    setPostObject(null);
+  };
 
-    return (
-        <>
-            <Article>
-                <GridContainerOne>
-                    <div className='image'>
-                        <Img src={ imgUrl }/>
-                    </div>
-                    <div className='username'>
-                        <SpanUserName>{ authenticatedUser }</SpanUserName>
-                    </div>
-                </GridContainerOne>
-                <br/>
-                <br/>
-                <GridContainerTwo>
-                    <div className='post_container'>
-                        <TextField type='text'
-                                   id="standard-basic"
-                                   variant="standard"
-                                   placeholder='Name'
-                                   value={ author }
-                                   onChange={ event => setAuthor(event.target.value) }/>
-                        <br/>
-                        <br/>
-                        <br/>
-                        <TextField type='text'
-                                   id="standard-basic"
-                                   variant="standard"
-                                   placeholder='Title'
-                                   value={ title }
-                                   onChange={ event => setTitle(event.target.value) }/>
-                        <br/>
-                        <br/>
-                        <br/>
-                        <TextArea value={ content }
-                                  onChange={ event => setContent(event.target.value) }/>
-                    </div>
-                </GridContainerTwo>
-                <br/>
-                <br/>
-                <br/>
-                <GridContainer>
-                    <div className='submit__btn'>
-                        <PrimaryButton onClick={() => createPosts()} children={'Submit'}/>
-                    </div>
-                    <div className='clear__btn'>
-                        <PrimaryButton onClick={ () => clearInputs() } children={'Clear'}/>
-                    </div>
-                </GridContainer>
-            </Article>
-            <ArticleOne>
-                <JsonToTable json={ postObject }/>
-            </ArticleOne>
-        </>
-    )
-}
+  return (
+    <>
+      <Article>
+        <Header>
+          <Img src={imgUrl} alt="Avatar" />
+          <SpanUserName>{authenticatedUser}</SpanUserName>
+        </Header>
 
-export default CreateNewPost
+        <FormArea>
+          <TextField
+            fullWidth
+            variant="standard"
+            placeholder="Title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
+
+          <TextArea
+            placeholder="Write your post..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+        </FormArea>
+
+        <ButtonRow>
+          <PrimaryButton onClick={createPost}>Submit</PrimaryButton>
+          <PrimaryButton onClick={clearInputs} type="reset">
+            Clear
+          </PrimaryButton>
+        </ButtonRow>
+      </Article>
+
+      <Preview>
+        <JsonToTable json={postObject ?? {}} />
+      </Preview>
+    </>
+  );
+};
+
+export default CreateNewPost;
 
 const Article = styled.article`
   padding: 2%;
@@ -104,86 +87,51 @@ const Article = styled.article`
   box-shadow: 5px 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  align-self: center;
-  width: 90%;
-  height: 20%;
-  margin: 5%;
+  width: min(900px, 90%);
+  margin: 2rem auto 0;
+`;
 
-  .username {
-    background-color: inherit;
-    border: none;
-    color: var(--secondary-color);
-    font-size: 0.6em;
-    font-weight: 500;
-  }
-
-  .title {
-    background-color: inherit;
-    border: none;
-  }
-`
-
-const GridContainerOne = styled.div`
+const Header = styled.div`
   display: inline-flex;
-  grid-gap: 1.5em;
-
-  .username {
-    padding-top: 1.5em;
-  }
-`
+  align-items: center;
+  gap: 12px;
+`;
 
 const Img = styled.img`
-  display: inline-block;
-  cursor: pointer;
-  align-self: center;
   border-radius: 50%;
   width: 3em;
   border: 1px solid var(--thirdly-color);
-`
+`;
 
 const SpanUserName = styled.span`
   color: var(--secondary-color);
   font-size: 1em;
-  font-weight: 500;
-  padding-bottom: 5em;
-`
+  font-weight: 600;
+`;
 
-const GridContainerTwo = styled.div`
+const FormArea = styled.div`
+  margin-top: 1.5rem;
   display: grid;
-`
+  gap: 16px;
+`;
 
 const TextArea = styled.textarea`
   background-color: inherit;
   width: 100%;
   padding: 1em;
   border-radius: 10px;
-  margin-bottom: 1em;
   font-size: 1em;
   border: 1px solid var(--fourthly-color);
-`
+  min-height: 140px;
+`;
 
-const GridContainer = styled.div`
-  display: inline-block;
-  width: 100%;
+const ButtonRow = styled.div`
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 10px;
+`;
 
-  .submit__btn {
-    width: 40%;
-    float: left;
-  }
-
-  .clear__btn {
-    width: 40%;
-    float: right;
-  }
-`
-
-const ArticleOne = styled.article`
-  padding: 5%;
-  margin: 5%;
-`
-
-
-
-
-
-
+const Preview = styled.article`
+  width: min(900px, 90%);
+  margin: 1rem auto 0;
+`;
