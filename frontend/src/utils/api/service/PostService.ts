@@ -1,12 +1,19 @@
 // frontend/src/utils/api/service/PostService.ts
 
 import http from "../http";
-import type { AuthUser } from "../../../utils/auth/authStorage";
 
+
+export type PostAuthorDTO = {
+    _id: string;
+    username: string;
+    firstname?: string;
+    lastname?: string;
+    avatarUrl?: string;
+};
 
 export type PostDTO = {
     _id: string;
-    author: AuthUser | string;
+    author?: PostAuthorDTO; // ✅ no string union
     content: string;
     imageUrl?: string;
     createdAt: string;
