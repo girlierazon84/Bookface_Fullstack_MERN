@@ -1,38 +1,43 @@
-import React, { useState } from 'react'
-import { JsonToTable } from 'react-json-to-table'
-import styled from 'styled-components'
-import UserService from '../../utils/api/service/UserService'
-import { UserDataObject } from '../../utils/interface/UsersInterfaces'
+// frontend/src/components/users/GetAllUsers.tsx
 
-function GetAllUsers() {
-    const initialState: Array<UserDataObject> = []
-    const [allUsersInDatabase, setAllUsersInDatabase] = useState<Array<UserDataObject>>(initialState)
+import React, { useState } from "react";
+import { JsonToTable } from "react-json-to-table";
+import styled from "styled-components";
+import UserService from "../../utils/api/service/UserService";
+import type { UserDataObject } from "../../utils/interface/UsersInterfaces";
 
 
+const GetAllUsers: React.FC = () => {
+  const [allUsersInDatabase, setAllUsersInDatabase] = useState<UserDataObject[]>([]);
 
-    function getUsers() {
-        UserService.getAllUsers()
-            .then(function (response) {
-                console.log(response.data)
-                setAllUsersInDatabase(response.data)
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
+  const getUsers = async () => {
+    try {
+      const res = await UserService.getAllUsers();
+      setAllUsersInDatabase(res.data);
+    } catch {
+      setAllUsersInDatabase([]);
     }
+  };
 
-    return (
-        <Article>
-            <H1>Get All Users from Database</H1>
-                <JsonToTable json={ allUsersInDatabase }/>
-            <br/>
-            <GridContainer>
-                <Button className='getAllUsers__btn' onClick={ getUsers }>Get All Users</Button>
-                <Button className='clear__btn' onClick={ () => setAllUsersInDatabase(initialState) }>Clear</Button>
-            </GridContainer>
-        </Article>
-    )
-}
+  return (
+    <Article>
+      <H1>Get All Users from Database</H1>
+
+      <JsonToTable json={allUsersInDatabase} />
+
+      <GridContainer>
+        <Button type="button" onClick={getUsers}>
+          Get All Users
+        </Button>
+        <Button type="button" onClick={() => setAllUsersInDatabase([])}>
+          Clear
+        </Button>
+      </GridContainer>
+    </Article>
+  );
+};
+
+export default GetAllUsers;
 
 const Article = styled.article`
   padding: 1em;
@@ -40,31 +45,22 @@ const Article = styled.article`
   box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  margin-top: 2em;
-`
+`;
 
 const H1 = styled.h1`
   font-size: 2em;
   color: var(--fourthly-color);
-  font-family: 'Oxygen - Regular', sans-serif;
-`
+  font-family: "Oxygen - Regular", sans-serif;
+`;
 
 const GridContainer = styled.div`
-  display: inline-block;
-  width: 100%;
-
-  .getAllUsers__btn {
-    float: left;
-
-  }
-
-  .clear__btn {
-    float: right;
-  }
-`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+`;
 
 const Button = styled.button`
-  width: 50%;
+  width: 100%;
   text-transform: uppercase;
   font-family: "Oxygen - Regular", sans-serif;
   font-size: 1em;
@@ -73,12 +69,11 @@ const Button = styled.button`
   border-radius: 0.8em;
   background-color: var(--secondary-color);
   color: var(--fifthly-color);
-  border-color: var(--fifthly-color);
+  border: 1px solid var(--fifthly-color);
+  cursor: pointer;
 
   &:hover {
     background-color: var(--fifthly-color);
     color: var(--secondary-color);
   }
-`
-
-export default GetAllUsers
+`;
