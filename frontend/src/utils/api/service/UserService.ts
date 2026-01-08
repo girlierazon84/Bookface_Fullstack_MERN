@@ -1,10 +1,19 @@
 // frontend/src/utils/api/service/UserService.ts
 
 import http from "../http";
-import type { AuthUser } from "../../auth/authStorage";
 
 
-export type RegisterPayload = {
+export type UserDTO = {
+    _id: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+    avatarUrl?: string;
+    bio?: string;
+};
+
+export type CreateUserPayload = {
     firstname: string;
     lastname: string;
     email: string;
@@ -12,20 +21,17 @@ export type RegisterPayload = {
     password: string;
 };
 
-export type LoginPayload = {
-    username: string;
-    password: string;
-};
-
-export type AuthResponse = {
-    token: string;
-    user: AuthUser;
+export type UpdateUserPayload = Partial<CreateUserPayload> & {
+    avatarUrl?: string;
+    bio?: string;
 };
 
 const UserService = {
-    register: (payload: RegisterPayload) => http.post<AuthResponse>("/auth/register", payload),
-    login: (payload: LoginPayload) => http.post<AuthResponse>("/auth/login", payload),
-    me: () => http.get<AuthUser>("/auth/me")
+    // admin/dev endpoints (keep if you still use AdminView)
+    getAllUsers: () => http.get<UserDTO[]>("/users"),
+    getUserById: (id: string) => http.get<UserDTO>(`/users/${id}`),
+    updateUser: (id: string, payload: UpdateUserPayload) => http.put<UserDTO>(`/users/${id}`, payload),
+    deleteUserById: (id: string) => http.delete<{ message: string }>(`/users/${id}`)
 };
 
 export default UserService;
