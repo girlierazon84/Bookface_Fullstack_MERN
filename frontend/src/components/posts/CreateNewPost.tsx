@@ -2,136 +2,110 @@
 
 import React, { useState } from "react";
 import styled from "styled-components";
-import { TextField } from "@mui/material";
-import { JsonToTable } from "react-json-to-table";
 
-import { PrimaryButton } from "../CustomButtonComponent";
 import PostService from "../../utils/api/service/PostService";
-import type { CreatePostObject, PostDataObject } from "../../utils/interface/PostInterface";
 import { useUserContext } from "../../utils/global/provider/UserProvider";
+import { PrimaryButton } from "../CustomButtonComponent";
 
 
-const CreateNewPost: React.FC = () => {
-  const { authenticatedUser } = useUserContext();
-  const imgUrl = "https://thispersondoesnotexist.com/image";
+type Props = {
+  onCreated?: () => void;
+};
 
-  const [title, setTitle] = useState("");
+const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
+  const { user } = useUserContext();
+
   const [content, setContent] = useState("");
-  const [postObject, setPostObject] = useState<PostDataObject | null>(null);
+  const [status, setStatus] = useState<string>("");
 
-  const createPost = async () => {
-    const payload: CreatePostObject = {
-      author: authenticatedUser || "anonymous",
-      title,
-      content
-    };
+  const submit = async () => {
+    setStatus("");
+    if (!content.trim()) {
+      setStatus("Write something first 🙂");
+      return;
+    }
 
     try {
-      const res = await PostService.createPost(payload);
-      setPostObject(res.data);
+      await PostService.createPost({ content: content.trim() });
+      setContent("");
+      setStatus("Posted ✅");
+      onCreated?.();
     } catch {
-      setPostObject(null);
+      setStatus("Failed to post ❌");
     }
   };
 
-  const clearInputs = () => {
-    setTitle("");
-    setContent("");
-    setPostObject(null);
-  };
-
   return (
-    <>
-      <Article>
-        <Header>
-          <Img src={imgUrl} alt="Avatar" />
-          <SpanUserName>{authenticatedUser}</SpanUserName>
-        </Header>
+    <Composer>
+      <Top>
+        <Avatar src={user?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Me" />
+        <Name>{user?.username}</Name>
+      </Top>
 
-        <FormArea>
-          <TextField
-            fullWidth
-            variant="standard"
-            placeholder="Title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+      <TextArea
+        placeholder="What's on your mind?"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+      />
 
-          <TextArea
-            placeholder="Write your post..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
-        </FormArea>
+      <Row>
+        <PrimaryButton onClick={submit}>Post</PrimaryButton>
+      </Row>
 
-        <ButtonRow>
-          <PrimaryButton onClick={createPost}>Submit</PrimaryButton>
-          <PrimaryButton onClick={clearInputs} type="reset">
-            Clear
-          </PrimaryButton>
-        </ButtonRow>
-      </Article>
-
-      <Preview>
-        <JsonToTable json={postObject ?? {}} />
-      </Preview>
-    </>
+      <Status>{status}</Status>
+    </Composer>
   );
 };
 
 export default CreateNewPost;
 
-const Article = styled.article`
-  padding: 2%;
-  border: 1px solid var(--thirdly-color);
-  box-shadow: 5px 10px 8px 5px var(--fourthly-color);
-  border-radius: 1em;
-  background-color: var(--thirdly-color);
-  width: min(900px, 90%);
-  margin: 2rem auto 0;
-`;
-
-const Header = styled.div`
-  display: inline-flex;
-  align-items: center;
+const Composer = styled.div`
+  display: grid;
   gap: 12px;
 `;
 
-const Img = styled.img`
+const Top = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
+
+const Avatar = styled.img`
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
-  width: 3em;
   border: 1px solid var(--thirdly-color);
+  object-fit: cover;
 `;
 
-const SpanUserName = styled.span`
+const Name = styled.div`
+  font-weight: 900;
   color: var(--secondary-color);
-  font-size: 1em;
-  font-weight: 600;
-`;
-
-const FormArea = styled.div`
-  margin-top: 1.5rem;
-  display: grid;
-  gap: 16px;
 `;
 
 const TextArea = styled.textarea`
-  background-color: inherit;
   width: 100%;
-  padding: 1em;
-  border-radius: 10px;
-  font-size: 1em;
-  border: 1px solid var(--fourthly-color);
-  min-height: 140px;
+  min-height: 110px;
+  border-radius: 12px;
+  border: 1px solid rgba(97, 97, 97, 0.25);
+  padding: 12px;
+  font-size: 1rem;
+  outline: none;
+  resize: vertical;
+
+  &:focus {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(0, 0, 153, 0.12);
+  }
 `;
 
-const ButtonRow = styled.div`
-  margin-top: 1.5rem;
-  display: grid;
-  gap: 10px;
+const Row = styled.div`
+  display: flex;
+  justify-content: flex-end;
 `;
 
-const Preview = styled.article`
-  width: min(900px, 90%);
-  margin: 1rem auto 0;
+const Status = styled.div`
+  min-height: 22px;
+  font-weight: 800;
+  color: var(--fourthly-color);
 `;
