@@ -1,45 +1,51 @@
-import { useState } from 'react'
-import { JsonToTable } from 'react-json-to-table'
-import styled from 'styled-components'
-import UserService from '../../utils/api/service/UserService'
-import { UserDataObject } from '../../utils/interface/UsersInterfaces'
+// frontend/src/components/users/GetUsersById.tsx
 
-function GetUsersById() {
-    const [oneUser, setOneUser] = useState<UserDataObject>()
-    const [id, setId] = useState<string>('')
+import { useState } from "react";
+import { JsonToTable } from "react-json-to-table";
+import styled from "styled-components";
+import UserService from "../../utils/api/service/UserService";
+import type { UserDataObject } from "../../utils/interface/UsersInterfaces";
 
-    function getUsers() {
-        UserService.getUserById(id)
-            .then(function (response) {
-                console.log(response.data)
-                setOneUser(response.data)
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
+
+const GetUsersById: React.FC = () => {
+  const [oneUser, setOneUser] = useState<UserDataObject | null>(null);
+  const [id, setId] = useState("");
+
+  const getUser = async () => {
+    try {
+      const res = await UserService.getUserById(id);
+      setOneUser(res.data);
+    } catch {
+      setOneUser(null);
     }
+  };
 
-    function clearInputs() {
-        setId('');
-        setOneUser(undefined);
-    }
+  const clearInputs = () => {
+    setId("");
+    setOneUser(null);
+  };
 
-    return (
-        <Article>
-            <H1>Get User by ID</H1>
-            <Input type='text'
-                   placeholder='ID'
-                   value={ id }
-                   onChange={ event => setId(event.target.value) }/>
-            <JsonToTable json={ oneUser }/>
-            <br/>
-            <GridContainer>
-                <Button className='getUserById__btn' onClick={ getUsers }>Get User By ID</Button>
-                <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
-            </GridContainer>
-        </Article>
-    )
-}
+  return (
+    <Article>
+      <H1>Get User by ID</H1>
+
+      <Input placeholder="ID" value={id} onChange={(e) => setId(e.target.value)} />
+
+      <JsonToTable json={oneUser ?? {}} />
+
+      <GridContainer>
+        <Button type="button" onClick={getUser}>
+          Get User By ID
+        </Button>
+        <Button type="button" onClick={clearInputs}>
+          Clear
+        </Button>
+      </GridContainer>
+    </Article>
+  );
+};
+
+export default GetUsersById;
 
 const Article = styled.article`
   padding: 1em;
@@ -47,14 +53,13 @@ const Article = styled.article`
   box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  margin-top: 2em;
-`
+`;
 
 const H1 = styled.h1`
   font-size: 2em;
   color: var(--fourthly-color);
   font-family: "Oxygen - Regular", sans-serif;
-`
+`;
 
 const Input = styled.input`
   background-color: var(--fifthly-color);
@@ -63,24 +68,16 @@ const Input = styled.input`
   padding: 1em;
   border-radius: 10px;
   font-size: 1em;
-`
+  border: 1px solid var(--fifthly-color);
+`;
 
 const GridContainer = styled.div`
-  display: inline-block;
-  width: 100%;
-
-  .getUserById__btn {
-    float: left;
-
-  }
-
-  .clear__btn {
-    float: right;
-  }
-`
+  display: flex;
+  gap: 10px;
+`;
 
 const Button = styled.button`
-  width: 50%;
+  width: 100%;
   text-transform: uppercase;
   font-family: "Oxygen - Regular", sans-serif;
   font-size: 1em;
@@ -89,12 +86,11 @@ const Button = styled.button`
   border-radius: 0.8em;
   background-color: var(--secondary-color);
   color: var(--fifthly-color);
-  border-color: var(--fifthly-color);
+  border: 1px solid var(--fifthly-color);
+  cursor: pointer;
 
   &:hover {
     background-color: var(--fifthly-color);
     color: var(--secondary-color);
   }
-`
-
-export default GetUsersById
+`;
