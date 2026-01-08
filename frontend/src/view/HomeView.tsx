@@ -1,108 +1,205 @@
 // frontend/src/view/HomeView.tsx
 
 import React from "react";
-import styled, { keyframes } from "styled-components";
-import { Link } from "react-router-dom";
+import styled from "styled-components";
+import { Navigate, Link } from "react-router-dom";
+
 import RoutingPath from "../routes/RoutingPath";
+import { useUserContext } from "../utils/global/provider/UserProvider";
+
+// Feed widgets
+import CreateNewPost from "../components/posts/CreateNewPost";
+import GetAllPosts from "../components/posts/GetAllPosts";
 
 
 const HomeView: React.FC = () => {
+  const { authenticatedUser } = useUserContext();
+
+  // Home should be visible ONLY after login
+  if (!authenticatedUser) {
+    return <Navigate to={RoutingPath.usersLogInView} replace />;
+  }
+
   return (
-    <Article>
-      <h1>Welcome!</h1>
-      <h2>Bookface</h2>
-      <p>Det är vårt slutprojekt med MERN stack, TypeScript och Bcrypt.</p>
+    <Page>
+      <Shell>
+        <LeftColumn>
+          <Brand>
+            <Logo>Bookface</Logo>
+            <Tagline>Connect with friends and the world around you.</Tagline>
+          </Brand>
 
-      <GridContainer>
-        <Button>
-          <Link to={RoutingPath.usersLogInView}>Log In</Link>
-        </Button>
+          <UserCard>
+            <Avatar src="https://thispersondoesnotexist.com/image" alt="Avatar" />
+            <div>
+              <Name>{authenticatedUser}</Name>
+              <MiniLinks>
+                <Link to={RoutingPath.profileView}>Profile</Link>
+                <span>·</span>
+                <Link to={RoutingPath.settingsView}>Settings</Link>
+              </MiniLinks>
+            </div>
+          </UserCard>
+        </LeftColumn>
 
-        <h3>OR</h3>
+        <CenterColumn>
+          <ComposerCard>
+            <CreateNewPost />
+          </ComposerCard>
 
-        <Button>
-          <Link to={RoutingPath.signUpFormView}>Sign Up</Link>
-        </Button>
-      </GridContainer>
-    </Article>
+          <FeedCard>
+            <FeedTitle>Feed</FeedTitle>
+            <GetAllPosts />
+          </FeedCard>
+        </CenterColumn>
+
+        <RightColumn>
+          <RightCard>
+            <RightTitle>Tips</RightTitle>
+            <RightText>
+              Post something positive ✨
+              <br />
+              Keep it short and friendly.
+            </RightText>
+          </RightCard>
+        </RightColumn>
+      </Shell>
+    </Page>
   );
 };
 
 export default HomeView;
 
-const fadeInAnimation = keyframes`
-  from { opacity: 0 }
-  to { opacity: 1 }
+const Page = styled.main`
+  background: var(--primary-color);
+  min-height: calc(100vh - 85px);
+  padding: 20px 0 60px;
 `;
 
-const Article = styled.article`
-  background-color: var(--primary-color);
-  padding: 2rem 0 18rem 0;
-
-  h1 {
-    font-size: 3.8em;
-    font-weight: bold;
-    font-family: "Lucida Calligraphy", sans-serif;
-    color: var(--fourthly-color);
-    text-align: center;
-    animation: ${fadeInAnimation} 0.8s ease-out;
-  }
-
-  h2 {
-    font-size: 3em;
-    padding-top: 1.5em;
-    color: var(--secondary-color);
-    font-family: "Oleo Script", sans-serif;
-    font-weight: 700;
-    text-align: center;
-  }
-
-  p {
-    font-size: 1.2em;
-    color: var(--fourthly-color);
-    font-family: "Oxygen - Regular", sans-serif;
-    text-align: center;
-    padding: 0 1rem;
-  }
-`;
-
-const GridContainer = styled.div`
-  background-color: var(--fifthly-color);
-  border-radius: 20px;
-  display: grid;
-  gap: 16px;
-  width: min(700px, 92%);
-  text-align: center;
-  margin: 2rem auto 0;
-  padding: 2rem 1rem;
-
-  h3 {
-    font-family: "Lucida Calligraphy", sans-serif;
-    font-size: 2em;
-    color: var(--fourthly-color);
-    margin: 0;
-  }
-`;
-
-const Button = styled.button`
-  background-color: var(--secondary-color);
-  border: 2px solid var(--fifthly-color);
-  border-radius: 10px;
-  box-shadow: 1.5px 2px 1.5px 2px var(--fourthly-color);
-  padding: 1.25em;
-  width: 90%;
+const Shell = styled.section`
+  width: min(1200px, 92%);
   margin: 0 auto;
-  cursor: pointer;
+  display: grid;
+  grid-template-columns: 280px 1fr 280px;
+  gap: 20px;
 
-  &:hover {
-    background-color: var(--fourthly-color);
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
   }
+`;
+
+const LeftColumn = styled.aside`
+  @media (max-width: 960px) {
+    order: 2;
+  }
+`;
+
+const CenterColumn = styled.section`
+  @media (max-width: 960px) {
+    order: 1;
+  }
+`;
+
+const RightColumn = styled.aside`
+  @media (max-width: 960px) {
+    order: 3;
+  }
+`;
+
+const Card = styled.div`
+  background: var(--fifthly-color);
+  border: 1px solid rgba(97, 97, 97, 0.25);
+  border-radius: 14px;
+  box-shadow: 0 10px 24px rgba(97, 97, 97, 0.2);
+`;
+
+const Brand = styled.div`
+  padding: 10px 6px 18px;
+`;
+
+const Logo = styled.h1`
+  margin: 0;
+  color: var(--secondary-color);
+  font-weight: 800;
+  font-size: 2.2rem;
+  font-family: "Oxygen - Regular", sans-serif;
+`;
+
+const Tagline = styled.p`
+  margin: 8px 0 0;
+  color: var(--fourthly-color);
+  font-size: 1rem;
+`;
+
+const UserCard = styled(Card)`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+`;
+
+const Avatar = styled.img`
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid var(--thirdly-color);
+  object-fit: cover;
+`;
+
+const Name = styled.div`
+  font-weight: 800;
+  color: var(--secondary-color);
+  font-family: "Oleo Script", sans-serif;
+  font-size: 1.2rem;
+`;
+
+const MiniLinks = styled.div`
+  margin-top: 4px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
 
   a {
-    color: var(--fifthly-color);
+    color: var(--fourthly-color);
     text-decoration: none;
-    text-transform: uppercase;
-    font-size: 150%;
-    font-weight: bold;
+    font-weight: 700;
   }
+
+  a:hover {
+    text-decoration: underline;
+    color: var(--secondary-color);
+  }
+`;
+
+const ComposerCard = styled(Card)`
+  padding: 14px;
+`;
+
+const FeedCard = styled(Card)`
+  margin-top: 18px;
+  padding: 14px;
+`;
+
+const FeedTitle = styled.h2`
+  margin: 0 0 10px;
+  color: var(--fourthly-color);
+  font-size: 1.1rem;
+  font-weight: 900;
+`;
+
+const RightCard = styled(Card)`
+  padding: 14px;
+`;
+
+const RightTitle = styled.h3`
+  margin: 0 0 8px;
+  color: var(--fourthly-color);
+  font-size: 1rem;
+  font-weight: 900;
+`;
+
+const RightText = styled.p`
+  margin: 0;
+  color: var(--fourthly-color);
+  line-height: 1.4;
 `;
