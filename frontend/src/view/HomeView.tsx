@@ -1,8 +1,8 @@
 // frontend/src/view/HomeView.tsx
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../utils/global/provider/UserProvider";
@@ -11,8 +11,16 @@ import PostService, { type PostDTO } from "../utils/api/service/PostService";
 import CreateNewPost from "../components/posts/CreateNewPost";
 
 
+// ✅ local guard to handle "string | AuthUser" situations safely
+const isAuthUser = (value: unknown): value is { _id: string; username: string; avatarUrl?: string } => {
+  return !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
+};
+
 const HomeView: React.FC = () => {
-  const { user } = useUserContext();
+  const { token, user } = useUserContext();
+
+  const me = useMemo(() => (isAuthUser(user) ? user : null), [user]);
+
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -27,8 +35,13 @@ const HomeView: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!token) return;
     loadFeed();
-  }, [loadFeed]);
+  }, [token, loadFeed]);
+
+  // ✅ redirect AFTER hooks
+  if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
+  if (!me) return <Navigate to={RoutingPath.usersLogInView} replace />;
 
   return (
     <Page>
@@ -40,9 +53,9 @@ const HomeView: React.FC = () => {
           </Brand>
 
           <UserCard>
-            <Avatar src={user?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Avatar" />
+            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Avatar" />
             <div>
-              <Name>{user?.username}</Name>
+              <Name>{me.username}</Name>
               <MiniLinks>
                 <Link to={RoutingPath.profileView}>Profile</Link>
                 <span>·</span>
@@ -69,9 +82,12 @@ const HomeView: React.FC = () => {
               {posts.map((p) => (
                 <PostCard key={p._id}>
                   <PostTop>
-                    <PostAvatar src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Author" />
+                    <PostAvatar
+                      src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
+                      alt="Author"
+                    />
                     <div>
-                      <PostName>{p.author?.username}</PostName>
+                      <PostName>{p.author?.username ?? "Unknown"}</PostName>
                       <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
                     </div>
                   </PostTop>
@@ -102,7 +118,7 @@ const HomeView: React.FC = () => {
 
 export default HomeView;
 
-/* styles */
+/* styles unchanged */
 const Page = styled.main`
   background: var(--primary-color);
   min-height: calc(100vh - 85px);
