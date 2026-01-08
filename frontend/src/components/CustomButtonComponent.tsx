@@ -1,32 +1,29 @@
-import React from 'react'
-import styled from 'styled-components'
+import React from "react";
+import styled from "styled-components";
 
 interface ButtonProps {
-    children: React.ReactNode;
-    onClick: () => void;
+  children: React.ReactNode;
+  onClick: () => void;
+  type?: "button" | "submit" | "reset";
 }
 
-const PrimaryButton: React.FC<ButtonProps> = ({children, onClick}) => {
-    let reset;
-    return (
-        <ButtonPrimary onClick={ onClick }>
-            { children }
-        </ButtonPrimary>
-    )
-}
+const PrimaryButton: React.FC<ButtonProps> = ({ children, onClick, type = "button" }) => {
+  return (
+    <ButtonPrimary type={type} onClick={onClick}>
+      {children}
+    </ButtonPrimary>
+  );
+};
 
-const SecondaryButton: React.FC<ButtonProps> = ({children, onClick}) => {
-    return (
-        <ButtonSecondary onClick={ onClick }>
-            { children }
-        </ButtonSecondary>
-    )
-}
+const SecondaryButton: React.FC<ButtonProps> = ({ children, onClick, type = "button" }) => {
+  return (
+    <ButtonSecondary type={type} onClick={onClick}>
+      {children}
+    </ButtonSecondary>
+  );
+};
 
-export {
-    PrimaryButton,
-    SecondaryButton
-}
+export { PrimaryButton, SecondaryButton };
 
 const ButtonPrimary = styled.button`
   background-color: var(--secondary-color);
@@ -45,7 +42,7 @@ const ButtonPrimary = styled.button`
     background-color: var(--fifthly);
     color: var(--secondary-color);
   }
-`
+`;
 
 const ButtonSecondary = styled.button`
   background-color: chocolate;
@@ -54,9 +51,10 @@ const ButtonSecondary = styled.button`
   border: none;
   color: #111;
   font-size: 1.25em;
+  cursor: pointer;
 
   &:hover {
     background-color: #111;
     color: chocolate;
   }
-`
+`;
