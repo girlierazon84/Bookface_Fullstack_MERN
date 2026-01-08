@@ -1,47 +1,51 @@
-import { useState } from 'react'
-import styled from 'styled-components'
+// frontend/src/components/posts/DeletePostById.tsx
+
+import { useState } from "react";
+import styled from "styled-components";
 import PostService from "../../utils/api/service/PostService";
 
-function DeletePostById() {
-    const [text, setText] = useState<string>('')
-    const [id, setId] = useState<string>('')
 
-    function deletePost() {
-        PostService.deletePostById(id)
-            .then(function (response) {
-                console.log(response.data)
-                setText(response.data.message)
-            })
-            .catch(function (error) {
-                console.log(error)
-            })
+type DeleteResponse = { message?: string };
+
+const DeletePostById: React.FC = () => {
+  const [text, setText] = useState("");
+  const [id, setId] = useState("");
+
+  const deletePost = async () => {
+    try {
+      const res = await PostService.deletePostById(id);
+      const data = res.data as DeleteResponse;
+      setText(data?.message ?? "Post deleted");
+    } catch {
+      setText("Delete failed");
     }
+  };
 
-    function clearInputs() {
-        setId('');
-        setText('');
-    }
+  const clearInputs = () => {
+    setId("");
+    setText("");
+  };
 
-    return (
-        <Article>
-            <H1>Delete Post</H1>
+  return (
+    <Article>
+      <H1>Delete Post</H1>
+      <Input placeholder="ID" value={id} onChange={(e) => setId(e.target.value)} />
 
-            <div>
-                <Input type='text'
-                       placeholder='ID'
-                       value={ id }
-                       onChange={ event => setId(event.target.value) }/>
-            </div>
+      <h3>{text}</h3>
 
-            <h3>{ text }</h3>
-            <GridContainer>
-                <Button className='delete__btn' onClick={ deletePost }>Delete Post</Button>
-                <Button className='clear__btn' onClick={ () => clearInputs() }>Clear</Button>
-            </GridContainer>
-        </Article>
-    )
-}
+      <GridContainer>
+        <Button type="button" onClick={deletePost}>
+          Delete Post
+        </Button>
+        <Button type="button" onClick={clearInputs}>
+          Clear
+        </Button>
+      </GridContainer>
+    </Article>
+  );
+};
 
+export default DeletePostById;
 
 const Article = styled.article`
   padding: 1em;
@@ -49,19 +53,19 @@ const Article = styled.article`
   box-shadow: 0 10px 8px 5px var(--fourthly-color);
   border-radius: 1em;
   background-color: var(--thirdly-color);
-  margin: 2em 0 5em 0;
-  
+
   h3 {
     color: green;
     font-family: "Oleo Script", sans-serif;
+    min-height: 24px;
   }
-`
+`;
 
 const H1 = styled.h1`
   font-size: 2em;
   color: var(--fourthly-color);
   font-family: "Oxygen - Regular", sans-serif;
-`
+`;
 
 const Input = styled.input`
   background-color: var(--fifthly-color);
@@ -70,24 +74,16 @@ const Input = styled.input`
   border-radius: 10px;
   margin-bottom: 1em;
   font-size: 1em;
-`
+  border: 1px solid var(--fifthly-color);
+`;
 
 const GridContainer = styled.div`
-  display: inline-block;
-  width: 100%;
-
-  .getUserById__btn {
-    float: left;
-
-  }
-
-  .clear__btn {
-    float: right;
-  }
-`
+  display: flex;
+  gap: 10px;
+`;
 
 const Button = styled.button`
-  width: 50%;
+  width: 100%;
   text-transform: uppercase;
   font-family: "Oxygen - Regular", sans-serif;
   font-size: 1em;
@@ -96,12 +92,11 @@ const Button = styled.button`
   border-radius: 0.8em;
   background-color: var(--secondary-color);
   color: var(--fifthly-color);
-  border-color: var(--fifthly-color);
+  border: 1px solid var(--fifthly-color);
+  cursor: pointer;
 
   &:hover {
     background-color: var(--fifthly-color);
     color: var(--secondary-color);
   }
-`
-
-export default DeletePostById
+`;
