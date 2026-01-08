@@ -2,12 +2,12 @@ import type { ReportHandler } from "web-vitals";
 
 const reportWebVitals = (onPerfEntry?: ReportHandler) => {
   if (onPerfEntry && onPerfEntry instanceof Function) {
-    import("web-vitals").then(({ getCLS, getFCP, getLCP, getTTFB, getFID }) => {
+    import("web-vitals").then(({ getCLS, getFCP, getFID, getLCP, getTTFB }) => {
       getCLS(onPerfEntry);
       getFCP(onPerfEntry);
+      getFID(onPerfEntry);
       getLCP(onPerfEntry);
       getTTFB(onPerfEntry);
-      getFID(onPerfEntry);
     });
   }
 };
