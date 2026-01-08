@@ -6,19 +6,16 @@ import { Link } from "react-router-dom";
 import { ListItemIcon, ListItemText } from "@mui/material";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
-import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 import { useUserContext } from "../../utils/global/provider/UserProvider";
 import Profile from "../Profile";
 import RoutingPath from "../../routes/RoutingPath";
 
 
-type Props = {
-  open: boolean;
-};
+type Props = { open: boolean };
 
 const RightNav: React.FC<Props> = ({ open }) => {
-  const { authenticatedUser } = useUserContext();
+  const { token } = useUserContext();
 
   return (
     <Ul open={open}>
@@ -31,16 +28,7 @@ const RightNav: React.FC<Props> = ({ open }) => {
         </Link>
       </Li>
 
-      <Li>
-        <Link to={RoutingPath.adminView}>
-          <ListItemIcon>
-            <AdminPanelSettingsIcon color="primary" fontSize="small" />
-          </ListItemIcon>
-          <ListItemText primary="Admin" />
-        </Link>
-      </Li>
-
-      {authenticatedUser ? (
+      {token ? (
         <Li>
           <Profile />
         </Li>
@@ -60,6 +48,7 @@ const RightNav: React.FC<Props> = ({ open }) => {
 
 export default RightNav;
 
+/* styles mostly same */
 const Ul = styled.ul<Props>`
   list-style: none;
   display: flex;
