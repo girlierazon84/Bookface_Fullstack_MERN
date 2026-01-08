@@ -1,93 +1,70 @@
-import React from 'react'
-import {Link, useNavigate} from 'react-router-dom'
-import styled from 'styled-components'
-import LogoutSharpIcon from '@mui/icons-material/LogoutSharp';
-import {ListItemIcon} from "@mui/material";
-import ListItemText from "@mui/material/ListItemText";
-import PostAddSharpIcon from '@mui/icons-material/PostAddSharp';
-import RoutingPath from '../routes/RoutingPath'
-import { useUserContext } from '../utils/global/provider/UserProvider'
-import './Profile.css'
+// frontend/src/components/Profile.tsx
 
-const Profile = () => {
-    const navigate = useNavigate()
-    const {authenticatedUser, setAuthenticatedUser} = useUserContext()
-    const imgUrl = 'https://thispersondoesnotexist.com/image'
+import React from "react";
+import { Link, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import LogoutSharpIcon from "@mui/icons-material/LogoutSharp";
+import { ListItemIcon, ListItemText } from "@mui/material";
+import PostAddSharpIcon from "@mui/icons-material/PostAddSharp";
 
-    const logout = () => {
-        localStorage.removeItem('username')
-        setAuthenticatedUser('')
-        navigate(RoutingPath.homeView)
-    }
+import RoutingPath from "../routes/RoutingPath";
+import { useUserContext } from "../utils/global/provider/UserProvider";
 
-    return (
-        <>
-            <LiRight>
-                <Link to={RoutingPath.createPostView}>
-                    <ListItemIcon>
-                        <ListItemText primary='Add Post'/>
-                        <PostAddSharpIcon color='primary'
-                                          fontSize='medium'
-                                          padding-top='inherit'/>
-                    </ListItemIcon>
-                </Link>
-            </LiRight>
 
-            <ProfileWrapper className='profileWrapper'>
-                <Img src={ imgUrl }/>
-                <SpanUserName>{ authenticatedUser }</SpanUserName>
+const Profile: React.FC = () => {
+  const navigate = useNavigate();
+  const { authenticatedUser, setAuthenticatedUser } = useUserContext();
+  const imgUrl = "https://thispersondoesnotexist.com/image";
 
-                <div className='profileDropdown'>
-                    <Span onClick={ () => navigate(RoutingPath.settingsView) }>Settings</Span>
-                    <Span onClick={ () => navigate(RoutingPath.profileView) }>Profile</Span>
-                    <hr/>
-                    <Span onClick={ () => logout() }>
-                        <LogoutSharpIcon color='action' fontSize='medium' />
-                        Logout
-                    </Span>
-                </div>
-            </ProfileWrapper>
-        </>
-    )
-}
+  const logout = () => {
+    localStorage.removeItem("username");
+    setAuthenticatedUser("");
+    navigate(RoutingPath.homeView);
+  };
 
-export default Profile
+  return (
+    <Wrapper>
+      <AddPostLink>
+        <Link to={RoutingPath.createPostView}>
+          <ListItemIcon>
+            <PostAddSharpIcon color="primary" fontSize="medium" />
+          </ListItemIcon>
+          <ListItemText primary="Add Post" />
+        </Link>
+      </AddPostLink>
 
-const ProfileWrapper = styled.section`
+      <ProfileWrapper>
+        <Img src={imgUrl} alt="Profile avatar" />
+        <SpanUserName>{authenticatedUser}</SpanUserName>
+
+        <Dropdown className="profileDropdown">
+          <DropdownItem onClick={() => navigate(RoutingPath.settingsView)}>Settings</DropdownItem>
+          <DropdownItem onClick={() => navigate(RoutingPath.profileView)}>Profile</DropdownItem>
+          <Hr />
+          <DropdownItem onClick={logout}>
+            <LogoutSharpIcon color="action" fontSize="small" />
+            Logout
+          </DropdownItem>
+        </Dropdown>
+      </ProfileWrapper>
+    </Wrapper>
+  );
+};
+
+export default Profile;
+
+const Wrapper = styled.div`
   display: flex;
-  grid-template-columns: repeat(2, 1fr);
-  height: 4.8vh;
+  align-items: center;
+  gap: 12px;
+`;
 
-  @media (max-width: 768px) {
-    height: 40vh;
-  }
-`
-
-const Img = styled.img`
-  display: inline-block;
-  cursor: pointer;
-  align-self: center;
-  border-radius: 50%;
-  width: 4em;
-  border: 1px solid var(--thirdly-color);
-`
-const SpanUserName = styled.span`
-  display: block;
-  align-self: center;
-  cursor: pointer;
-  padding-left: 10px;
-  color: var(--secondary-color);
-  font-family: "Oleo Script", sans-serif;
-  font-weight: bold;
-`
-
-const LiRight = styled.li`
-  float: right;
-
+const AddPostLink = styled.div`
   a {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 6px;
     color: var(--fourthly-color);
-    margin-left: 30px;
     text-decoration: none;
     font-weight: bold;
   }
@@ -97,22 +74,62 @@ const LiRight = styled.li`
   }
 
   @media (max-width: 768px) {
-    a {
-      margin-right: 215px;
-      padding-top: 30px;
-      width: 95px;
-    }
-
     a:hover {
-      width: 95px;
+      border-bottom: none;
+      text-decoration: underline;
     }
   }
-`
+`;
 
-const Span = styled.span`
-  display: block;
-  align-self: center;
+const ProfileWrapper = styled.section`
+  display: flex;
+  align-items: center;
+  position: relative;
   cursor: pointer;
-  padding: 10px 15px;
-`
 
+  &:hover .profileDropdown {
+    display: block;
+  }
+`;
+
+const Img = styled.img`
+  border-radius: 50%;
+  width: 3.5em;
+  border: 1px solid var(--thirdly-color);
+`;
+
+const SpanUserName = styled.span`
+  padding-left: 10px;
+  color: var(--secondary-color);
+  font-family: "Oleo Script", sans-serif;
+  font-weight: bold;
+`;
+
+const Dropdown = styled.div`
+  display: none;
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background-color: var(--thirdly-color);
+  min-width: 170px;
+  padding: 12px 10px;
+  border-radius: 10px;
+  z-index: 10;
+`;
+
+const DropdownItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+
+  &:hover {
+    background: var(--fifthly-color);
+  }
+`;
+
+const Hr = styled.hr`
+  border: 1px solid var(--fifthly-color);
+  margin: 8px 0;
+`;
