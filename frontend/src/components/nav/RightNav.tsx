@@ -1,140 +1,107 @@
-import React from 'react';
-import styled from 'styled-components';
-import {useUserContext} from "../../utils/global/provider/UserProvider";
-import Profile from "../Profile";
-import {Link, Outlet} from "react-router-dom";
-import RoutingPath from "../../routes/RoutingPath";
-import {ListItemIcon} from "@mui/material";
-import ListItemText from "@mui/material/ListItemText";
+// frontend/src/components/nav/RightNav.tsx
+
+import React from "react";
+import styled from "styled-components";
+import { Link } from "react-router-dom";
+import { ListItemIcon, ListItemText } from "@mui/material";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
-interface Props {
-    open: boolean
-}
+import { useUserContext } from "../../utils/global/provider/UserProvider";
+import Profile from "../Profile";
+import RoutingPath from "../../routes/RoutingPath";
 
-const RightNav: React.FC<Props> = ({open}) => {
-    const {authenticatedUser} = useUserContext()
 
-    const displayUserIfAuthenticated = () => {
-        return (authenticatedUser)
-            ? <LiLeft><Profile/></LiLeft>
-            : <LiLeft>
-                <Link to={RoutingPath.usersLogInView}>
-                    <ListItemIcon>
-                        <ListItemText primary='Log in'/>
-                        <LoginSharpIcon color='action'
-                                        fontSize='medium'/>
-                    </ListItemIcon>
-                </Link>
-            </LiLeft>
-    }
+type Props = {
+  open: boolean;
+};
 
-    return (
-        <>
-            <Ul open={open}>
-                <LiRight>
-                    <Link to={RoutingPath.homeView}>
-                        <ListItemIcon>
-                            <ListItemText primary='Home'/>
-                            <HomeSharpIcon color='primary'
-                                           fontSize='medium'
-                                           padding-top='inherit'/>
-                        </ListItemIcon>
-                    </Link>
-                </LiRight>
+const RightNav: React.FC<Props> = ({ open }) => {
+  const { authenticatedUser } = useUserContext();
 
-                <LiRight>
-                    <Link to={RoutingPath.adminView}>
-                        <ListItemIcon>
-                            <ListItemText primary='Admin'/>
-                            <AdminPanelSettingsIcon color='primary'
-                                                    fontSize='small'
-                                                    padding-top='inherit'/>
-                        </ListItemIcon>
-                    </Link>
-                </LiRight>
+  return (
+    <Ul open={open}>
+      <Li>
+        <Link to={RoutingPath.homeView}>
+          <ListItemIcon>
+            <HomeSharpIcon color="primary" fontSize="medium" />
+          </ListItemIcon>
+          <ListItemText primary="Home" />
+        </Link>
+      </Li>
 
-                {displayUserIfAuthenticated()}
-            </Ul>
-            <Outlet/>
-        </>
-    )
-}
+      <Li>
+        <Link to={RoutingPath.adminView}>
+          <ListItemIcon>
+            <AdminPanelSettingsIcon color="primary" fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Admin" />
+        </Link>
+      </Li>
 
-export default RightNav
+      {authenticatedUser ? (
+        <Li>
+          <Profile />
+        </Li>
+      ) : (
+        <Li>
+          <Link to={RoutingPath.usersLogInView}>
+            <ListItemIcon>
+              <LoginSharpIcon color="action" fontSize="medium" />
+            </ListItemIcon>
+            <ListItemText primary="Log in" />
+          </Link>
+        </Li>
+      )}
+    </Ul>
+  );
+};
 
+export default RightNav;
 
 const Ul = styled.ul<Props>`
   list-style: none;
+  display: flex;
   flex-flow: row nowrap;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+
+  a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--fourthly-color);
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  a:hover {
+    border-bottom: 3px solid var(--secondary-color);
+  }
 
   @media (max-width: 768px) {
-    display: flex;
     flex-flow: column nowrap;
     background-color: var(--fifthly-color);
     position: fixed;
-    transform: ${({open}) => open ? 'translateX(0)' : 'translateX(100%)'};
-    margin-top: 0;
     top: 0;
     right: 0;
     height: 100vh;
-    width: 50vh;
-    padding-top: 3.5rem;
-    transition: transform 0.3s ease-in-out;
-  }
-`
-
-const LiLeft = styled.li`
-  float: left;
-
-  a {
-    display: block;
-    color: var(--fourthly-color);
-    text-decoration: none;
-    font-weight: bold;
-  }
-
-  a:hover {
-    border-bottom: 3px solid var(--secondary-color);
-  }
-
-  @media (max-width: 768px) {
-
-    a {
-      padding-top: 30px;
-    }
+    width: min(80vw, 320px);
+    padding: 4.5rem 1.5rem 1.5rem;
+    transform: ${({ open }) => (open ? "translateX(0)" : "translateX(100%)")};
+    transition: transform 0.25s ease-in-out;
 
     a:hover {
-      width: 70px;
+      border-bottom: none;
+      text-decoration: underline;
     }
   }
-`
+`;
 
-const LiRight = styled.li`
-  float: right;
-
-  a {
-    display: block;
-    color: var(--fourthly-color);
-    margin-left: 30px;
-    text-decoration: none;
-    font-weight: bold;
-  }
-
-  a:hover {
-    border-bottom: 3px solid var(--secondary-color);
-  }
-
-  @media (max-width: 768px) {
-    a {
-      margin-left: 0;
-      padding-top: 30px;
-    }
-
-    a:hover {
-      width: 68px;
-    }
-  }
-`
+const Li = styled.li`
+  display: flex;
+  align-items: center;
+`;
