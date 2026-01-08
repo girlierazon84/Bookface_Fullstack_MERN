@@ -5,7 +5,6 @@ import styled from "styled-components";
 import { Link, useNavigate } from "react-router-dom";
 
 import UserService from "../../utils/api/service/UserService";
-import type { CreateUserObject, UsersLogInDataObject } from "../../utils/interface/UsersInterfaces";
 import { PrimaryButton } from "../CustomButtonComponent";
 import RoutingPath from "../../routes/RoutingPath";
 import { useUserContext } from "../../utils/global/provider/UserProvider";
@@ -13,70 +12,45 @@ import { useUserContext } from "../../utils/global/provider/UserProvider";
 
 const CreateUser: React.FC = () => {
     const navigate = useNavigate();
-    const { setAuthenticatedUser } = useUserContext();
+    const { setAuth } = useUserContext();
 
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
+    const [firstname, setFirstname] = useState("");
+    const [lastname, setLastname] = useState("");
     const [email, setEmail] = useState("");
-    const [userName, setUserName] = useState("");
-    const [passWord, setPassWord] = useState("");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
 
-    const [status, setStatus] = useState<string>("");
+    const [status, setStatus] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const validate = (): string | null => {
-        if (!firstName.trim()) return "Firstname is required";
-        if (!lastName.trim()) return "Lastname is required";
+        if (!firstname.trim()) return "Firstname is required";
+        if (!lastname.trim()) return "Lastname is required";
         if (!email.trim()) return "Email is required";
-        if (!userName.trim()) return "Username is required";
-        if (!passWord) return "Password is required";
-        if (passWord.length < 6) return "Password must be at least 6 characters";
+        if (!username.trim()) return "Username is required";
+        if (!password) return "Password is required";
+        if (password.length < 6) return "Password must be at least 6 characters";
         return null;
     };
 
-    const createAndLogin = async () => {
-        const error = validate();
-        if (error) {
-            setStatus(`❌ ${error}`);
-            return;
-        }
+    const register = async () => {
+        const err = validate();
+        if (err) return setStatus(`❌ ${err}`);
 
         setIsSubmitting(true);
         setStatus("");
 
-        const newUserPayload: CreateUserObject = {
-            firstname: firstName.trim(),
-            lastname: lastName.trim(),
-            email: email.trim(),
-            username: userName.trim(),
-            password: passWord
-        };
-
         try {
-            // 1) Create user
-            await UserService.createUser(newUserPayload);
+            const res = await UserService.register({
+                firstname: firstname.trim(),
+                lastname: lastname.trim(),
+                email: email.trim().toLowerCase(),
+                username: username.trim(),
+                password
+            });
 
-            // 2) Auto login (verify)
-            const loginPayload: UsersLogInDataObject = {
-                username: newUserPayload.username,
-                password: newUserPayload.password
-            };
-
-            const verifyRes = await UserService.verifyUser(loginPayload);
-
-            if (verifyRes.data.message) {
-                // 3) Persist auth (FB-like)
-                setAuthenticatedUser(loginPayload.username);
-                localStorage.setItem("username", loginPayload.username);
-
-                setStatus("✅ Account created! Logging you in...");
-                navigate(RoutingPath.homeView, { replace: true });
-                return;
-            }
-
-            // If API returns false-ish
-            setStatus("✅ Account created, but auto-login failed. Please log in.");
-            navigate(RoutingPath.usersLogInView);
+            setAuth(res.data.token, res.data.user);
+            navigate(RoutingPath.homeView, { replace: true });
         } catch {
             setStatus("❌ Registration failed. Please try again.");
         } finally {
@@ -84,64 +58,55 @@ const CreateUser: React.FC = () => {
         }
     };
 
-    const clearInputs = () => {
-        setFirstName("");
-        setLastName("");
-        setEmail("");
-        setUserName("");
-        setPassWord("");
-        setStatus("");
-    };
-
     return (
         <>
-            <Header>
-                <H1>Create account</H1>
-                <Sub>It’s quick and easy.</Sub>
-            </Header>
-
             <Article>
                 <FieldRow>
                     <label>
                         First name
-                        <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} autoComplete="given-name" />
+                        <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} />
                     </label>
 
                     <label>
                         Last name
-                        <Input value={lastName} onChange={(e) => setLastName(e.target.value)} autoComplete="family-name" />
+                        <Input value={lastname} onChange={(e) => setLastname(e.target.value)} />
                     </label>
                 </FieldRow>
 
                 <label>
                     Email
-                    <Input value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+                    <Input value={email} onChange={(e) => setEmail(e.target.value)} />
                 </label>
 
                 <label>
                     Username
-                    <Input value={userName} onChange={(e) => setUserName(e.target.value)} autoComplete="username" />
+                    <Input value={username} onChange={(e) => setUsername(e.target.value)} />
                 </label>
 
                 <label>
                     Password
-                    <Input
-                        type="password"
-                        value={passWord}
-                        onChange={(e) => setPassWord(e.target.value)}
-                        autoComplete="new-password"
-                    />
+                    <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
                 </label>
             </Article>
 
             <StatusText role="status">{status}</StatusText>
 
             <GridContainer>
-                <PrimaryButton onClick={createAndLogin} type="submit">
+                <PrimaryButton onClick={register} type="submit">
                     {isSubmitting ? "Creating..." : "Sign Up"}
                 </PrimaryButton>
 
-                <PrimaryButton onClick={clearInputs} type="reset">
+                <PrimaryButton
+                    onClick={() => {
+                        setFirstname("");
+                        setLastname("");
+                        setEmail("");
+                        setUsername("");
+                        setPassword("");
+                        setStatus("");
+                    }}
+                    type="reset"
+                >
                     Clear
                 </PrimaryButton>
             </GridContainer>
@@ -154,23 +119,6 @@ const CreateUser: React.FC = () => {
 };
 
 export default CreateUser;
-
-const Header = styled.div`
-    margin-bottom: 10px;
-`;
-
-const H1 = styled.h2`
-    margin: 0;
-    color: var(--secondary-color);
-    font-weight: 900;
-    font-size: 1.5rem;
-`;
-
-const Sub = styled.p`
-    margin: 6px 0 0;
-    color: var(--fourthly-color);
-    font-weight: 700;
-`;
 
 const Article = styled.article`
     padding: 14px;
