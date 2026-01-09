@@ -8,45 +8,51 @@ type Props = {
 };
 
 export const StyledBurger = styled.button<Props>`
-  display: none;
-  z-index: 20;
+  z-index: 60;
   cursor: pointer;
-  width: 2rem;
-  height: 2rem;
 
-  position: absolute;
-  top: 25px;
-  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
 
-  border: none;
-  background: transparent;
+  border: 1px solid rgba(97, 97, 97, 0.2);
+  background: rgba(255, 255, 255, 0.7);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   padding: 0;
 
-  @media (max-width: 768px) {
-    display: flex;
-    justify-content: space-around;
-    flex-flow: column nowrap;
+  @media (min-width: 769px) {
+    display: none;
   }
 
-  div {
-    width: 2rem;
-    height: 0.25rem;
+  .lines {
+    width: 22px;
+    height: 16px;
+    display: grid;
+    gap: 4px;
+  }
+
+  span {
+    height: 3px;
+    border-radius: 999px;
     background-color: ${({ open }) => (open ? "var(--fourthly-color)" : "var(--secondary-color)")};
-    border-radius: 10px;
-    transform-origin: 1px;
     transition: all 0.2s linear;
+    transform-origin: 1px;
+  }
 
-    &:nth-child(1) {
-      transform: ${({ open }) => (open ? "rotate(45deg)" : "rotate(0)")};
-    }
+  span:nth-child(1) {
+    transform: ${({ open }) => (open ? "rotate(45deg) translateY(6px)" : "none")};
+  }
 
-    &:nth-child(2) {
-      transform: ${({ open }) => (open ? "translateX(100%)" : "translateX(0)")};
-      opacity: ${({ open }) => (open ? 0 : 1)};
-    }
+  span:nth-child(2) {
+    opacity: ${({ open }) => (open ? 0 : 1)};
+    transform: ${({ open }) => (open ? "translateX(8px)" : "none")};
+  }
 
-    &:nth-child(3) {
-      transform: ${({ open }) => (open ? "rotate(-45deg)" : "rotate(0)")};
-    }
+  span:nth-child(3) {
+    transform: ${({ open }) => (open ? "rotate(-45deg) translateY(-6px)" : "none")};
   }
 `;
