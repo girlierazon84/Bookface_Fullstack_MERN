@@ -1,7 +1,7 @@
 // frontend/src/utils/api/service/AuthService.ts
 
 import http from "../http";
-import type { AuthUser } from "../../../utils/auth/authStorage";
+import type { AuthUser } from "../../auth/authStorage";
 
 
 export type RegisterPayload = {
@@ -12,13 +12,23 @@ export type RegisterPayload = {
     password: string;
 };
 
-export type LoginPayload = { username: string; password: string };
+export type LoginPayload = {
+    username: string;
+    password: string;
+};
 
-export type AuthResponse = { token: string; user: AuthUser };
+export type AuthResponse = {
+    token: string;
+    user: AuthUser;
+};
 
 const AuthService = {
-    register: (payload: RegisterPayload) => http.post<AuthResponse>("/auth/register", payload),
-    login: (payload: LoginPayload) => http.post<AuthResponse>("/auth/login", payload),
+    register: (payload: RegisterPayload) =>
+        http.post<AuthResponse>("/auth/register", payload),
+
+    login: (payload: LoginPayload) =>
+        http.post<AuthResponse>("/auth/login", payload),
+
     me: () => http.get<AuthUser>("/auth/me")
 };
 
