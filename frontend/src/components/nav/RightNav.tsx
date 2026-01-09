@@ -12,49 +12,24 @@ import Profile from "../Profile";
 import RoutingPath from "../../routes/RoutingPath";
 
 
-// Props definition for RightNav component
+// Right navigation panel component export
 type Props = {
   open: boolean;
-  setOpen: (open: boolean) => void;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-// Right-side navigation component
+// Right navigation panel component export
 const RightNav: React.FC<Props> = ({ open, setOpen }) => {
-  // Get user token from context
+  // Get user token from context to determine logged-in state
   const { token } = useUserContext();
 
-  // Close on Escape
-  React.useEffect(() => {
-    // only attach listener if drawer is open
-    if (!open) return;
-
-    // handle keydown events
-    const onKeyDown = (e: KeyboardEvent) => {
-      // close drawer on Escape
-      if (e.key === "Escape") setOpen(false);
-    };
-
-    // attach and clean up event listener
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, setOpen]);
-
-  // Function to close the drawer
+  // Handlers to close nav and stop propagation
   const close = () => setOpen(false);
+  const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
-    <Panel
-      $open={open}
-      aria-hidden={!open}
-      role="dialog"
-      aria-modal={open ? "true" : undefined}
-      onClick={close} // clicking overlay closes drawer
-    >
-      <Menu
-        id="primary-navigation"
-        $open={open}
-        onClick={(e) => e.stopPropagation()} // prevent overlay-close when clicking inside menu
-      >
+    <Panel $open={open} aria-hidden={!open} onClick={close}>
+      <Menu id="primary-navigation" $open={open} onClick={stop} role="menu">
         <Li>
           <Link to={RoutingPath.homeView} onClick={close}>
             <ListItemIcon>
@@ -66,7 +41,7 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
 
         {token ? (
           <Li>
-            {/* Profile likely uses useNavigate -> must be inside Router (it is now via index.tsx) */}
+            {/* If Profile navigates, it now has Router context + nav closes on route change */}
             <Profile />
           </Li>
         ) : (
@@ -87,9 +62,9 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
 export default RightNav;
 
 
-/**---------------------------------------------------------------
-    styled-components: use $open to avoid passing props to DOM
-------------------------------------------------------------------*/
+/**-------------------------------------------------------------------------
+    styled-components: use transient $open to avoid passing props to DOM
+----------------------------------------------------------------------------*/
 const Panel = styled.aside<{ $open: boolean }>`
   /* desktop: inline */
   @media (min-width: 769px) {
