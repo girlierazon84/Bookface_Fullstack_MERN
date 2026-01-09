@@ -11,9 +11,9 @@ type Props = {
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-// Burger component definition
+// Burger component definition with accessibility features and state management for the navigation menu
 const Burger: React.FC<Props> = ({ open, setOpen }) => {
-    // Toggle the open state of the navigation menu
+    // Toggle function to open/close the navigation menu
     const toggle = () => setOpen((prev) => !prev);
 
     return (
@@ -33,7 +33,6 @@ const Burger: React.FC<Props> = ({ open, setOpen }) => {
                 </div>
             </StyledBurger>
 
-            {/* RightNav can close itself via setOpen (overlay click / link click) */}
             <RightNav open={open} setOpen={setOpen} />
         </>
     );
