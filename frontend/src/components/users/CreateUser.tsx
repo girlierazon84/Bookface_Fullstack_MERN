@@ -145,38 +145,41 @@ const CreateUser: React.FC = () => {
 
 export default CreateUser;
 
-/* styles unchanged */
+/**----------------------
+    Styled Components
+-------------------------*/
 const Article = styled.article`
     padding: 14px;
     border: 1px solid rgba(97, 97, 97, 0.25);
-    border-radius: 14px;
-    background-color: var(--thirdly-color);
+    border-radius: 16px;
+    background-color: white;
 
     label {
         display: grid;
         gap: 6px;
         margin-bottom: 12px;
         color: var(--fourthly-color);
-        font-weight: 800;
+        font-weight: 900;
     }
 `;
 
 const FieldRow = styled.div`
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 10px;
 
-    @media (max-width: 520px) {
-        grid-template-columns: 1fr;
+    @media (min-width: 520px) {
+        grid-template-columns: 1fr 1fr;
     }
 `;
 
 const Input = styled.input`
-    padding: 0.75em 0.9em;
+    height: 46px;
+    padding: 0 12px;
     font-family: "Oxygen - Regular", sans-serif;
-    font-size: 1em;
+    font-size: 1rem;
     width: 100%;
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid rgba(97, 97, 97, 0.25);
     background: white;
     outline: none;
@@ -191,13 +194,17 @@ const GridContainer = styled.div`
     display: grid;
     gap: 10px;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 12px;
+
+    @media (min-width: 520px) {
+        grid-template-columns: 1fr 1fr;
+    }
 `;
 
 const StatusText = styled.p`
     text-align: center;
-    font-weight: 800;
-    min-height: 24px;
+    font-weight: 900;
+    min-height: 22px;
     margin: 10px 0 0;
     color: var(--fourthly-color);
 `;
