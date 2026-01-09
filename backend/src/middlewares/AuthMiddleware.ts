@@ -13,24 +13,29 @@ type JwtPayload = {
 };
 
 export const requireAuth = (req: Request, res: Response, next: NextFunction) => {
-    const auth = req.headers.authorization;
+    const authHeader = req.headers.authorization;
 
-    if (!auth?.startsWith("Bearer ")) {
+    if (!authHeader) {
+        return res.status(StatusCode.UNAUTHORIZED).send({ message: "Missing Authorization header" });
+    }
+
+    // support "Bearer <token>" and "bearer <token>"
+    const [scheme, token] = authHeader.split(" ");
+
+    if (!scheme || scheme.toLowerCase() !== "bearer" || !token) {
         return res.status(StatusCode.UNAUTHORIZED).send({ message: "Missing Bearer token" });
     }
 
-    const token = auth.slice("Bearer ".length).trim();
     const secret = process.env.JWT_SECRET;
-
     if (!secret) {
         Logger.error("JWT_SECRET is not set");
-        return res
-            .status(StatusCode.INTERNAL_SERVER_ERROR)
-            .send({ message: "Server auth misconfiguration" });
+        return res.status(StatusCode.INTERNAL_SERVER_ERROR).send({
+            message: "Server auth misconfiguration"
+        });
     }
 
     try {
-        const payload = jwt.verify(token, secret) as JwtPayload;
+        const payload = jwt.verify(token.trim(), secret) as JwtPayload;
 
         if (!payload?.id) {
             return res.status(StatusCode.UNAUTHORIZED).send({ message: "Invalid token payload" });
