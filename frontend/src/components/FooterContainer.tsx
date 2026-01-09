@@ -1,60 +1,76 @@
 // frontend/src/components/FooterContainer.tsx
 
 import styled from "styled-components";
-import FooterLogo from "../utils/images/Footer_Logo.png";
+import logo from "../utils/images/logo.png";
 import CopyrightIcon from "@mui/icons-material/Copyright";
 
 
 export default function FooterContainer() {
   return (
     <Footer>
-      <InnerContainer>
-        <img src={FooterLogo} alt="Bookface logo" />
-      </InnerContainer>
-
-      <h4>
-        This website is developed by:
-        <br />
-        <u>
-          Girlie Razon
-          <br />
-          Mohammad Haydar
-        </u>
-      </h4>
-
-      <h5>
-        BF <CopyrightIcon fontSize="inherit" /> 2021
-      </h5>
+      <Inner>
+        <img src={logo} alt="Bookface logo" />
+        <Meta>
+          <Creator>
+            Created by <strong>Girlie Razon</strong>
+          </Creator>
+          <Copy>
+            BF <CopyrightIcon fontSize="inherit" /> 2021
+          </Copy>
+        </Meta>
+      </Inner>
     </Footer>
   );
 }
 
 const Footer = styled.footer`
-  display: grid;
-  border-top: 2px solid var(--fifthly-color);
-  box-shadow: 0 0 40px var(--fourthly-color);
-  background-color: var(--primary-color);
-  padding: 1rem 0;
-
-  h4,
-  h5 {
-    color: var(--fourthly-color);
-    text-align: center;
-    margin: 0.5rem 0;
-  }
-
-  h5 {
-    font-size: 1em;
-  }
+  width: 100%;
+  border-top: 1px solid rgba(97, 97, 97, 0.2);
+  background: var(--primary-color);
+  padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
 `;
 
-const InnerContainer = styled.div`
+const Inner = styled.div`
+  width: min(1100px, 92%);
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 12px;
+
+  /* mobile-first: stack */
+  flex-direction: column;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+  }
 
   img {
-    max-width: 60px;
-    padding-top: 10px;
+    width: 52px;
+    height: 52px;
+    object-fit: contain;
+    border-radius: 14px;
   }
+`;
+
+const Meta = styled.div`
+  display: grid;
+  gap: 6px;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    text-align: right;
+  }
+`;
+
+const Creator = styled.div`
+  color: var(--fourthly-color);
+  font-weight: 800;
+`;
+
+const Copy = styled.div`
+  color: var(--fourthly-color);
+  font-weight: 800;
+  opacity: 0.9;
 `;
