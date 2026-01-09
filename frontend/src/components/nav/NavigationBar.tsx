@@ -9,16 +9,15 @@ import RoutingPath from "../../routes/RoutingPath";
 import logo from "../../utils/images/logo.png";
 
 
-// NavigationBar component: top navigation bar with logo, title, and burger menu
+// Navigation bar component export
 const NavigationBar: React.FC = () => {
-  // State to manage burger menu open/close
+  // State to manage burger menu open/close status
   const [open, setOpen] = React.useState(false);
-  // Get current location to detect route changes
+  // Get current location to handle navigation changes
   const location = useLocation();
 
-  // Close mobile drawer on route change
+  // Close the drawer after navigation
   React.useEffect(() => {
-    // Close the burger menu when the route changes
     setOpen(false);
   }, [location.pathname]);
 
@@ -49,6 +48,7 @@ const Nav = styled.nav`
   height: 72px;
   background-color: var(--primary-color);
   border-bottom: 1px solid rgba(97, 97, 97, 0.2);
+
   display: flex;
   align-items: center;
   justify-content: space-between;
