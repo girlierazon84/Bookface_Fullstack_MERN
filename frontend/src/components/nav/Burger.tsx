@@ -5,20 +5,26 @@ import { StyledBurger } from "./Burger.styled";
 import RightNav from "./RightNav";
 
 
+// Props definition for Burger component
 type Props = {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
+// Burger menu component that toggles the right navigation drawer
 const Burger: React.FC<Props> = ({ open, setOpen }) => {
+    // Function to toggle the open state of the navigation menu
+    const toggle = () => setOpen((prev) => !prev);
+
     return (
         <>
             <StyledBurger
                 open={open}
                 type="button"
-                aria-label="Toggle navigation menu"
+                aria-label={open ? "Close navigation menu" : "Open navigation menu"}
                 aria-expanded={open}
-                onClick={() => setOpen((prev) => !prev)}
+                aria-controls="primary-navigation"
+                onClick={toggle}
             >
                 <div className="lines" aria-hidden="true">
                     <span />
@@ -27,7 +33,7 @@ const Burger: React.FC<Props> = ({ open, setOpen }) => {
                 </div>
             </StyledBurger>
 
-            <RightNav open={open} />
+            <RightNav open={open} setOpen={setOpen} />
         </>
     );
 };
