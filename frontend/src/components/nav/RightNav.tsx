@@ -18,44 +18,69 @@ const RightNav: React.FC<Props> = ({ open }) => {
   const { token } = useUserContext();
 
   return (
-    <Ul open={open}>
-      <Li>
-        <Link to={RoutingPath.homeView}>
-          <ListItemIcon>
-            <HomeSharpIcon color="primary" fontSize="medium" />
-          </ListItemIcon>
-          <ListItemText primary="Home" />
-        </Link>
-      </Li>
-
-      {token ? (
+    <Panel $open={open} aria-hidden={!open}>
+      <Menu $open={open}>
         <Li>
-          <Profile />
-        </Li>
-      ) : (
-        <Li>
-          <Link to={RoutingPath.usersLogInView}>
+          <Link to={RoutingPath.homeView}>
             <ListItemIcon>
-              <LoginSharpIcon color="action" fontSize="medium" />
+              <HomeSharpIcon color="primary" fontSize="medium" />
             </ListItemIcon>
-            <ListItemText primary="Log in" />
+            <ListItemText primary="Home" />
           </Link>
         </Li>
-      )}
-    </Ul>
+
+        {token ? (
+          <Li>
+            <Profile />
+          </Li>
+        ) : (
+          <Li>
+            <Link to={RoutingPath.usersLogInView}>
+              <ListItemIcon>
+                <LoginSharpIcon color="action" fontSize="medium" />
+              </ListItemIcon>
+              <ListItemText primary="Log in" />
+            </Link>
+          </Li>
+        )}
+      </Menu>
+    </Panel>
   );
 };
 
 export default RightNav;
 
-const Ul = styled.ul<Props>`
+/** styled-components: use $open to avoid passing props to DOM */
+const Panel = styled.aside<{ $open: boolean }>`
+  /* desktop: do nothing */
+  @media (min-width: 769px) {
+    position: static;
+  }
+
+  /* mobile drawer overlay */
+  @media (max-width: 768px) {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+
+    pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
+    background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.28 : 0)});
+
+    display: flex;
+    justify-content: flex-end;
+    transition: background 0.25s ease;
+  }
+`;
+
+const Menu = styled.ul<{ $open: boolean }>`
   list-style: none;
+  margin: 0;
+  padding: 0;
+
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
   gap: 12px;
-  margin: 0;
-  padding: 0;
 
   a {
     display: flex;
@@ -63,29 +88,28 @@ const Ul = styled.ul<Props>`
     gap: 6px;
     color: var(--fourthly-color);
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 900;
+    padding: 8px 10px;
+    border-radius: 12px;
   }
 
   a:hover {
-    border-bottom: 3px solid var(--secondary-color);
+    background: rgba(255, 255, 255, 0.6);
   }
 
   @media (max-width: 768px) {
-    flex-flow: column nowrap;
-    background-color: var(--fifthly-color);
-    position: fixed;
-    top: 0;
-    right: 0;
-    height: 100vh;
-    width: min(80vw, 320px);
-    padding: 4.5rem 1.5rem 1.5rem;
-    transform: ${({ open }) => (open ? "translateX(0)" : "translateX(100%)")};
-    transition: transform 0.25s ease-in-out;
+    height: 100%;
+    width: min(82vw, 340px);
+    background: white;
+    border-left: 1px solid rgba(97, 97, 97, 0.2);
 
-    a:hover {
-      border-bottom: none;
-      text-decoration: underline;
-    }
+    padding: 90px 14px 14px;
+    display: grid;
+    gap: 8px;
+    align-content: start;
+
+    transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
+    transition: transform 0.25s ease;
   }
 `;
 
