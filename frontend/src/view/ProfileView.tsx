@@ -6,12 +6,25 @@ import styled from "styled-components";
 
 import { useUserContext } from "../utils/global/provider/UserProvider";
 import RoutingPath from "../routes/RoutingPath";
-import PostService, { type PostDTO } from "../utils/api/service/PostService";
+import PostService, {
+  type PostDTO,
+  normalizePostsList
+} from "../utils/api/service/PostService";
 import CreateNewPost from "../components/posts/CreateNewPost";
 
 
 // ✅ local guard to handle "string | AuthUser" situations safely
-const isAuthUser = (value: unknown): value is { _id: string; username: string; firstname: string; lastname: string; email?: string; avatarUrl?: string; bio?: string } => {
+const isAuthUser = (
+  value: unknown
+): value is {
+  _id: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email?: string;
+  avatarUrl?: string;
+  bio?: string;
+} => {
   return !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
 };
 
@@ -29,7 +42,13 @@ const ProfileView: React.FC = () => {
     setLoading(true);
     try {
       const res = await PostService.getFeed();
-      setPosts(res.data.filter((p) => p.author?._id === me._id));
+
+      const allPosts = normalizePostsList(res.data);
+      const myPosts = allPosts.filter((p: PostDTO) => p.author?._id === me._id);
+
+      setPosts(myPosts);
+    } catch {
+      setPosts([]);
     } finally {
       setLoading(false);
     }
@@ -95,7 +114,10 @@ const ProfileView: React.FC = () => {
                 {posts.map((p) => (
                   <PostCard key={p._id}>
                     <PostTop>
-                      <PostAvatar src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Author" />
+                      <PostAvatar
+                        src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
+                        alt="Author"
+                      />
                       <div>
                         <PostName>{p.author?.username ?? "Unknown"}</PostName>
                         <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
