@@ -9,7 +9,7 @@ import { UserProvider } from "./utils/global/provider/UserProvider";
 import AuthBootstrap from "./utils/auth/AuthBootstrap";
 
 
-// Main Application Component
+// Main application component export
 function App() {
     return (
         <UserProvider>
@@ -29,9 +29,9 @@ function App() {
 export default App;
 
 
-/**----------------------
-    Styled Components
--------------------------*/
+/**-------------------------------------
+    Styled Components for App layout
+----------------------------------------*/
 const AppShell = styled.div`
     min-height: 100vh;
     display: grid;
@@ -40,6 +40,5 @@ const AppShell = styled.div`
 `;
 
 const Main = styled.main`
-    /* Mobile-app spacing */
     padding-bottom: env(safe-area-inset-bottom);
 `;
