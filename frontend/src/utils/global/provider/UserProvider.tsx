@@ -1,7 +1,15 @@
 // frontend/src/utils/global/provider/UserProvider.tsx
 
-import React, { createContext, useContext, useMemo, useState } from "react";
-import { authStorage, type AuthUser } from "../../auth/authStorage";
+import React, {
+    createContext,
+    useContext,
+    useMemo,
+    useState
+} from "react";
+import {
+    authStorage,
+    type AuthUser
+} from "../../auth/authStorage";
 
 
 export type AuthContextValue = {
@@ -34,7 +42,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUser(newUser);
             },
             logout: () => {
-                authStorage.clear(); // ✅ now valid
+                authStorage.clearAuth(); // ✅ correct method name
                 setToken(null);
                 setUser(null);
             }
