@@ -15,18 +15,16 @@ const Burger: React.FC<Props> = ({ open, setOpen }) => {
         <>
             <StyledBurger
                 open={open}
-                role="button"
-                tabIndex={0}
+                type="button"
                 aria-label="Toggle navigation menu"
                 aria-expanded={open}
                 onClick={() => setOpen((prev) => !prev)}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") setOpen((prev) => !prev);
-                }}
             >
-                <div />
-                <div />
-                <div />
+                <div className="lines" aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                </div>
             </StyledBurger>
 
             <RightNav open={open} />
