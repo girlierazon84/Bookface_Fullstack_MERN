@@ -4,12 +4,12 @@ import { useState } from "react";
 import styled from "styled-components";
 import { JsonToTable } from "react-json-to-table";
 
-import type { PostDataObject } from "../../utils/interface/PostInterface";
 import PostService from "../../utils/api/service/PostService";
+import type { PostDTO } from "../../utils/api/service/PostService";
 
 
 const GetAllPosts: React.FC = () => {
-  const [allPostsInDatabase, setAllPostsInDatabase] = useState<PostDataObject[]>([]);
+  const [allPostsInDatabase, setAllPostsInDatabase] = useState<PostDTO[]>([]);
 
   const getPosts = async () => {
     try {
@@ -40,6 +40,7 @@ const GetAllPosts: React.FC = () => {
 
 export default GetAllPosts;
 
+/* styles unchanged */
 const Article = styled.article`
   padding: 1em;
   border: 1px solid var(--thirdly-color);
