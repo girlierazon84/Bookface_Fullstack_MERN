@@ -6,6 +6,7 @@ import styled from "styled-components";
 import PostService, { normalizeCreatedPost } from "../../utils/api/service/PostService";
 import { useUserContext } from "../../utils/global/provider/UserProvider";
 import { PrimaryButton } from "../CustomButtonComponent";
+import Avatar from "../ui/Avatar";
 
 
 type Props = {
@@ -27,23 +28,16 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
       setStatus("Write something first 🙂");
       return;
     }
-
     if (submitting) return;
 
     setSubmitting(true);
     try {
       const res = await PostService.createPost({ content: trimmed });
-
-      // ✅ handles wrapped responses safely (PostDTO | {post} | {data} etc)
       const created = normalizeCreatedPost(res.data);
-      if (!created) {
-        console.warn("Unexpected create post response shape:", res.data);
-      }
+      if (!created) console.warn("Unexpected create post response shape:", res.data);
 
       setContent("");
       setStatus("Posted ✅");
-
-      // ✅ refresh feed after successful creation
       await onCreated?.();
     } catch (e) {
       console.warn("Failed to create post:", e);
@@ -56,8 +50,11 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
   return (
     <Composer>
       <Top>
-        <Avatar src={user?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Me" />
-        <Name>{user?.username ?? "Me"}</Name>
+        <Avatar src={user?.avatarUrl} name={user?.username} alt="Me" size={40} />
+        <TopText>
+          <Name>{user?.username ?? "Me"}</Name>
+          <Hint>Share something with your friends</Hint>
+        </TopText>
       </Top>
 
       <TextArea
@@ -67,13 +64,12 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
         disabled={submitting}
       />
 
-      <Row>
+      <BottomRow>
+        <Status aria-live="polite">{status}</Status>
         <PrimaryButton onClick={submit} disabled={submitting}>
           {submitting ? "Posting..." : "Post"}
         </PrimaryButton>
-      </Row>
-
-      <Status aria-live="polite">{status}</Status>
+      </BottomRow>
     </Composer>
   );
 };
@@ -91,12 +87,9 @@ const Top = styled.div`
   align-items: center;
 `;
 
-const Avatar = styled.img`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--thirdly-color);
-  object-fit: cover;
+const TopText = styled.div`
+  display: grid;
+  gap: 2px;
 `;
 
 const Name = styled.div`
@@ -104,15 +97,22 @@ const Name = styled.div`
   color: var(--secondary-color);
 `;
 
+const Hint = styled.div`
+  color: var(--fourthly-color);
+  font-weight: 700;
+  font-size: 0.9rem;
+`;
+
 const TextArea = styled.textarea`
   width: 100%;
   min-height: 110px;
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid rgba(97, 97, 97, 0.25);
   padding: 12px;
   font-size: 1rem;
   outline: none;
   resize: vertical;
+  background: #fff;
 
   &:focus {
     border-color: var(--secondary-color);
@@ -120,18 +120,24 @@ const TextArea = styled.textarea`
   }
 
   &:disabled {
-    opacity: 0.8;
+    opacity: 0.85;
     cursor: not-allowed;
   }
 `;
 
-const Row = styled.div`
-  display: flex;
-  justify-content: flex-end;
+const BottomRow = styled.div`
+  display: grid;
+  gap: 10px;
+
+  /* mobile-first: button full width, status above */
+  @media (min-width: 640px) {
+    grid-template-columns: 1fr 160px;
+    align-items: center;
+  }
 `;
 
 const Status = styled.div`
-  min-height: 22px;
+  min-height: 18px;
   font-weight: 800;
   color: var(--fourthly-color);
 `;
