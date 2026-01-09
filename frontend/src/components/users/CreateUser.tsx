@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import styled from "styled-components";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import AuthService from "../../utils/api/service/AuthService";
 import { PrimaryButton } from "../CustomButtonComponent";
@@ -139,11 +139,6 @@ const CreateUser: React.FC = () => {
                     Clear
                 </PrimaryButton>
             </GridContainer>
-
-            <H4>
-                Already have an account?{" "}
-                <LinkStyled to={RoutingPath.usersLogInView}>Log in</LinkStyled>
-            </H4>
         </>
     );
 };
@@ -205,21 +200,4 @@ const StatusText = styled.p`
     min-height: 24px;
     margin: 10px 0 0;
     color: var(--fourthly-color);
-`;
-
-const H4 = styled.p`
-    color: var(--fourthly-color);
-    font-weight: 800;
-    text-align: center;
-    margin-top: 14px;
-`;
-
-const LinkStyled = styled(Link)`
-    color: var(--secondary-color);
-    font-weight: 900;
-    text-decoration: none;
-
-    &:hover {
-        text-decoration: underline;
-    }
 `;
