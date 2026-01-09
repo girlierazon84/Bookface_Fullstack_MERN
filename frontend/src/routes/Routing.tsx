@@ -26,7 +26,12 @@ const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) =
 
 export const Routing: React.FC<RoutingProps> = ({ children }) => {
     return (
-        <BrowserRouter>
+        <BrowserRouter
+            future={{
+                v7_startTransition: true,
+                v7_relativeSplatPath: true
+            }}
+        >
             {children}
             <Routes>
                 {/* Public */}
@@ -67,7 +72,7 @@ export const Routing: React.FC<RoutingProps> = ({ children }) => {
                     }
                 />
 
-                {/* Admin/misc (protect if you want) */}
+                {/* Admin/misc */}
                 <Route path={RoutingPath.adminView} element={<AdminView />} />
                 <Route path={RoutingPath.apiAliveView} element={<Alive />} />
 
