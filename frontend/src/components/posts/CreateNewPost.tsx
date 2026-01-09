@@ -3,13 +3,13 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 
-import PostService from "../../utils/api/service/PostService";
+import PostService, { normalizeCreatedPost } from "../../utils/api/service/PostService";
 import { useUserContext } from "../../utils/global/provider/UserProvider";
 import { PrimaryButton } from "../CustomButtonComponent";
 
 
 type Props = {
-  onCreated?: () => void;
+  onCreated?: () => void | Promise<void>;
 };
 
 const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
@@ -17,21 +17,39 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
 
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<string>("");
+  const [submitting, setSubmitting] = useState(false);
 
   const submit = async () => {
     setStatus("");
-    if (!content.trim()) {
+
+    const trimmed = content.trim();
+    if (!trimmed) {
       setStatus("Write something first 🙂");
       return;
     }
 
+    if (submitting) return;
+
+    setSubmitting(true);
     try {
-      await PostService.createPost({ content: content.trim() });
+      const res = await PostService.createPost({ content: trimmed });
+
+      // ✅ handles wrapped responses safely (PostDTO | {post} | {data} etc)
+      const created = normalizeCreatedPost(res.data);
+      if (!created) {
+        console.warn("Unexpected create post response shape:", res.data);
+      }
+
       setContent("");
       setStatus("Posted ✅");
-      onCreated?.();
-    } catch {
+
+      // ✅ refresh feed after successful creation
+      await onCreated?.();
+    } catch (e) {
+      console.warn("Failed to create post:", e);
       setStatus("Failed to post ❌");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -39,20 +57,23 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
     <Composer>
       <Top>
         <Avatar src={user?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Me" />
-        <Name>{user?.username}</Name>
+        <Name>{user?.username ?? "Me"}</Name>
       </Top>
 
       <TextArea
         placeholder="What's on your mind?"
         value={content}
         onChange={(e) => setContent(e.target.value)}
+        disabled={submitting}
       />
 
       <Row>
-        <PrimaryButton onClick={submit}>Post</PrimaryButton>
+        <PrimaryButton onClick={submit} disabled={submitting}>
+          {submitting ? "Posting..." : "Post"}
+        </PrimaryButton>
       </Row>
 
-      <Status>{status}</Status>
+      <Status aria-live="polite">{status}</Status>
     </Composer>
   );
 };
@@ -96,6 +117,11 @@ const TextArea = styled.textarea`
   &:focus {
     border-color: var(--secondary-color);
     box-shadow: 0 0 0 3px rgba(0, 0, 153, 0.12);
+  }
+
+  &:disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
   }
 `;
 
