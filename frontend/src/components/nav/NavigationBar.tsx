@@ -2,15 +2,25 @@
 
 import React from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import Burger from "./Burger";
 import RoutingPath from "../../routes/RoutingPath";
 import logo from "../../utils/images/logo.png";
 
 
+// NavigationBar component: top navigation bar with logo, title, and burger menu
 const NavigationBar: React.FC = () => {
+  // State to manage burger menu open/close
   const [open, setOpen] = React.useState(false);
+  // Get current location to detect route changes
+  const location = useLocation();
+
+  // Close mobile drawer on route change
+  React.useEffect(() => {
+    // Close the burger menu when the route changes
+    setOpen(false);
+  }, [location.pathname]);
 
   return (
     <Nav>
@@ -29,6 +39,7 @@ const NavigationBar: React.FC = () => {
 };
 
 export default NavigationBar;
+
 
 /**----------------------
     Styled Components
