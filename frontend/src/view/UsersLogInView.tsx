@@ -59,7 +59,7 @@ const UsersLogInView: React.FC = () => {
 
             <Input
               type="text"
-              placeholder="Username"
+              placeholder="Username or email"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && login()}
