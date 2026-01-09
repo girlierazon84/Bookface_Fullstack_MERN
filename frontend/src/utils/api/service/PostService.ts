@@ -27,73 +27,62 @@ export type CreatePostPayload = {
 
 export type UpdatePostPayload = Partial<CreatePostPayload>;
 
-// ✅ backend sometimes wraps arrays/objects — normalize it once
-type PostsApiResponse =
+/**
+ * API can return:
+ * - PostDTO[]
+ * - { posts: PostDTO[] }
+ * - { data: PostDTO[] }   (common wrapper)
+ * - { items/results: PostDTO[] } (sometimes)
+ */
+export type PostsApiResponse =
     | PostDTO[]
     | { posts: PostDTO[] }
     | { data: PostDTO[] }
-    | { data: { posts: PostDTO[] } }
-    | { feed: PostDTO[] }
+    | { items: PostDTO[] }
     | { results: PostDTO[] };
 
-export const normalizePostsArray = (payload: unknown): PostDTO[] => {
-    if (Array.isArray(payload)) return payload as PostDTO[];
+export type CreatePostApiResponse =
+    | PostDTO
+    | { post: PostDTO }
+    | { data: PostDTO };
 
-    if (payload && typeof payload === "object") {
-        const obj: any = payload;
+/** Normalize ANY posts list response into PostDTO[] */
+export const normalizePostsList = (input: PostsApiResponse | unknown): PostDTO[] => {
+    if (Array.isArray(input)) return input;
 
-        if (Array.isArray(obj.posts)) return obj.posts;
-        if (Array.isArray(obj.data)) return obj.data;
-        if (obj.data && Array.isArray(obj.data.posts)) return obj.data.posts;
-        if (Array.isArray(obj.feed)) return obj.feed;
-        if (Array.isArray(obj.results)) return obj.results;
+    if (input && typeof input === "object") {
+        const maybe = (input as any).posts ?? (input as any).data ?? (input as any).items ?? (input as any).results;
+        if (Array.isArray(maybe)) return maybe;
     }
 
     return [];
 };
 
-type CreatePostResponse = PostDTO | { post: PostDTO } | { data: PostDTO } | { data: { post: PostDTO } };
+/** Normalize create-post response into PostDTO | null */
+export const normalizeCreatedPost = (input: CreatePostApiResponse | unknown): PostDTO | null => {
+    if (!input || typeof input !== "object") return null;
 
-export const normalizeCreatedPost = (payload: unknown): PostDTO | null => {
-    if (payload && typeof payload === "object") {
-        const obj: any = payload;
+    // direct PostDTO shape
+    if ("_id" in (input as any) && "content" in (input as any)) return input as PostDTO;
 
-        // raw PostDTO
-        if (obj._id && obj.content) return obj as PostDTO;
+    const maybe = (input as any).post ?? (input as any).data;
+    if (maybe && typeof maybe === "object" && "_id" in maybe && "content" in maybe) return maybe as PostDTO;
 
-        if (obj.post && obj.post._id) return obj.post as PostDTO;
-        if (obj.data && obj.data._id) return obj.data as PostDTO;
-        if (obj.data?.post && obj.data.post._id) return obj.data.post as PostDTO;
-    }
     return null;
 };
 
 const PostService = {
-    // Facebook-like
+    // Feed
     getFeed: () => http.get<PostsApiResponse>("/feed"),
 
-    // ✅ use this in UI (always returns PostDTO[])
-    getFeedPosts: async (): Promise<PostDTO[]> => {
-        const res = await http.get<PostsApiResponse>("/feed");
-        return normalizePostsArray(res.data);
-    },
+    // Create
+    createPost: (payload: CreatePostPayload) => http.post<CreatePostApiResponse>("/posts", payload),
 
-    createPost: (payload: CreatePostPayload) => http.post<CreatePostResponse>("/posts", payload),
-
-    // admin/dev endpoints
+    // Admin/dev endpoints
     getAllPosts: () => http.get<PostsApiResponse>("/posts"),
-
-    // ✅ safe helper if you ever need it
-    getAllPostsList: async (): Promise<PostDTO[]> => {
-        const res = await http.get<PostsApiResponse>("/posts");
-        return normalizePostsArray(res.data);
-    },
-
     getPostById: (id: string) => http.get<PostDTO>(`/posts/${id}`),
-
     updatePost: (id: string, payload: UpdatePostPayload) => http.put<PostDTO>(`/posts/${id}`, payload),
-
-    deletePostById: (id: string) => http.delete<{ message: string }>(`/posts/${id}`),
+    deletePostById: (id: string) => http.delete<{ message: string }>(`/posts/${id}`)
 };
 
 export default PostService;
