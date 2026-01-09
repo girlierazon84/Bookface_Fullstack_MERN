@@ -2,13 +2,12 @@
 
 import styled from "styled-components";
 
-
-// Props for the styled component
+// Props for the StyledBurger component to manage its open state styling
 type Props = {
   $open: boolean;
 };
 
-// Styled component for the burger menu button with open/close animation
+// Styled component for the burger menu button with responsive design and animated lines
 export const StyledBurger = styled.button<Props>`
   z-index: 60;
   cursor: pointer;
@@ -40,8 +39,7 @@ export const StyledBurger = styled.button<Props>`
   span {
     height: 3px;
     border-radius: 999px;
-    background-color: ${({ $open }) =>
-      $open ? "var(--fourthly-color)" : "var(--secondary-color)"};
+    background-color: ${({ $open }) => ($open ? "var(--fourthly-color)" : "var(--secondary-color)")};
     transition: all 0.2s linear;
     transform-origin: 1px;
   }
