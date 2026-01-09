@@ -15,10 +15,12 @@ import CommentRoutes from "./routes/CommentRoutes";
 import FriendRoutes from "./routes/FriendRoutes";
 
 import { notFound } from "./middlewares/ErrorMiddleware";
+import Logger from "./utils/Logger";
 
 
 const app = express();
 
+// Middlewares first
 ApplyMiddlewares(app);
 
 // Routes
@@ -34,9 +36,16 @@ FriendRoutes.routes(app);
 app.use(notFound);
 
 // Start server only after DB is connected
-(async () => {
-    await Configuration.connectToDatabase();
-    Configuration.connectToPort(app);
-})();
+const start = async () => {
+    try {
+        await Configuration.connectToDatabase();
+        Configuration.connectToPort(app);
+    } catch (err) {
+        Logger.error("Server startup failed", err);
+        process.exit(1);
+    }
+};
+
+void start();
 
 export default app;
