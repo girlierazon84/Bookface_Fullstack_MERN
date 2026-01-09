@@ -17,11 +17,15 @@ const UsersLogInView: React.FC = () => {
   const [userName, setUserName] = useState("");
   const [passWord, setPassWord] = useState("");
   const [loginText, setLoginText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (token) return <Navigate to={RoutingPath.homeView} replace />;
 
   const login = async () => {
+    if (isSubmitting) return;
+
     setLoginText("");
+    setIsSubmitting(true);
 
     try {
       const res = await AuthService.login({
@@ -31,8 +35,13 @@ const UsersLogInView: React.FC = () => {
 
       setAuth(res.data.token, res.data.user);
       navigate(RoutingPath.homeView, { replace: true });
-    } catch {
-      setLoginText("Wrong username or password");
+    } catch (e: any) {
+      const msg =
+        e?.response?.data?.message ||
+        "Wrong username or password";
+      setLoginText(msg);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -53,21 +62,29 @@ const UsersLogInView: React.FC = () => {
               placeholder="Username"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && login()}
+              autoComplete="username"
             />
             <Input
               type="password"
               placeholder="Password"
               value={passWord}
               onChange={(e) => setPassWord(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && login()}
+              autoComplete="current-password"
             />
 
             <ErrorText>{loginText}</ErrorText>
 
-            <PrimaryButton onClick={login}>Log In</PrimaryButton>
+            <PrimaryButton onClick={login}>
+              {isSubmitting ? "Logging in..." : "Log In"}
+            </PrimaryButton>
 
             <Divider />
 
-            <SignUpLink to={RoutingPath.signUpFormView}>Create new account</SignUpLink>
+            <SignUpLink to={RoutingPath.signUpFormView}>
+              Create new account
+            </SignUpLink>
           </Card>
         </Right>
       </Shell>
@@ -77,7 +94,7 @@ const UsersLogInView: React.FC = () => {
 
 export default UsersLogInView;
 
-/* styles unchanged from your version */
+/* styles unchanged */
 const Page = styled.main`
   background: var(--primary-color);
   min-height: calc(100vh - 85px);
