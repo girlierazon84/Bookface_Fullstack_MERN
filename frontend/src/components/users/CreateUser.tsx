@@ -33,9 +33,23 @@ const CreateUser: React.FC = () => {
         return null;
     };
 
+    const clear = () => {
+        setFirstname("");
+        setLastname("");
+        setEmail("");
+        setUsername("");
+        setPassword("");
+        setStatus("");
+    };
+
     const register = async () => {
+        if (isSubmitting) return;
+
         const err = validate();
-        if (err) return setStatus(`❌ ${err}`);
+        if (err) {
+            setStatus(`❌ ${err}`);
+            return;
+        }
 
         setIsSubmitting(true);
         setStatus("");
@@ -51,20 +65,15 @@ const CreateUser: React.FC = () => {
 
             setAuth(res.data.token, res.data.user);
             navigate(RoutingPath.homeView, { replace: true });
-        } catch {
-            setStatus("❌ Registration failed. Please try again.");
+        } catch (e: any) {
+            const msg =
+                e?.response?.data?.message ||
+                e?.message ||
+                "Registration failed. Please try again.";
+            setStatus(`❌ ${msg}`);
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-    const clear = () => {
-        setFirstname("");
-        setLastname("");
-        setEmail("");
-        setUsername("");
-        setPassword("");
-        setStatus("");
     };
 
     return (
@@ -73,28 +82,49 @@ const CreateUser: React.FC = () => {
                 <FieldRow>
                     <label>
                         First name
-                        <Input value={firstname} onChange={(e) => setFirstname(e.target.value)} autoComplete="given-name" />
+                        <Input
+                            value={firstname}
+                            onChange={(e) => setFirstname(e.target.value)}
+                            autoComplete="given-name"
+                        />
                     </label>
 
                     <label>
                         Last name
-                        <Input value={lastname} onChange={(e) => setLastname(e.target.value)} autoComplete="family-name" />
+                        <Input
+                            value={lastname}
+                            onChange={(e) => setLastname(e.target.value)}
+                            autoComplete="family-name"
+                        />
                     </label>
                 </FieldRow>
 
                 <label>
                     Email
-                    <Input value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+                    <Input
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                    />
                 </label>
 
                 <label>
                     Username
-                    <Input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" />
+                    <Input
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        autoComplete="username"
+                    />
                 </label>
 
                 <label>
                     Password
-                    <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
+                    <Input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        autoComplete="new-password"
+                    />
                 </label>
             </Article>
 
@@ -111,7 +141,8 @@ const CreateUser: React.FC = () => {
             </GridContainer>
 
             <H4>
-                Already have an account? <LinkStyled to={RoutingPath.usersLogInView}>Log in</LinkStyled>
+                Already have an account?{" "}
+                <LinkStyled to={RoutingPath.usersLogInView}>Log in</LinkStyled>
             </H4>
         </>
     );
