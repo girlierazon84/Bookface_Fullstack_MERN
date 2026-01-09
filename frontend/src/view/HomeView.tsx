@@ -6,7 +6,7 @@ import { Link, Navigate } from "react-router-dom";
 
 import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../utils/global/provider/UserProvider";
-import PostService, { type PostDTO } from "../utils/api/service/PostService";
+import PostService, { type PostDTO, normalizePostsList } from "../utils/api/service/PostService";
 import CreateNewPost from "../components/posts/CreateNewPost";
 
 
@@ -24,7 +24,10 @@ const HomeView: React.FC = () => {
   const loadFeed = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await PostService.getFeedPosts(); // ✅ always PostDTO[]
+      // ✅ supports both: PostDTO[] and { posts: PostDTO[] }
+      const res = await PostService.getFeed();
+      const list = normalizePostsList(res.data);
+
       setPosts(list);
     } catch (e) {
       console.warn("Failed to load feed", e);
@@ -39,10 +42,10 @@ const HomeView: React.FC = () => {
     loadFeed();
   }, [token, loadFeed]);
 
+  // ✅ redirect AFTER hooks
   if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
   if (!me) return <Navigate to={RoutingPath.usersLogInView} replace />;
 
-  // ...render unchanged (posts.map is now safe)
   return (
     <Page>
       <Shell>
@@ -83,12 +86,26 @@ const HomeView: React.FC = () => {
             <FeedList>
               {posts.map((p) => (
                 <PostCard key={p._id}>
-                  {/* ...unchanged */}
+                  <PostTop>
+                    <PostAvatar
+                      src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
+                      alt="Author"
+                    />
+                    <div>
+                      <PostName>{p.author?.username ?? "Unknown"}</PostName>
+                      <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
+                    </div>
+                  </PostTop>
+
                   <PostContent>{p.content}</PostContent>
+
+                  {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
                 </PostCard>
               ))}
 
-              {!loading && posts.length === 0 ? <EmptyState>No posts yet. Create the first one ✨</EmptyState> : null}
+              {!loading && posts.length === 0 ? (
+                <EmptyState>No posts yet. Create the first one ✨</EmptyState>
+              ) : null}
             </FeedList>
           </Card>
         </CenterColumn>
@@ -258,11 +275,42 @@ const PostCard = styled.div`
   padding: 12px;
 `;
 
+const PostTop = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+`;
+
+const PostAvatar = styled.img`
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--thirdly-color);
+  object-fit: cover;
+`;
+
+const PostName = styled.div`
+  font-weight: 900;
+  color: var(--secondary-color);
+`;
+
+const PostTime = styled.div`
+  font-size: 0.85rem;
+  color: var(--fourthly-color);
+`;
+
 const PostContent = styled.p`
   margin: 10px 0 0;
   color: var(--fourthly-color);
   line-height: 1.4;
   white-space: pre-wrap;
+`;
+
+const PostImage = styled.img`
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(97, 97, 97, 0.15);
 `;
 
 const RightTitle = styled.h3`
