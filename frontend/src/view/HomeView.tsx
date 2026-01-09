@@ -29,16 +29,17 @@ const HomeView: React.FC = () => {
   const loadFeed = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await FeedService.getFeed();
-      setPosts(res.data);
-    } catch {
-      setPosts([]); // avoid infinite retries; show empty state
+      const nextPosts = await FeedService.getFeedPosts();
+      setPosts(nextPosts);
+    } catch (e) {
+      // optional: console for debugging bad payloads / auth issues
+      console.warn("Failed to load feed", e);
+      setPosts([]);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // ✅ Fetch feed once after login/token becomes available
   useEffect(() => {
     if (!token) return;
     loadFeed();
@@ -58,10 +59,7 @@ const HomeView: React.FC = () => {
           </Brand>
 
           <UserCard>
-            <Avatar
-              src={me.avatarUrl || "https://thispersondoesnotexist.com/image"}
-              alt="Avatar"
-            />
+            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Avatar" />
             <div>
               <Name>{me.username}</Name>
               <MiniLinks>
