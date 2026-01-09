@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 import Burger from "./Burger";
 import RoutingPath from "../../routes/RoutingPath";
-import BookfaceLogo from "../../utils/images/Bookface_circle_logo.png";
+import logo from "../../utils/images/logo.png";
 
 
 const NavigationBar: React.FC = () => {
@@ -16,8 +16,9 @@ const NavigationBar: React.FC = () => {
     <Nav>
       <Left>
         <Link to={RoutingPath.homeView} aria-label="Go to home">
-          <img className="bookface__logo" src={BookfaceLogo} alt="Bookface Logo" />
+          <img className="bookface__logo" src={logo} alt="Bookface Logo" />
         </Link>
+        <Title>Bookface</Title>
       </Left>
 
       <Right>
@@ -29,27 +30,47 @@ const NavigationBar: React.FC = () => {
 
 export default NavigationBar;
 
+/**----------------------
+    Styled Components
+-------------------------*/
 const Nav = styled.nav`
   width: 100%;
-  height: 85px;
+  height: 72px;
   background-color: var(--primary-color);
-  border-bottom: 2px solid var(--fifthly-color);
+  border-bottom: 1px solid rgba(97, 97, 97, 0.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 10px 14px;
-  position: relative;
+
+  position: sticky;
+  top: 0;
+  z-index: 50;
 `;
 
 const Left = styled.div`
   display: flex;
   align-items: center;
+  gap: 10px;
 
   .bookface__logo {
-    width: 4em;
-    border: 1px solid var(--fifthly-color);
-    border-radius: 50px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgba(97, 97, 97, 0.2);
+    border-radius: 14px;
     display: block;
+    background: white;
+    object-fit: cover;
+  }
+`;
+
+const Title = styled.div`
+  font-weight: 900;
+  color: var(--secondary-color);
+  font-size: 1.1rem;
+
+  @media (max-width: 520px) {
+    display: none;
   }
 `;
 
