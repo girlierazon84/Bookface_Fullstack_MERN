@@ -1,7 +1,7 @@
 // frontend/src/routes/Routing.tsx
 
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import RoutingPath from "./RoutingPath";
 
 import UsersLogInView from "../view/UsersLogInView";
@@ -16,70 +16,63 @@ import SettingsView from "../view/SettingsView";
 import { useUserContext } from "../utils/global/provider/UserProvider";
 
 
-type RoutingProps = { children?: React.ReactNode };
-
+// Component to protect routes that require authentication
 const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+    // Check if the user is authenticated
     const { token } = useUserContext();
     if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
     return children;
 };
 
-export const Routing: React.FC<RoutingProps> = ({ children }) => {
+// Main routing component
+export const Routing: React.FC = () => {
     return (
-        <BrowserRouter
-            future={{
-                v7_startTransition: true,
-                v7_relativeSplatPath: true
-            }}
-        >
-            {children}
-            <Routes>
-                {/* Public */}
-                <Route path={RoutingPath.usersLogInView} element={<UsersLogInView />} />
-                <Route path={RoutingPath.signUpFormView} element={<SignUpFormView />} />
+        <Routes>
+            {/* Public */}
+            <Route path={RoutingPath.usersLogInView} element={<UsersLogInView />} />
+            <Route path={RoutingPath.signUpFormView} element={<SignUpFormView />} />
 
-                {/* Protected */}
-                <Route
-                    path={RoutingPath.homeView}
-                    element={
-                        <RequireAuth>
-                            <HomeView />
-                        </RequireAuth>
-                    }
-                />
-                <Route
-                    path={RoutingPath.profileView}
-                    element={
-                        <RequireAuth>
-                            <ProfileView />
-                        </RequireAuth>
-                    }
-                />
-                <Route
-                    path={RoutingPath.createPostView}
-                    element={
-                        <RequireAuth>
-                            <CreatePostView />
-                        </RequireAuth>
-                    }
-                />
-                <Route
-                    path={RoutingPath.settingsView}
-                    element={
-                        <RequireAuth>
-                            <SettingsView />
-                        </RequireAuth>
-                    }
-                />
+            {/* Protected */}
+            <Route
+                path={RoutingPath.homeView}
+                element={
+                    <RequireAuth>
+                        <HomeView />
+                    </RequireAuth>
+                }
+            />
+            <Route
+                path={RoutingPath.profileView}
+                element={
+                    <RequireAuth>
+                        <ProfileView />
+                    </RequireAuth>
+                }
+            />
+            <Route
+                path={RoutingPath.createPostView}
+                element={
+                    <RequireAuth>
+                        <CreatePostView />
+                    </RequireAuth>
+                }
+            />
+            <Route
+                path={RoutingPath.settingsView}
+                element={
+                    <RequireAuth>
+                        <SettingsView />
+                    </RequireAuth>
+                }
+            />
 
-                {/* Admin/misc */}
-                <Route path={RoutingPath.adminView} element={<AdminView />} />
-                <Route path={RoutingPath.apiAliveView} element={<Alive />} />
+            {/* Admin/misc */}
+            <Route path={RoutingPath.adminView} element={<AdminView />} />
+            <Route path={RoutingPath.apiAliveView} element={<Alive />} />
 
-                {/* 404 */}
-                <Route path={RoutingPath.pageNotFoundView} element={<PageNotFoundView />} />
-                <Route path={RoutingPath.wildCardView} element={<Navigate to={RoutingPath.pageNotFoundView} replace />} />
-            </Routes>
-        </BrowserRouter>
+            {/* 404 */}
+            <Route path={RoutingPath.pageNotFoundView} element={<PageNotFoundView />} />
+            <Route path={RoutingPath.wildCardView} element={<Navigate to={RoutingPath.pageNotFoundView} replace />} />
+        </Routes>
     );
 };
