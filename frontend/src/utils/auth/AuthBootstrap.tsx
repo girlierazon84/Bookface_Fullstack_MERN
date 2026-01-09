@@ -1,52 +1,62 @@
 // frontend/src/utils/auth/AuthBootstrap.tsx
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import AuthService from "../api/service/AuthService";
 import { useUserContext } from "../global/provider/UserProvider";
 
 
-type Props = {
-    children: React.ReactNode;
-};
+const AuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { token, user, setAuth, logout } = useUserContext();
+    const [ready, setReady] = useState(false);
 
-const AuthBootstrap: React.FC<Props> = ({ children }) => {
-    const { token, setAuth, logout } = useUserContext();
-    const [checking, setChecking] = useState<boolean>(!!token);
+    // ensure we only bootstrap once per token (StrictMode-safe)
+    const ranForTokenRef = useRef<string | null>(null);
+
+    const userId = user?._id; // ✅ stable primitive for dependency
 
     useEffect(() => {
-        let alive = true;
+        // no token => app is "ready" (public routes)
+        if (!token) {
+            ranForTokenRef.current = null;
+            setReady(true);
+            return;
+        }
 
-        const run = async () => {
-            if (!token) {
-                if (alive) setChecking(false);
-                return;
-            }
+        // already bootstrapped for this token
+        if (ranForTokenRef.current === token) {
+            setReady(true);
+            return;
+        }
 
-            setChecking(true);
+        ranForTokenRef.current = token;
+        let cancelled = false;
 
+        (async () => {
             try {
                 const res = await AuthService.me();
-                if (!alive) return;
+                if (cancelled) return;
 
-                // Keep existing token, refresh user from server
-                setAuth(token, res.data);
+                const me = res.data;
+
+                // only update if missing or changed user
+                if (!userId || userId !== me._id) {
+                    setAuth(token, me);
+                }
+
+                setReady(true);
             } catch {
-                if (!alive) return;
+                if (cancelled) return;
                 logout();
-            } finally {
-                if (alive) setChecking(false);
+                setReady(true);
             }
-        };
+        })();
 
-        run();
         return () => {
-            alive = false;
+            cancelled = true;
         };
-    }, [token, setAuth, logout]);
+    }, [token, userId, setAuth, logout]);
 
-    // Optional: render nothing while checking (prevents UI flicker)
-    if (checking) return null;
-
+    if (!ready) return null; // or a spinner component
     return <>{children}</>;
 };
 
