@@ -22,37 +22,51 @@ const getPort = (key: string, fallback: number): number => {
     return port;
 };
 
-const normalizeMongoUri = (uri: string) => uri.trim().replace(/\/+$/g, "");
-const normalizeDbName = (name: string) => name.trim().replace(/^\/+|\/+$/g, "");
-
-const mongoUriRaw = getRequiredEnv("MONGO_URI");
-const mongoUri = normalizeMongoUri(mongoUriRaw);
-
-const dbNameRaw = process.env.DB_NAME; // optional if MONGO_URI already includes db
-const dbName = dbNameRaw ? normalizeDbName(dbNameRaw) : "";
-
-const uriAlreadyHasDb =
-    /mongodb(\+srv)?:\/\/[^/]+\/[^?]+/.test(mongoUri); // has a path segment after host
-
-const mongodbUri = uriAlreadyHasDb
-    ? mongoUri
-    : dbName
-        ? `${mongoUri}/${dbName}`
-        : mongoUri; // fallback => connects to default db if you didn't pass DB_NAME
-
-const port = getPort("SERVER_PORT", 4000);
+const port = getPort("SERVER_PORT", 3001);
 const env = process.env.NODE_ENV ?? "development";
 
-const connectToDatabase = async () => {
-    try {
-        // optional: silence strictQuery deprecation warning
-        mongoose.set("strictQuery", false);
+/**------------------------------------------------------------------------------
+    Prefer using ONE env var for the full mongo connection string:
+    MONGO_URI=mongodb://127.0.0.1:27017/bookface-mern
+    If you also keep DB_NAME, we only append it if MONGO_URI has no db path.
+---------------------------------------------------------------------------------*/
+const buildMongoUri = (): string => {
+    const mongoUri = getRequiredEnv("MONGO_URI").trim();
+    const dbName = (process.env.DB_NAME ?? "").trim();
 
-        await mongoose.connect(mongodbUri);
-        Logger.info(`Successfully connected to MongoDB: ${mongodbUri}`);
-    } catch (error: unknown) {
-        Logger.error("ERROR WHILE CONNECTING TO DATABASE", error);
-        process.exit(1);
+    // If uri already includes a db name path (mongodb://host:port/mydb)
+    const hasDbPath = /mongodb(\+srv)?:\/\/[^/]+\/[^?]+/i.test(mongoUri);
+
+    if (hasDbPath) return mongoUri;
+
+    if (!dbName) return mongoUri; // allow connecting without selecting db explicitly
+
+    if (dbName.includes("/") || dbName.includes("\\")) {
+        throw new Error(`Invalid DB_NAME "${dbName}". Do not include "/" or "\\".`);
+    }
+
+    return mongoUri.endsWith("/") ? `${mongoUri}${dbName}` : `${mongoUri}/${dbName}`;
+};
+
+const connectToDatabase = async () => {
+    mongoose.set("strictQuery", false);
+
+    const mongodbUri = buildMongoUri();
+
+    let attempt = 0;
+    // retry forever in dev/watch so tsx doesn't restart-loop
+    while (true) {
+        attempt += 1;
+        try {
+            await mongoose.connect(mongodbUri, {
+                serverSelectionTimeoutMS: 5000
+            });
+            Logger.info("✅ Connected to MongoDB");
+            return;
+        } catch (error) {
+            Logger.error(`❌ MongoDB connect failed (attempt ${attempt})`, error);
+            await new Promise((r) => setTimeout(r, 2000));
+        }
     }
 };
 
