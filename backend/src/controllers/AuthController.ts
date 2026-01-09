@@ -15,15 +15,21 @@ const signToken = (payload: JwtPayload) => {
     const secret = process.env.JWT_SECRET;
     const expiresIn = process.env.JWT_EXPIRES_IN ?? "7d";
 
-    if (!secret) {
-        throw new Error("JWT_SECRET is not set");
-    }
+    if (!secret) throw new Error("JWT_SECRET is not set");
 
     return jwt.sign(payload, secret, { expiresIn });
 };
 
-const toAuthUser = (user: any) => ({
-    _id: user._id,
+const toAuthUser = (user: {
+    _id: unknown;
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+    avatarUrl?: string;
+    bio?: string;
+}) => ({
+    _id: String(user._id),
     firstname: user.firstname,
     lastname: user.lastname,
     email: user.email,
@@ -44,10 +50,11 @@ export const register = async (req: Request, res: Response) => {
             return res.status(StatusCode.BAD_REQUEST).send({ message: "Missing required fields" });
         }
 
-        const exists = await UserModel.findOne({
-            $or: [{ email }, { username }]
-        }).select("_id");
+        if (password.length < 6) {
+            return res.status(StatusCode.BAD_REQUEST).send({ message: "Password must be at least 6 characters" });
+        }
 
+        const exists = await UserModel.findOne({ $or: [{ email }, { username }] }).select("_id").lean();
         if (exists) {
             return res.status(StatusCode.BAD_REQUEST).send({ message: "User already exists" });
         }
@@ -76,14 +83,20 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
     try {
-        const username = String(req.body.username ?? "").trim();
+        // frontend sends { username, password } but "username" may be email -> we support both
+        const identifierRaw = String(req.body.username ?? "").trim();
         const password = String(req.body.password ?? "");
 
-        if (!username || !password) {
-            return res.status(StatusCode.BAD_REQUEST).send({ message: "Missing username/password" });
+        if (!identifierRaw || !password) {
+            return res.status(StatusCode.BAD_REQUEST).send({ message: "Missing username/email or password" });
         }
 
-        const user = await UserModel.findOne({ username });
+        const identifier = identifierRaw.toLowerCase();
+
+        const user = await UserModel.findOne({
+            $or: [{ username: identifierRaw }, { email: identifier }]
+        });
+
         if (!user) {
             return res.status(StatusCode.UNAUTHORIZED).send({ message: "Invalid credentials" });
         }
