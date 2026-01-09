@@ -1,13 +1,26 @@
 // frontend/src/utils/interface/PostInterface.ts
 
-export interface CreatePostObject {
-    author: string;
-    title: string;
-    content: string;
-}
-
-export interface PostDataObject extends CreatePostObject {
+export type PostAuthorDTO = {
     _id: string;
-    createdAt?: string;
-    updatedAt?: string;
-}
+    username: string;
+    firstname?: string;
+    lastname?: string;
+    avatarUrl?: string;
+};
+
+export type PostDataObject = {
+    _id: string;
+    author?: PostAuthorDTO;
+    content: string;
+    imageUrl?: string;
+    createdAt: string;
+    updatedAt: string;
+};
+
+// payloads
+export type CreatePostObject = {
+    content: string;
+    imageUrl?: string;
+};
+
+export type UpdatePostObject = Partial<CreatePostObject>;
