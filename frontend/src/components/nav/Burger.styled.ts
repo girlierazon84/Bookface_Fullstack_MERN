@@ -3,10 +3,12 @@
 import styled from "styled-components";
 
 
+// Props for the styled component
 type Props = {
-  open: boolean;
+  $open: boolean;
 };
 
+// Styled component for the burger menu button with open/close animation
 export const StyledBurger = styled.button<Props>`
   z-index: 60;
   cursor: pointer;
@@ -38,21 +40,22 @@ export const StyledBurger = styled.button<Props>`
   span {
     height: 3px;
     border-radius: 999px;
-    background-color: ${({ open }) => (open ? "var(--fourthly-color)" : "var(--secondary-color)")};
+    background-color: ${({ $open }) =>
+      $open ? "var(--fourthly-color)" : "var(--secondary-color)"};
     transition: all 0.2s linear;
     transform-origin: 1px;
   }
 
   span:nth-child(1) {
-    transform: ${({ open }) => (open ? "rotate(45deg) translateY(6px)" : "none")};
+    transform: ${({ $open }) => ($open ? "rotate(45deg) translateY(6px)" : "none")};
   }
 
   span:nth-child(2) {
-    opacity: ${({ open }) => (open ? 0 : 1)};
-    transform: ${({ open }) => (open ? "translateX(8px)" : "none")};
+    opacity: ${({ $open }) => ($open ? 0 : 1)};
+    transform: ${({ $open }) => ($open ? "translateX(8px)" : "none")};
   }
 
   span:nth-child(3) {
-    transform: ${({ open }) => (open ? "rotate(-45deg) translateY(-6px)" : "none")};
+    transform: ${({ $open }) => ($open ? "rotate(-45deg) translateY(-6px)" : "none")};
   }
 `;
