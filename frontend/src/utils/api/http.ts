@@ -4,13 +4,17 @@ import axios from "axios";
 import { authStorage } from "../auth/authStorage";
 
 
+// Prefer a single base url in env for production/deploy:
+// REACT_APP_API_BASE_URL=http://localhost:3001
+const envBaseUrl = process.env.REACT_APP_API_BASE_URL;
+
 const serverUrl = process.env.REACT_APP_SERVER_URL ?? "http://localhost";
 const serverPort = process.env.REACT_APP_SERVER_PORT ?? "3001";
 
-export const API_BASE_URL = `${serverUrl}:${serverPort}`;
+export const API_BASE_URL = (envBaseUrl ?? `${serverUrl}:${serverPort}`).replace(/\/+$/, "");
 
 const http = axios.create({
-    baseURL: API_BASE_URL
+    baseURL: API_BASE_URL,
 });
 
 // Attach token for every request (FB-like session)
