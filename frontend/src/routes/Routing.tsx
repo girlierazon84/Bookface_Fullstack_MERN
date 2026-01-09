@@ -18,13 +18,13 @@ import { useUserContext } from "../utils/global/provider/UserProvider";
 
 // Component to protect routes that require authentication
 const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-    // Check if the user is authenticated
+    // Check if the user is authenticated (using context or any state management)
     const { token } = useUserContext();
     if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
     return children;
 };
 
-// Main routing component
+// Main routing component export
 export const Routing: React.FC = () => {
     return (
         <Routes>
