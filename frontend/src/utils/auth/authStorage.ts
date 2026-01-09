@@ -10,10 +10,10 @@ export type AuthUser = {
     bio?: string;
 };
 
-const TOKEN_KEY = "auth_token";
-const USER_KEY = "auth_user";
+const TOKEN_KEY = "auth_token" as const;
+const USER_KEY = "auth_user" as const;
 
-export const authStorage = {
+export const authStorage = Object.freeze({
     getToken(): string | null {
         return localStorage.getItem(TOKEN_KEY);
     },
@@ -45,17 +45,17 @@ export const authStorage = {
     },
 
     setAuth(token: string, user: AuthUser) {
-        authStorage.setToken(token);
-        authStorage.setUser(user);
+        this.setToken(token);
+        this.setUser(user);
     },
 
     clearAuth() {
-        authStorage.clearToken();
-        authStorage.clearUser();
+        this.clearToken();
+        this.clearUser();
     },
 
     // ✅ alias for convenience (used in provider)
     clear() {
-        authStorage.clearAuth();
+        this.clearAuth();
     }
-};
+});
