@@ -9,6 +9,7 @@ import PostAddSharpIcon from "@mui/icons-material/PostAddSharp";
 
 import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../utils/global/provider/UserProvider";
+import Avatar from "./ui/Avatar";
 
 
 const Profile: React.FC = () => {
@@ -18,7 +19,7 @@ const Profile: React.FC = () => {
   return (
     <Wrapper>
       <AddPostLink>
-        <Link to={RoutingPath.createPostView}>
+        <Link to={RoutingPath.createPostView} aria-label="Add post">
           <ListItemIcon>
             <PostAddSharpIcon color="primary" fontSize="medium" />
           </ListItemIcon>
@@ -27,14 +28,19 @@ const Profile: React.FC = () => {
       </AddPostLink>
 
       <ProfileWrapper>
-        <Img src={user?.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Profile avatar" />
+        <Avatar src={user?.avatarUrl} name={user?.username} alt="Profile avatar" size={40} />
         <SpanUserName>{user?.username}</SpanUserName>
 
-        <Dropdown className="profileDropdown">
-          <DropdownItem onClick={() => navigate(RoutingPath.settingsView)}>Settings</DropdownItem>
-          <DropdownItem onClick={() => navigate(RoutingPath.profileView)}>Profile</DropdownItem>
+        <Dropdown className="profileDropdown" role="menu">
+          <DropdownItem role="menuitem" onClick={() => navigate(RoutingPath.settingsView)}>
+            Settings
+          </DropdownItem>
+          <DropdownItem role="menuitem" onClick={() => navigate(RoutingPath.profileView)}>
+            Profile
+          </DropdownItem>
           <Hr />
           <DropdownItem
+            role="menuitem"
             onClick={() => {
               logout();
               navigate(RoutingPath.usersLogInView, { replace: true });
@@ -51,7 +57,6 @@ const Profile: React.FC = () => {
 
 export default Profile;
 
-/* styles unchanged from your version */
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -65,18 +70,13 @@ const AddPostLink = styled.div`
     gap: 6px;
     color: var(--fourthly-color);
     text-decoration: none;
-    font-weight: bold;
+    font-weight: 900;
+    padding: 8px 10px;
+    border-radius: 12px;
   }
 
   a:hover {
-    border-bottom: 3px solid var(--secondary-color);
-  }
-
-  @media (max-width: 768px) {
-    a:hover {
-      border-bottom: none;
-      text-decoration: underline;
-    }
+    background: rgba(255, 255, 255, 0.6);
   }
 `;
 
@@ -85,50 +85,64 @@ const ProfileWrapper = styled.section`
   align-items: center;
   position: relative;
   cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 12px;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.6);
+  }
 
   &:hover .profileDropdown {
     display: block;
   }
 `;
 
-const Img = styled.img`
-  border-radius: 50%;
-  width: 3.5em;
-  border: 1px solid var(--thirdly-color);
-`;
-
 const SpanUserName = styled.span`
   padding-left: 10px;
   color: var(--secondary-color);
   font-family: "Oleo Script", sans-serif;
-  font-weight: bold;
+  font-weight: 900;
+
+  @media (max-width: 520px) {
+    display: none; /* mobile app feel */
+  }
 `;
 
 const Dropdown = styled.div`
   display: none;
   position: absolute;
-  top: 60px;
+  top: 54px;
   right: 0;
-  background-color: var(--thirdly-color);
-  min-width: 170px;
-  padding: 12px 10px;
-  border-radius: 10px;
-  z-index: 10;
+  background-color: white;
+  min-width: 190px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(97, 97, 97, 0.2);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  z-index: 30;
 `;
 
-const DropdownItem = styled.span`
+const DropdownItem = styled.button`
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-weight: 900;
+  color: var(--fourthly-color);
+  cursor: pointer;
 
   &:hover {
-    background: var(--fifthly-color);
+    background: rgba(0, 0, 0, 0.05);
   }
 `;
 
 const Hr = styled.hr`
-  border: 1px solid var(--fifthly-color);
+  border: none;
+  border-top: 1px solid rgba(97, 97, 97, 0.2);
   margin: 8px 0;
 `;
