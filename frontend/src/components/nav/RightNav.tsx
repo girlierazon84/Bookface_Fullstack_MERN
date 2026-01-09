@@ -12,16 +12,51 @@ import Profile from "../Profile";
 import RoutingPath from "../../routes/RoutingPath";
 
 
-type Props = { open: boolean };
+// Props definition for RightNav component
+type Props = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+};
 
-const RightNav: React.FC<Props> = ({ open }) => {
+// Right-side navigation component
+const RightNav: React.FC<Props> = ({ open, setOpen }) => {
+  // Get user token from context
   const { token } = useUserContext();
 
+  // Close on Escape
+  React.useEffect(() => {
+    // only attach listener if drawer is open
+    if (!open) return;
+
+    // handle keydown events
+    const onKeyDown = (e: KeyboardEvent) => {
+      // close drawer on Escape
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    // attach and clean up event listener
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open, setOpen]);
+
+  // Function to close the drawer
+  const close = () => setOpen(false);
+
   return (
-    <Panel $open={open} aria-hidden={!open}>
-      <Menu $open={open}>
+    <Panel
+      $open={open}
+      aria-hidden={!open}
+      role="dialog"
+      aria-modal={open ? "true" : undefined}
+      onClick={close} // clicking overlay closes drawer
+    >
+      <Menu
+        id="primary-navigation"
+        $open={open}
+        onClick={(e) => e.stopPropagation()} // prevent overlay-close when clicking inside menu
+      >
         <Li>
-          <Link to={RoutingPath.homeView}>
+          <Link to={RoutingPath.homeView} onClick={close}>
             <ListItemIcon>
               <HomeSharpIcon color="primary" fontSize="medium" />
             </ListItemIcon>
@@ -31,11 +66,12 @@ const RightNav: React.FC<Props> = ({ open }) => {
 
         {token ? (
           <Li>
+            {/* Profile likely uses useNavigate -> must be inside Router (it is now via index.tsx) */}
             <Profile />
           </Li>
         ) : (
           <Li>
-            <Link to={RoutingPath.usersLogInView}>
+            <Link to={RoutingPath.usersLogInView} onClick={close}>
               <ListItemIcon>
                 <LoginSharpIcon color="action" fontSize="medium" />
               </ListItemIcon>
@@ -50,9 +86,12 @@ const RightNav: React.FC<Props> = ({ open }) => {
 
 export default RightNav;
 
-/** styled-components: use $open to avoid passing props to DOM */
+
+/**---------------------------------------------------------------
+    styled-components: use $open to avoid passing props to DOM
+------------------------------------------------------------------*/
 const Panel = styled.aside<{ $open: boolean }>`
-  /* desktop: do nothing */
+  /* desktop: inline */
   @media (min-width: 769px) {
     position: static;
   }
