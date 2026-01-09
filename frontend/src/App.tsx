@@ -9,6 +9,7 @@ import { UserProvider } from "./utils/global/provider/UserProvider";
 import AuthBootstrap from "./utils/auth/AuthBootstrap";
 
 
+// Main Application Component
 function App() {
     return (
         <UserProvider>
@@ -27,6 +28,10 @@ function App() {
 
 export default App;
 
+
+/**----------------------
+    Styled Components
+-------------------------*/
 const AppShell = styled.div`
     min-height: 100vh;
     display: grid;
