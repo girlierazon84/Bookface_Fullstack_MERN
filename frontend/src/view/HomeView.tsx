@@ -8,6 +8,7 @@ import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../utils/global/provider/UserProvider";
 import PostService, { type PostDTO, normalizePostsList } from "../utils/api/service/PostService";
 import CreateNewPost from "../components/posts/CreateNewPost";
+import Avatar from "../components/ui/Avatar";
 
 
 const isAuthUser = (value: unknown): value is { _id: string; username: string; avatarUrl?: string } => {
@@ -24,10 +25,8 @@ const HomeView: React.FC = () => {
   const loadFeed = useCallback(async () => {
     setLoading(true);
     try {
-      // ✅ supports both: PostDTO[] and { posts: PostDTO[] }
       const res = await PostService.getFeed();
       const list = normalizePostsList(res.data);
-
       setPosts(list);
     } catch (e) {
       console.warn("Failed to load feed", e);
@@ -42,81 +41,65 @@ const HomeView: React.FC = () => {
     loadFeed();
   }, [token, loadFeed]);
 
-  // ✅ redirect AFTER hooks
   if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
   if (!me) return <Navigate to={RoutingPath.usersLogInView} replace />;
 
   return (
     <Page>
       <Shell>
-        {/* left */}
-        <LeftColumn>
-          <Brand>
-            <Logo>Bookface</Logo>
-            <Tagline>Connect with friends and the world around you.</Tagline>
-          </Brand>
+        {/* Top user card (mobile-first) */}
+        <TopCard>
+          <Avatar src={me.avatarUrl} name={me.username} alt="Avatar" size={44} />
+          <TopInfo>
+            <TopName>{me.username}</TopName>
+            <TopLinks>
+              <Link to={RoutingPath.profileView}>Profile</Link>
+              <span>·</span>
+              <Link to={RoutingPath.settingsView}>Settings</Link>
+            </TopLinks>
+          </TopInfo>
+        </TopCard>
 
-          <UserCard>
-            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Avatar" />
-            <div>
-              <Name>{me.username}</Name>
-              <MiniLinks>
-                <Link to={RoutingPath.profileView}>Profile</Link>
-                <span>·</span>
-                <Link to={RoutingPath.settingsView}>Settings</Link>
-              </MiniLinks>
-            </div>
-          </UserCard>
-        </LeftColumn>
+        {/* Composer */}
+        <Card>
+          <CreateNewPost onCreated={loadFeed} />
+        </Card>
 
-        {/* center */}
-        <CenterColumn>
-          <Card style={{ padding: 14 }}>
-            <CreateNewPost onCreated={loadFeed} />
-          </Card>
+        {/* Feed */}
+        <Card>
+          <FeedHeader>
+            <FeedTitle>Feed</FeedTitle>
+            <Refresh onClick={loadFeed} type="button" disabled={loading}>
+              {loading ? "Loading..." : "Refresh"}
+            </Refresh>
+          </FeedHeader>
 
-          <Card style={{ padding: 14, marginTop: 18 }}>
-            <FeedHeader>
-              <FeedTitle>Feed</FeedTitle>
-              <Refresh onClick={loadFeed} type="button" disabled={loading}>
-                {loading ? "Loading..." : "Refresh"}
-              </Refresh>
-            </FeedHeader>
+          <FeedList>
+            {posts.map((p) => (
+              <PostCard key={p._id}>
+                <PostTop>
+                  <Avatar src={p.author?.avatarUrl} name={p.author?.username} alt="Author" size={40} />
+                  <div>
+                    <PostName>{p.author?.username ?? "Unknown"}</PostName>
+                    <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
+                  </div>
+                </PostTop>
 
-            <FeedList>
-              {posts.map((p) => (
-                <PostCard key={p._id}>
-                  <PostTop>
-                    <PostAvatar
-                      src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
-                      alt="Author"
-                    />
-                    <div>
-                      <PostName>{p.author?.username ?? "Unknown"}</PostName>
-                      <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
-                    </div>
-                  </PostTop>
+                <PostContent>{p.content}</PostContent>
 
-                  <PostContent>{p.content}</PostContent>
+                {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
+              </PostCard>
+            ))}
 
-                  {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
-                </PostCard>
-              ))}
+            {!loading && posts.length === 0 ? <EmptyState>No posts yet. Create the first one ✨</EmptyState> : null}
+          </FeedList>
+        </Card>
 
-              {!loading && posts.length === 0 ? (
-                <EmptyState>No posts yet. Create the first one ✨</EmptyState>
-              ) : null}
-            </FeedList>
-          </Card>
-        </CenterColumn>
-
-        {/* right */}
-        <RightColumn>
-          <Card style={{ padding: 14 }}>
-            <RightTitle>Tips</RightTitle>
-            <RightText>Post something positive ✨</RightText>
-          </Card>
-        </RightColumn>
+        {/* Tips card (bottom on mobile) */}
+        <Card>
+          <RightTitle>Tips</RightTitle>
+          <RightText>Post something positive ✨</RightText>
+        </Card>
       </Shell>
     </Page>
   );
@@ -124,94 +107,57 @@ const HomeView: React.FC = () => {
 
 export default HomeView;
 
-/**----------------------
-    Styled Components
--------------------------*/
 const Page = styled.main`
   background: var(--primary-color);
   min-height: calc(100vh - 85px);
-  padding: 20px 0 60px;
+  padding: 14px 0 60px;
 `;
 
 const Shell = styled.section`
-  width: min(1200px, 92%);
+  width: min(720px, 92%);
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 280px 1fr 280px;
-  gap: 20px;
+  gap: 12px;
 
-  @media (max-width: 960px) {
-    grid-template-columns: 1fr;
-  }
-`;
+  /* desktop can expand */
+  @media (min-width: 1024px) {
+    width: min(1100px, 92%);
+    grid-template-columns: 1fr 340px;
+    align-items: start;
 
-const LeftColumn = styled.aside`
-  @media (max-width: 960px) {
-    order: 2;
-  }
-`;
-
-const CenterColumn = styled.section`
-  @media (max-width: 960px) {
-    order: 1;
-  }
-`;
-
-const RightColumn = styled.aside`
-  @media (max-width: 960px) {
-    order: 3;
+    /* feed column left, side column right */
+    ${"" /* Put the feed/composer/top in left column via DOM order (works fine) */}
   }
 `;
 
 const Card = styled.div`
   background: var(--fifthly-color);
   border: 1px solid rgba(97, 97, 97, 0.25);
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(97, 97, 97, 0.2);
-`;
-
-const Brand = styled.div`
-  padding: 10px 6px 18px;
-`;
-
-const Logo = styled.h1`
-  margin: 0;
-  color: var(--secondary-color);
-  font-weight: 800;
-  font-size: 2.2rem;
-  font-family: "Oxygen - Regular", sans-serif;
-`;
-
-const Tagline = styled.p`
-  margin: 8px 0 0;
-  color: var(--fourthly-color);
-  font-size: 1rem;
-`;
-
-const UserCard = styled(Card)`
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(97, 97, 97, 0.18);
   padding: 14px;
 `;
 
-const Avatar = styled.img`
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  border: 1px solid var(--thirdly-color);
-  object-fit: cover;
+const TopCard = styled(Card)`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
 `;
 
-const Name = styled.div`
-  font-weight: 800;
+const TopInfo = styled.div`
+  display: grid;
+  gap: 4px;
+`;
+
+const TopName = styled.div`
+  font-weight: 900;
   color: var(--secondary-color);
   font-family: "Oleo Script", sans-serif;
   font-size: 1.2rem;
 `;
 
-const MiniLinks = styled.div`
-  margin-top: 4px;
+const TopLinks = styled.div`
   display: flex;
   gap: 8px;
   align-items: center;
@@ -219,7 +165,7 @@ const MiniLinks = styled.div`
   a {
     color: var(--fourthly-color);
     text-decoration: none;
-    font-weight: 700;
+    font-weight: 800;
   }
 
   a:hover {
@@ -239,17 +185,17 @@ const FeedHeader = styled.div`
 const FeedTitle = styled.h2`
   margin: 0;
   color: var(--fourthly-color);
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 900;
 `;
 
 const Refresh = styled.button`
   border: 1px solid rgba(97, 97, 97, 0.25);
   background: white;
-  border-radius: 10px;
-  padding: 8px 12px;
+  border-radius: 12px;
+  padding: 10px 12px;
   cursor: pointer;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--fourthly-color);
 
   &:hover {
@@ -271,7 +217,7 @@ const FeedList = styled.div`
 const PostCard = styled.div`
   background: white;
   border: 1px solid rgba(97, 97, 97, 0.15);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 12px;
 `;
 
@@ -279,14 +225,6 @@ const PostTop = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
-`;
-
-const PostAvatar = styled.img`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--thirdly-color);
-  object-fit: cover;
 `;
 
 const PostName = styled.div`
@@ -302,19 +240,20 @@ const PostTime = styled.div`
 const PostContent = styled.p`
   margin: 10px 0 0;
   color: var(--fourthly-color);
-  line-height: 1.4;
+  line-height: 1.45;
   white-space: pre-wrap;
+  font-weight: 700;
 `;
 
 const PostImage = styled.img`
   margin-top: 10px;
   width: 100%;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid rgba(97, 97, 97, 0.15);
 `;
 
 const RightTitle = styled.h3`
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   color: var(--fourthly-color);
   font-size: 1rem;
   font-weight: 900;
@@ -324,11 +263,12 @@ const RightText = styled.p`
   margin: 0;
   color: var(--fourthly-color);
   line-height: 1.4;
+  font-weight: 700;
 `;
 
 const EmptyState = styled.div`
   padding: 14px;
   text-align: center;
   color: var(--fourthly-color);
-  font-weight: 800;
+  font-weight: 900;
 `;
