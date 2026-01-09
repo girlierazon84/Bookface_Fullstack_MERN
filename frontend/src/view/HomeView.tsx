@@ -6,19 +6,21 @@ import { Link, Navigate } from "react-router-dom";
 
 import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../utils/global/provider/UserProvider";
-import PostService, { type PostDTO } from "../utils/api/service/PostService";
+import FeedService from "../utils/api/service/FeedService";
+import type { PostDTO } from "../utils/api/service/PostService";
 
 import CreateNewPost from "../components/posts/CreateNewPost";
 
 
-// ✅ local guard to handle "string | AuthUser" situations safely
-const isAuthUser = (value: unknown): value is { _id: string; username: string; avatarUrl?: string } => {
+// ✅ local guard to handle "unknown" safely
+const isAuthUser = (
+  value: unknown
+): value is { _id: string; username: string; avatarUrl?: string } => {
   return !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
 };
 
 const HomeView: React.FC = () => {
   const { token, user } = useUserContext();
-
   const me = useMemo(() => (isAuthUser(user) ? user : null), [user]);
 
   const [posts, setPosts] = useState<PostDTO[]>([]);
@@ -27,13 +29,16 @@ const HomeView: React.FC = () => {
   const loadFeed = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await PostService.getFeed();
+      const res = await FeedService.getFeed();
       setPosts(res.data);
+    } catch {
+      setPosts([]); // avoid infinite retries; show empty state
     } finally {
       setLoading(false);
     }
   }, []);
 
+  // ✅ Fetch feed once after login/token becomes available
   useEffect(() => {
     if (!token) return;
     loadFeed();
@@ -53,7 +58,10 @@ const HomeView: React.FC = () => {
           </Brand>
 
           <UserCard>
-            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Avatar" />
+            <Avatar
+              src={me.avatarUrl || "https://thispersondoesnotexist.com/image"}
+              alt="Avatar"
+            />
             <div>
               <Name>{me.username}</Name>
               <MiniLinks>
@@ -73,7 +81,7 @@ const HomeView: React.FC = () => {
           <Card style={{ padding: 14, marginTop: 18 }}>
             <FeedHeader>
               <FeedTitle>Feed</FeedTitle>
-              <Refresh onClick={loadFeed} type="button">
+              <Refresh onClick={loadFeed} type="button" disabled={loading}>
                 {loading ? "Loading..." : "Refresh"}
               </Refresh>
             </FeedHeader>
@@ -93,7 +101,6 @@ const HomeView: React.FC = () => {
                   </PostTop>
 
                   <PostContent>{p.content}</PostContent>
-
                   {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
                 </PostCard>
               ))}
@@ -247,6 +254,11 @@ const Refresh = styled.button`
   &:hover {
     border-color: var(--secondary-color);
     color: var(--secondary-color);
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
   }
 `;
 
