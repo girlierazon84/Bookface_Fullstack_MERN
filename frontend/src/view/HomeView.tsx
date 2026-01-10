@@ -3,7 +3,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { Link, Navigate } from "react-router-dom";
-
 import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../provider/UserProvider";
 import PostService, { type PostDTO, normalizePostsList } from "../api/service/PostService";
@@ -18,6 +17,15 @@ const Page = styled.main`
   background: ${({ theme }) => theme.colors.primary};
   min-height: calc(100vh - 85px);
   padding: 14px 0 calc(60px + env(safe-area-inset-bottom));
+  width: 100%;
+
+  /* Fix: prevent horizontal overflow that can show "white panels" */
+  overflow-x: clip;
+
+  /* Fallback for browsers that don't support clip */
+  @supports not (overflow: clip) {
+    overflow-x: hidden;
+  }
 `;
 
 const Shell = styled.section`
@@ -26,8 +34,11 @@ const Shell = styled.section`
   display: grid;
   gap: 12px;
 
+  /* Allow grid children to shrink without forcing overflow */
+  min-width: 0;
+
   @media (min-width: 1024px) {
-    grid-template-columns: 1fr 340px;
+    grid-template-columns: minmax(0, 1fr) 340px;
     align-items: start;
     gap: 16px;
   }
@@ -36,11 +47,13 @@ const Shell = styled.section`
 const MainCol = styled.div`
   display: grid;
   gap: 12px;
+  min-width: 0;
 `;
 
 const SideCol = styled.aside`
   display: grid;
   gap: 12px;
+  min-width: 0;
 `;
 
 const Card = styled.div`
@@ -49,6 +62,9 @@ const Card = styled.div`
   border-radius: 16px;
   box-shadow: ${({ theme }) => theme.colors.card_shadow};
   padding: 14px;
+
+  /* Fix: prevent child content from stretching the card */
+  min-width: 0;
 `;
 
 const TopCard = styled(Card)`
@@ -61,6 +77,7 @@ const TopCard = styled(Card)`
 const TopInfo = styled.div`
   display: grid;
   gap: 6px;
+  min-width: 0;
 `;
 
 const TopName = styled.div`
@@ -75,6 +92,7 @@ const TopLinks = styled.nav`
   gap: 10px;
   align-items: center;
   color: ${({ theme }) => theme.colors.text_secondary};
+  min-width: 0;
 
   a {
     color: ${({ theme }) => theme.colors.text_secondary};
@@ -94,6 +112,7 @@ const FeedHeader = styled.div`
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 10px;
+  min-width: 0;
 `;
 
 const FeedTitle = styled.h2`
@@ -111,6 +130,7 @@ const Refresh = styled.button`
   cursor: pointer;
   font-weight: 900;
   color: ${({ theme }) => theme.colors.text_primary};
+  white-space: nowrap;
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.secondary};
@@ -126,6 +146,7 @@ const Refresh = styled.button`
 const FeedList = styled.div`
   display: grid;
   gap: 12px;
+  min-width: 0;
 `;
 
 const PostCard = styled.article`
@@ -133,12 +154,14 @@ const PostCard = styled.article`
   border: 1px solid rgba(97, 97, 97, 0.15);
   border-radius: 16px;
   padding: 12px;
+  min-width: 0;
 `;
 
 const PostTop = styled.div`
   display: flex;
   gap: 10px;
   align-items: center;
+  min-width: 0;
 `;
 
 const PostName = styled.div`
@@ -158,11 +181,16 @@ const PostContent = styled.p`
   line-height: 1.5;
   white-space: pre-wrap;
   font-weight: 700;
+
+  /* Fix: prevent long strings from forcing horizontal overflow */
+  overflow-wrap: anywhere;
+  word-break: break-word;
 `;
 
 const PostImage = styled.img`
   margin-top: 10px;
   width: 100%;
+  display: block;
   border-radius: 14px;
   border: 1px solid rgba(97, 97, 97, 0.15);
 `;
