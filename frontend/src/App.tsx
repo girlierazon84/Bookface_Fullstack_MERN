@@ -5,8 +5,8 @@ import { matchPath, useLocation } from "react-router-dom";
 
 import { Routing } from "./routes/Routing";
 import FooterContainer from "./components/FooterContainer";
-import NavigationBar from "./components/nav/NavigationBar";
-import { UserProvider } from "./utils/global/provider/UserProvider";
+import NavigationBar from "./components/NavigationBar";
+import { UserProvider } from "./provider/UserProvider";
 import AuthBootstrap from "./utils/auth/AuthBootstrap";
 import RoutingPath from "./routes/RoutingPath";
 
@@ -18,12 +18,12 @@ const AppShell = styled.div`
     min-height: 100vh;
     display: grid;
     grid-template-rows: auto 1fr auto;
-    background: var(--primary-color);
+    background: ${({ theme }) => theme.colors.primary};
 `;
 
 const PublicShell = styled.div`
     min-height: 100vh;
-    background: var(--primary-color);
+    background: ${({ theme }) => theme.colors.primary};
     display: grid;
     grid-template-rows: 1fr;
 `;
