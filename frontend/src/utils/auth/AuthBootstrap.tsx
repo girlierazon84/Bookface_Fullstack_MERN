@@ -1,8 +1,8 @@
 // frontend/src/utils/auth/AuthBootstrap.tsx
 
 import React, { useEffect, useRef, useState } from "react";
-import AuthService from "../api/service/AuthService";
-import { useUserContext } from "../global/provider/UserProvider";
+import AuthService from "../../api/service/AuthService";
+import { useUserContext } from "../../provider/UserProvider";
 
 
 const AuthBootstrap: React.FC<{ children: React.ReactNode }> = ({ children }) => {
