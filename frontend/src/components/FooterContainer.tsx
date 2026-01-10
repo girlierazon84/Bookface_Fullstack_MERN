@@ -1,7 +1,7 @@
 // frontend/src/components/FooterContainer.tsx
 
 import styled from "styled-components";
-import logo from "../utils/images/logo.png";
+import logo from "../assets/logo.png";
 import CopyrightIcon from "@mui/icons-material/Copyright";
 
 
