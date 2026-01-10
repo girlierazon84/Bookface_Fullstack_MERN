@@ -2,6 +2,9 @@
 
 import React from "react";
 import { createRoot } from "react-dom/client";
+import { ThemeProvider } from "styled-components";
+import { GlobalStyle } from "./styles/GlobalStyle";
+import { theme } from "./styles/theme";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 
@@ -13,13 +16,11 @@ if (!container) throw new Error("Root container #root not found");
 // Use React 18's createRoot API to enable concurrent features and improved performance.
 createRoot(container).render(
   <React.StrictMode>
-    <BrowserRouter
-      future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true,
-      }}
-    >
-      <App />
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <GlobalStyle />
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ThemeProvider>
   </React.StrictMode>
 );
