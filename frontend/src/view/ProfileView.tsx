@@ -1,156 +1,27 @@
 // frontend/src/view/ProfileView.tsx
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import { Navigate } from "react-router-dom";
 import styled from "styled-components";
 
-import { useUserContext } from "../utils/global/provider/UserProvider";
+import { useUserContext } from "../provider/UserProvider";
 import RoutingPath from "../routes/RoutingPath";
 import PostService, {
   type PostDTO,
   normalizePostsList
-} from "../utils/api/service/PostService";
-import CreateNewPost from "../components/posts/CreateNewPost";
+} from "../api/service/PostService";
+import CreateNewPost from "../components/CreateNewPost";
 
 
-// ✅ local guard to handle "string | AuthUser" situations safely
-const isAuthUser = (
-  value: unknown
-): value is {
-  _id: string;
-  username: string;
-  firstname: string;
-  lastname: string;
-  email?: string;
-  avatarUrl?: string;
-  bio?: string;
-} => {
-  return !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
-};
 
-const ProfileView: React.FC = () => {
-  const { token, user } = useUserContext();
-
-  const me = useMemo(() => (isAuthUser(user) ? user : null), [user]);
-
-  const [posts, setPosts] = useState<PostDTO[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const loadMyTimeline = useCallback(async () => {
-    if (!token || !me) return;
-
-    setLoading(true);
-    try {
-      const res = await PostService.getFeed();
-
-      const allPosts = normalizePostsList(res.data);
-      const myPosts = allPosts.filter((p: PostDTO) => p.author?._id === me._id);
-
-      setPosts(myPosts);
-    } catch {
-      setPosts([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [token, me]);
-
-  useEffect(() => {
-    loadMyTimeline();
-  }, [loadMyTimeline]);
-
-  // redirects AFTER hooks
-  if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
-  if (!me) return <Navigate to={RoutingPath.usersLogInView} replace />;
-
-  return (
-    <Page>
-      <Shell>
-        <ProfileCard>
-          <Cover />
-
-          <HeaderRow>
-            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Profile avatar" />
-            <HeaderText>
-              <Name>{me.username}</Name>
-              <SubText>
-                {me.bio?.trim()
-                  ? me.bio
-                  : "Welcome to your profile. Add a bio later (backend update endpoint coming soon)."}
-              </SubText>
-            </HeaderText>
-          </HeaderRow>
-
-          <ActionRow>
-            <SmallPill>
-              {me.firstname} {me.lastname}
-            </SmallPill>
-            {me.email ? <SmallPill>{me.email}</SmallPill> : null}
-          </ActionRow>
-        </ProfileCard>
-
-        <Grid>
-          <Left>
-            <Card>
-              <CardTitle>Intro</CardTitle>
-              <Muted>This section can later show: city, school, relationship, friends count, etc.</Muted>
-            </Card>
-          </Left>
-
-          <Center>
-            <Card>
-              <CardTitle>Create Post</CardTitle>
-              <CreateNewPost onCreated={loadMyTimeline} />
-            </Card>
-
-            <Card style={{ marginTop: 16 }}>
-              <FeedHeader>
-                <CardTitle style={{ margin: 0 }}>Timeline</CardTitle>
-                <RefreshBtn type="button" onClick={loadMyTimeline}>
-                  {loading ? "Loading..." : "Refresh"}
-                </RefreshBtn>
-              </FeedHeader>
-
-              <FeedList>
-                {posts.map((p) => (
-                  <PostCard key={p._id}>
-                    <PostTop>
-                      <PostAvatar
-                        src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
-                        alt="Author"
-                      />
-                      <div>
-                        <PostName>{p.author?.username ?? "Unknown"}</PostName>
-                        <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
-                      </div>
-                    </PostTop>
-
-                    <PostContent>{p.content}</PostContent>
-                    {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
-                  </PostCard>
-                ))}
-
-                {!loading && posts.length === 0 ? (
-                  <EmptyState>No posts yet. Share your first thought ✨</EmptyState>
-                ) : null}
-              </FeedList>
-            </Card>
-          </Center>
-
-          <Right>
-            <Card>
-              <CardTitle>Friends</CardTitle>
-              <Muted>Coming soon: friends list + friend requests (backend FriendRequestModel).</Muted>
-            </Card>
-          </Right>
-        </Grid>
-      </Shell>
-    </Page>
-  );
-};
-
-export default ProfileView;
-
-/* styles unchanged from yours */
+/*-----------------------
+    Styled Components
+-------------------------*/
 const Page = styled.main`
   background: var(--primary-color);
   min-height: calc(100vh - 85px);
@@ -356,3 +227,154 @@ const EmptyState = styled.div`
   color: var(--fourthly-color);
   font-weight: 800;
 `;
+
+// ✅ local guard to handle "string | AuthUser" situations safely
+const isAuthUser = (
+  value: unknown
+): value is {
+  _id: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email?: string;
+  avatarUrl?: string;
+  bio?: string;
+} => {
+  // check for required fields
+  return !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
+};
+
+// ProfileView component definition
+const ProfileView: React.FC = () => {
+  // get user context data
+  const { token, user } = useUserContext();
+
+  // memoized authenticated user object or null if not authenticated user data is present
+  const me = useMemo(() => (isAuthUser(user) ? user : null), [user]);
+
+  // state for user's posts and loading status
+  const [posts, setPosts] = useState<PostDTO[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // function to load user's timeline posts from the API
+  const loadMyTimeline = useCallback(async () => {
+    // guard clauses for token and user data presence
+    if (!token || !me) return;
+
+    // fetch posts and filter for user's own posts only
+    setLoading(true);
+    try {
+      // fetch all posts from the API
+      const res = await PostService.getFeed();
+
+      // normalize and filter posts authored by the authenticated user
+      const allPosts = normalizePostsList(res.data);
+      const myPosts = allPosts.filter((p: PostDTO) => p.author?._id === me._id);
+
+      // update state with user's posts only
+      setPosts(myPosts);
+    } catch {
+      // on error, clear posts state to indicate failure to load posts for user timeline
+      setPosts([]);
+    } finally {
+      // reset loading state after fetch attempt completes (regardless of success or failure)
+      setLoading(false);
+    }
+  }, [token, me]);
+
+  // load user's timeline posts on component mount and when loadMyTimeline changes
+  useEffect(() => {
+    loadMyTimeline();
+  }, [loadMyTimeline]);
+
+  // redirects AFTER hooks
+  if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
+  if (!me) return <Navigate to={RoutingPath.usersLogInView} replace />;
+
+  return (
+    <Page>
+      <Shell>
+        <ProfileCard>
+          <Cover />
+
+          <HeaderRow>
+            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Profile avatar" />
+            <HeaderText>
+              <Name>{me.username}</Name>
+              <SubText>
+                {me.bio?.trim()
+                  ? me.bio
+                  : "Welcome to your profile. Add a bio later (backend update endpoint coming soon)."}
+              </SubText>
+            </HeaderText>
+          </HeaderRow>
+
+          <ActionRow>
+            <SmallPill>
+              {me.firstname} {me.lastname}
+            </SmallPill>
+            {me.email ? <SmallPill>{me.email}</SmallPill> : null}
+          </ActionRow>
+        </ProfileCard>
+
+        <Grid>
+          <Left>
+            <Card>
+              <CardTitle>Intro</CardTitle>
+              <Muted>This section can later show: city, school, relationship, friends count, etc.</Muted>
+            </Card>
+          </Left>
+
+          <Center>
+            <Card>
+              <CardTitle>Create Post</CardTitle>
+              <CreateNewPost onCreated={loadMyTimeline} />
+            </Card>
+
+            <Card style={{ marginTop: 16 }}>
+              <FeedHeader>
+                <CardTitle style={{ margin: 0 }}>Timeline</CardTitle>
+                <RefreshBtn type="button" onClick={loadMyTimeline}>
+                  {loading ? "Loading..." : "Refresh"}
+                </RefreshBtn>
+              </FeedHeader>
+
+              <FeedList>
+                {posts.map((p) => (
+                  <PostCard key={p._id}>
+                    <PostTop>
+                      <PostAvatar
+                        src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
+                        alt="Author"
+                      />
+                      <div>
+                        <PostName>{p.author?.username ?? "Unknown"}</PostName>
+                        <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
+                      </div>
+                    </PostTop>
+
+                    <PostContent>{p.content}</PostContent>
+                    {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
+                  </PostCard>
+                ))}
+
+                {!loading && posts.length === 0 ? (
+                  <EmptyState>No posts yet. Share your first thought ✨</EmptyState>
+                ) : null}
+              </FeedList>
+            </Card>
+          </Center>
+
+          <Right>
+            <Card>
+              <CardTitle>Friends</CardTitle>
+              <Muted>Coming soon: friends list + friend requests (backend FriendRequestModel).</Muted>
+            </Card>
+          </Right>
+        </Grid>
+      </Shell>
+    </Page>
+  );
+};
+
+export default ProfileView;
