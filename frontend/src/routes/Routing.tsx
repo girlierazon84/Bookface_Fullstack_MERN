@@ -9,11 +9,9 @@ import HomeView from "../view/HomeView";
 import PageNotFoundView from "../view/PageNotFoundView";
 import CreatePostView from "../view/CreatePostView";
 import SignUpFormView from "../view/SignUpFormView";
-import Alive from "../components/users/Alive";
 import ProfileView from "../view/ProfileView";
-import AdminView from "../view/AdminView";
 import SettingsView from "../view/SettingsView";
-import { useUserContext } from "../utils/global/provider/UserProvider";
+import { useUserContext } from "../provider/UserProvider";
 
 
 // Component to protect routes that require authentication
@@ -65,10 +63,6 @@ export const Routing: React.FC = () => {
                     </RequireAuth>
                 }
             />
-
-            {/* Admin/misc */}
-            <Route path={RoutingPath.adminView} element={<AdminView />} />
-            <Route path={RoutingPath.apiAliveView} element={<Alive />} />
 
             {/* 404 */}
             <Route path={RoutingPath.pageNotFoundView} element={<PageNotFoundView />} />
