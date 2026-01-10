@@ -18,12 +18,12 @@ const StyledLabel = styled.label`
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 0.35rem;
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_primary};
 `;
 
 const StyledRequiredAsterisk = styled.span`
   color: rgb(220, 38, 38);
-  margin-left: 0.1rem;
+  margin-left: 0.15rem;
 `;
 
 const InputContainer = styled.div`
@@ -38,15 +38,16 @@ const InputField = styled.input<{ $hasError?: boolean; $hasIcon?: boolean }>`
   padding-right: ${({ $hasIcon }) => ($hasIcon ? "2.75rem" : "1rem")};
   font-size: 1rem;
 
-  /* always show a border; switch color when error */
+  /* Always show a border; change color when error */
   border: 2px solid
-    ${({ $hasError }) =>
-        $hasError ? "rgba(220, 38, 38, 0.9)" : "var(--secondary-color)"};
-  border-radius: 12px;
+    ${({ $hasError, theme }) =>
+      $hasError ? "rgba(220, 38, 38, 0.9)" : theme.colors.secondary};
 
+  border-radius: 12px;
   outline: none;
-  background-color: var(--fifthly-color);
-  color: var(--fourthly-color);
+
+  background-color: ${({ theme }) => theme.colors.fourthly};
+  color: ${({ theme }) => theme.colors.text_primary};
 
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
@@ -54,12 +55,14 @@ const InputField = styled.input<{ $hasError?: boolean; $hasIcon?: boolean }>`
     font-style: italic;
     font-size: 0.85rem;
     opacity: 0.8;
+    color: ${({ theme }) => theme.colors.text_secondary};
   }
 
   &:focus {
-    border-color: ${({ $hasError }) =>
-        $hasError ? "rgba(220, 38, 38, 0.9)" : "var(--secondary-color)"};
-    box-shadow: 0 0 0 2px
+    border-color: ${({ $hasError, theme }) =>
+      $hasError ? "rgba(220, 38, 38, 0.9)" : theme.colors.secondary};
+
+    box-shadow: 0 0 0 3px
       ${({ $hasError }) =>
         $hasError ? "rgba(220, 38, 38, 0.15)" : "rgba(0, 0, 153, 0.15)"};
   }
@@ -75,7 +78,7 @@ const IconSlot = styled.div`
   right: 1rem;
   display: grid;
   place-items: center;
-  opacity: 0.75;
+  opacity: 0.8;
 
   svg,
   img {
@@ -88,82 +91,85 @@ const ErrorText = styled.span`
   font-size: 0.8rem;
   color: rgb(220, 38, 38);
   margin-top: 0.25rem;
+  font-weight: 600;
 `;
 
 const getDefaultLabel = (name: string) =>
-    name
-        .replace(/_/g, " ")
-        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
-        .trim();
+  name
+    .replace(/_/g, " ")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .trim();
 
 /**----------------------------------
     Props for FormInput component
 -------------------------------------*/
 export type FormInputProps = Omit<
-    React.InputHTMLAttributes<HTMLInputElement>,
-    "onChange" | "type" | "value" | "name"
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "onChange" | "type" | "value" | "name"
 > & {
-    label?: string;
-    type?: React.HTMLInputTypeAttribute;
-    name: string;
-    value: string | number;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    error?: string;
-    icon?: React.ReactNode;
+  label?: string;
+  type?: React.HTMLInputTypeAttribute;
+  name: string;
+  value: string | number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  error?: string;
+  icon?: React.ReactNode;
 };
 
 /**------------------------
     FormInput Component
 ---------------------------*/
 const FormInput: React.FC<FormInputProps> = ({
-    label,
-    type = "text",
-    name,
-    value,
-    onChange,
-    error,
-    icon,
-    placeholder,
-    required,
-    disabled,
-    ...rest
+  label,
+  type = "text",
+  name,
+  value,
+  onChange,
+  error,
+  icon,
+  placeholder,
+  required,
+  disabled,
+  ...rest
 }) => {
-    const inferredLabel = label ?? getDefaultLabel(name);
-    const describedBy = error ? `${name}-error` : rest["aria-describedby"];
+  const inferredLabel = label ?? getDefaultLabel(name);
+  const describedBy = error ? `${name}-error` : rest["aria-describedby"];
 
-    return (
-        <InputWrapper>
-            <StyledLabel htmlFor={name}>
-                {inferredLabel}
-                {required ? <StyledRequiredAsterisk aria-hidden="true">*</StyledRequiredAsterisk> : null}
-            </StyledLabel>
+  return (
+    <InputWrapper>
+      <StyledLabel htmlFor={name}>
+        {inferredLabel}
+        {required ? (
+          <StyledRequiredAsterisk aria-hidden="true">*</StyledRequiredAsterisk>
+        ) : null}
+      </StyledLabel>
 
-            <InputContainer>
-                <InputField
-                    id={name}
-                    name={name}
-                    type={type}
-                    value={value}
-                    placeholder={placeholder ?? `Enter ${inferredLabel.toLowerCase()}`}
-                    onChange={onChange}
-                    required={required}
-                    disabled={disabled}
-                    $hasError={!!error}
-                    $hasIcon={!!icon}
-                    aria-invalid={!!error}
-                    aria-describedby={describedBy}
-                    {...rest}
-                />
-                {icon ? <IconSlot aria-hidden="true">{icon}</IconSlot> : null}
-            </InputContainer>
+      <InputContainer>
+        <InputField
+          id={name}
+          name={name}
+          type={type}
+          value={value}
+          placeholder={placeholder ?? `Enter ${inferredLabel.toLowerCase()}`}
+          onChange={onChange}
+          required={required}
+          disabled={disabled}
+          $hasError={!!error}
+          $hasIcon={!!icon}
+          aria-invalid={!!error}
+          aria-describedby={describedBy}
+          {...rest}
+        />
+        {icon ? <IconSlot aria-hidden="true">{icon}</IconSlot> : null}
+      </InputContainer>
 
-            {error ? (
-                <ErrorText id={`${name}-error`} role="alert">
-                    {error}
-                </ErrorText>
-            ) : null}
-        </InputWrapper>
-    );
+      {error ? (
+        <ErrorText id={`${name}-error`} role="alert">
+          {error}
+        </ErrorText>
+      ) : null}
+    </InputWrapper>
+  );
 };
 
 export default FormInput;
