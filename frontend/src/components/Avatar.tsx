@@ -1,4 +1,4 @@
-// frontend/src/components/ui/Avatar.tsx
+// frontend/src/components/Avatar.tsx
 
 import React, { useMemo, useState } from "react";
 import styled from "styled-components";
@@ -10,97 +10,106 @@ import styled from "styled-components";
 const Wrap = styled.div<{ $size: number }>`
     width: ${({ $size }) => $size}px;
     height: ${({ $size }) => $size}px;
-    border-radius: 50%;
+    border-radius: 999px;
     overflow: hidden;
+
     display: grid;
     place-items: center;
 
-    border: 1px solid var(--thirdly-color);
-    background: #fff;
+    /* ✅ Critical fix for absolute children */
+    position: relative;
+
+    border: 1px solid rgba(97, 97, 97, 0.22);
+    background: ${({ theme }) => theme.colors.fourthly};
 `;
 
 const Img = styled.img`
     width: 100%;
     height: 100%;
-    object-fit: cover;
     display: block;
+    object-fit: cover;
 `;
 
 const Initials = styled.div`
     position: absolute;
-    width: 100%;
-    height: 100%;
+    inset: 0;
+
     display: grid;
     place-items: center;
+
     font-weight: 900;
-    color: var(--secondary-color);
-    background: white;
+    letter-spacing: 0.5px;
+    color: ${({ theme }) => theme.colors.secondary};
+    background: ${({ theme }) => theme.colors.fourthly};
 `;
 
-// Avatar component props definition
-type Props = {
-    src?: string | null;
-    alt?: string;
-    name?: string; // used for initials fallback
-    size?: number; // px
-    className?: string;
-};
+/**-----------------------
+    Helpers
+------------------------*/
+const DEFAULT_AVATAR = "/images/default-avatar.png"; // /public/images/default-avatar.png
 
-// Default avatar image path definition
-const DEFAULT_AVATAR = "/images/default-avatar.png"; // put file in /public/images/
-
-// Function to extract initials from a name string or return a default emoji if name is empty or undefined
 const getInitials = (name?: string) => {
-    // Trim and check if name is empty or undefined
     const n = (name ?? "").trim();
     if (!n) return "🙂";
     const parts = n.split(/\s+/).slice(0, 2);
     return parts.map((p) => p[0]?.toUpperCase()).join("");
 };
 
-// Function to check if a given string is probably a URL
 const isProbablyUrl = (value?: string | null) => {
-    // Basic check for URL patterns
     if (!value) return false;
     return value.startsWith("http://") || value.startsWith("https://") || value.startsWith("/");
 };
 
-// Avatar component definition
+/**-----------------------
+    Types
+------------------------*/
+type Props = {
+    src?: string | null;
+    alt?: string;
+    name?: string;
+    size?: number;
+    className?: string;
+};
+
+type Mode = "img" | "fallback" | "initials";
+
+/**-----------------------
+    Avatar
+------------------------*/
 const Avatar: React.FC<Props> = ({ src, alt = "Avatar", name, size = 42, className }) => {
-    // State to track if image loading has failed
-    const [failed, setFailed] = useState(false);
-
-    // Memoized computation of the safe image source to use
-    const safeSrc = useMemo(() => {
-        // If loading the provided src failed, fallback to default avatar image
-        if (failed) return DEFAULT_AVATAR;
-        if (!isProbablyUrl(src)) return DEFAULT_AVATAR;
-        return src!;
-    }, [src, failed]);
-
-    // Memoized computation of initials from the name prop for fallback display
     const initials = useMemo(() => getInitials(name), [name]);
+
+    // start with provided src if valid; otherwise default
+    const initialSrc = useMemo(() => (isProbablyUrl(src) ? src! : DEFAULT_AVATAR), [src]);
+
+    const [mode, setMode] = useState<Mode>("img");
+    const [resolvedSrc, setResolvedSrc] = useState<string>(initialSrc);
+
+    const handleError = () => {
+        // first failure -> try default avatar
+        if (mode === "img" && resolvedSrc !== DEFAULT_AVATAR) {
+            setMode("fallback");
+            setResolvedSrc(DEFAULT_AVATAR);
+            return;
+        }
+
+        // default avatar also failed -> show initials
+        setMode("initials");
+    };
 
     return (
         <Wrap $size={size} className={className} aria-label={alt} title={name ?? alt}>
-            {/* If even default image fails, we show initials */}
-            {!safeSrc ? (
-                <Initials>{initials}</Initials>
+            {mode === "initials" ? (
+                <Initials aria-hidden="true">{initials}</Initials>
             ) : (
                 <Img
-                    src={safeSrc}
+                    src={resolvedSrc}
                     alt={alt}
-                    onError={() => {
-                        // if the given src fails -> fallback to default
-                        // if default fails too -> drop to initials
-                        if (safeSrc === DEFAULT_AVATAR) setFailed(true);
-                        else setFailed(true);
-                    }}
+                    onError={handleError}
                     loading="lazy"
                     referrerPolicy="no-referrer"
                 />
             )}
-            {failed && <Initials aria-hidden="true">{initials}</Initials>}
         </Wrap>
     );
 };
