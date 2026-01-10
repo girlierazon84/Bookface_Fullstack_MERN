@@ -3,34 +3,36 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import RoutingPath from "./RoutingPath";
-
 import UsersLogInView from "../view/UsersLogInView";
-import HomeView from "../view/HomeView";
-import PageNotFoundView from "../view/PageNotFoundView";
-import CreatePostView from "../view/CreatePostView";
 import SignUpFormView from "../view/SignUpFormView";
+import HomeView from "../view/HomeView";
+import CreatePostView from "../view/CreatePostView";
 import ProfileView from "../view/ProfileView";
 import SettingsView from "../view/SettingsView";
 import { useUserContext } from "../provider/UserProvider";
 
 
-// Component to protect routes that require authentication
 const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-    // Check if the user is authenticated (using context or any state management)
     const { token } = useUserContext();
-    if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
-    return children;
+    return token ? children : <Navigate to={RoutingPath.usersLogInView} replace />;
 };
 
-// Main routing component export
 export const Routing: React.FC = () => {
+    const { token } = useUserContext();
+
     return (
         <Routes>
             {/* Public */}
-            <Route path={RoutingPath.usersLogInView} element={<UsersLogInView />} />
-            <Route path={RoutingPath.signUpFormView} element={<SignUpFormView />} />
+            <Route
+                path={RoutingPath.usersLogInView}
+                element={token ? <Navigate to={RoutingPath.homeView} replace /> : <UsersLogInView />}
+            />
+            <Route
+                path={RoutingPath.signUpFormView}
+                element={token ? <Navigate to={RoutingPath.homeView} replace /> : <SignUpFormView />}
+            />
 
-            {/* Protected */}
+            {/* Protected ("/" is your authenticated home/feed) */}
             <Route
                 path={RoutingPath.homeView}
                 element={
@@ -64,9 +66,11 @@ export const Routing: React.FC = () => {
                 }
             />
 
-            {/* 404 */}
-            <Route path={RoutingPath.pageNotFoundView} element={<PageNotFoundView />} />
-            <Route path={RoutingPath.wildCardView} element={<Navigate to={RoutingPath.pageNotFoundView} replace />} />
+            {/* Fallback */}
+            <Route
+                path="*"
+                element={<Navigate to={token ? RoutingPath.homeView : RoutingPath.usersLogInView} replace />}
+            />
         </Routes>
     );
 };
