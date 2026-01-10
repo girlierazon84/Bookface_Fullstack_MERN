@@ -20,7 +20,7 @@ const Page = styled.main`
 `;
 
 const Card = styled.div`
-    background: var(--fifthly-color);
+    background: ${({ theme }) => theme.colors.fourthly};
     border: 1px solid rgba(97, 97, 97, 0.25);
     border-radius: 16px;
     box-shadow: ${({ theme }) => theme.colors.card_shadow};
