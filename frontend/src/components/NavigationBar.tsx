@@ -6,7 +6,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import Burger from "./Burger";
 import RoutingPath from "../routes/RoutingPath";
-import logo from "../../utils/images/logo.png";
+import logo from "../assets/logo.png";
 
 
 /**----------------------
