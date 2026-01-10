@@ -3,79 +3,91 @@
 import React from "react";
 import styled from "styled-components";
 
-
 /**------------------------------------
     Styled Components for FormInput
 ---------------------------------------*/
 const InputWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 1rem;
 `;
 
 const StyledLabel = styled.label`
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 0.35rem;
-    color: var(--fourthly-color);
+  font-family: "Oxygen", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+  color: var(--fourthly-color);
+`;
+
+const StyledRequiredAsterisk = styled.span`
+  color: rgb(220, 38, 38);
+  margin-left: 0.1rem;
 `;
 
 const InputContainer = styled.div`
-    position: relative;
-    display: flex;
-    align-items: center;
+  position: relative;
+  display: flex;
+  align-items: center;
 `;
 
 const InputField = styled.input<{ $hasError?: boolean; $hasIcon?: boolean }>`
-    width: 100%;
-    padding: 0.75rem 1rem;
-    padding-right: ${({ $hasIcon }) => ($hasIcon ? "2.75rem" : "1rem")};
-    font-size: 1rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  padding-right: ${({ $hasIcon }) => ($hasIcon ? "2.75rem" : "1rem")};
+  font-size: 1rem;
 
-    border: 2px solid ${({ $hasError }) => ($hasError ? "rgba(220, 38, 38, 0.9)" : "var(--secondary-color)")};
-    border-radius: 12px;
+  /* always show a border; switch color when error */
+  border: 2px solid
+    ${({ $hasError }) =>
+        $hasError ? "rgba(220, 38, 38, 0.9)" : "var(--secondary-color)"};
+  border-radius: 12px;
 
-    outline: none;
-    background-color: var(--fifthly-color);
-    color: var(--fourthly-color);
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+  background-color: var(--fifthly-color);
+  color: var(--fourthly-color);
 
-    &::placeholder {
-        font-style: italic;
-        font-size: 0.85rem;
-        opacity: 0.8;
-    }
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 
-    &:focus {
-        border-color: ${({ $hasError }) => ($hasError ? "rgba(220, 38, 38, 0.9)" : "var(--secondary-color)")};
-        box-shadow: 0 0 0 2px ${({ $hasError }) => ($hasError ? "rgba(220, 38, 38, 0.15)" : "rgba(0, 0, 153, 0.15)")};
-    }
+  &::placeholder {
+    font-style: italic;
+    font-size: 0.85rem;
+    opacity: 0.8;
+  }
 
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
+  &:focus {
+    border-color: ${({ $hasError }) =>
+        $hasError ? "rgba(220, 38, 38, 0.9)" : "var(--secondary-color)"};
+    box-shadow: 0 0 0 2px
+      ${({ $hasError }) =>
+        $hasError ? "rgba(220, 38, 38, 0.15)" : "rgba(0, 0, 153, 0.15)"};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const IconSlot = styled.div`
-    position: absolute;
-    right: 1rem;
-    display: grid;
-    place-items: center;
-    opacity: 0.75;
+  position: absolute;
+  right: 1rem;
+  display: grid;
+  place-items: center;
+  opacity: 0.75;
 
-    svg,
-    img {
-        width: 20px;
-        height: 20px;
-    }
+  svg,
+  img {
+    width: 20px;
+    height: 20px;
+  }
 `;
 
 const ErrorText = styled.span`
-    font-size: 0.8rem;
-    color: rgb(220, 38, 38);
-    margin-top: 0.25rem;
+  font-size: 0.8rem;
+  color: rgb(220, 38, 38);
+  margin-top: 0.25rem;
 `;
 
 const getDefaultLabel = (name: string) =>
@@ -87,7 +99,10 @@ const getDefaultLabel = (name: string) =>
 /**----------------------------------
     Props for FormInput component
 -------------------------------------*/
-export type FormInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "onChange" | "type" | "value" | "name"> & {
+export type FormInputProps = Omit<
+    React.InputHTMLAttributes<HTMLInputElement>,
+    "onChange" | "type" | "value" | "name"
+> & {
     label?: string;
     type?: React.HTMLInputTypeAttribute;
     name: string;
@@ -120,7 +135,7 @@ const FormInput: React.FC<FormInputProps> = ({
         <InputWrapper>
             <StyledLabel htmlFor={name}>
                 {inferredLabel}
-                {required ? " *" : ""}
+                {required ? <StyledRequiredAsterisk aria-hidden="true">*</StyledRequiredAsterisk> : null}
             </StyledLabel>
 
             <InputContainer>
