@@ -7,30 +7,33 @@ import { ListItemIcon, ListItemText } from "@mui/material";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
 import { useUserContext } from "../provider/UserProvider";
-import Profile from "./Profile";
 import RoutingPath from "../routes/RoutingPath";
+import Profile from "./Profile";
 
 
 /**-------------------------------------------------------------------------
-    styled-components: use transient $open to avoid passing props to DOM
+    styled-components: use transient props ($open) to avoid passing to DOM
 ----------------------------------------------------------------------------*/
 const Panel = styled.aside<{ $open: boolean }>`
-  /* desktop: inline */
+  /* Desktop: no overlay, no positioning */
   @media (min-width: 769px) {
     position: static;
+    inset: auto;
+    background: transparent;
+    pointer-events: auto;
   }
 
-  /* mobile drawer overlay */
+  /* Mobile: overlay */
   @media (max-width: 768px) {
     position: fixed;
     inset: 0;
     z-index: 40;
 
-    pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-    background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.28 : 0)});
-
     display: flex;
     justify-content: flex-end;
+
+    pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
+    background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.28 : 0)});
     transition: background 0.25s ease;
   }
 `;
@@ -40,6 +43,7 @@ const Menu = styled.ul<{ $open: boolean }>`
   margin: 0;
   padding: 0;
 
+  /* Desktop: inline actions */
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
@@ -49,9 +53,11 @@ const Menu = styled.ul<{ $open: boolean }>`
     display: flex;
     align-items: center;
     gap: 6px;
-    color: ${({ theme }) => theme.colors.secondary};
     text-decoration: none;
+
+    color: ${({ theme }) => theme.colors.secondary};
     font-weight: 900;
+
     padding: 8px 10px;
     border-radius: 12px;
   }
@@ -60,6 +66,7 @@ const Menu = styled.ul<{ $open: boolean }>`
     background: ${({ theme }) => theme.colors.fourthly};
   }
 
+  /* Mobile: slide-in drawer */
   @media (max-width: 768px) {
     height: 100%;
     width: min(82vw, 340px);
@@ -67,12 +74,18 @@ const Menu = styled.ul<{ $open: boolean }>`
     border-left: 1px solid rgba(97, 97, 97, 0.2);
 
     padding: 90px 14px 14px;
+
     display: grid;
     gap: 8px;
     align-content: start;
 
     transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
     transition: transform 0.25s ease;
+
+    /* keep icons/text aligned nicely */
+    a {
+      padding: 10px 12px;
+    }
   }
 `;
 
@@ -81,24 +94,26 @@ const Li = styled.li`
   align-items: center;
 `;
 
-// Right navigation panel component export
 type Props = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
-// Right navigation panel component export
 const RightNav: React.FC<Props> = ({ open, setOpen }) => {
-  // Get user token from context to determine logged-in state
   const { token } = useUserContext();
 
-  // Handlers to close nav and stop propagation
   const close = () => setOpen(false);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
     <Panel $open={open} aria-hidden={!open} onClick={close}>
-      <Menu id="primary-navigation" $open={open} onClick={stop} role="menu">
+      <Menu
+        id="primary-navigation"
+        $open={open}
+        onClick={stop}
+        role="menu"
+        aria-label="Primary navigation"
+      >
         <Li>
           <Link to={RoutingPath.homeView} onClick={close}>
             <ListItemIcon>
@@ -110,7 +125,6 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
 
         {token ? (
           <Li>
-            {/* If Profile navigates, it now has Router context + nav closes on route change */}
             <Profile />
           </Li>
         ) : (
