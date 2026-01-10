@@ -3,21 +3,31 @@
 import React from "react";
 import styled from "styled-components";
 
+
 /**------------------------------------
     Styled Components for FormInput
 ---------------------------------------*/
 const InputWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
   width: 100%;
-  margin-bottom: 1rem;
+  display: grid;
+
+  /* Consistent spacing tokens for the whole component */
+  --fi-gap-label: 6px;
+  --fi-gap-error: 6px;
+  --fi-gap-field: 14px;
+
+  /* Label -> input spacing */
+  row-gap: var(--fi-gap-label);
+
+  /* Consistent distance to next field */
+  margin-bottom: var(--fi-gap-field);
 `;
 
 const StyledLabel = styled.label`
   font-family: "Oxygen", sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
-  margin-bottom: 0.35rem;
+  line-height: 1.15;
   color: ${({ theme }) => theme.colors.text_primary};
 `;
 
@@ -38,13 +48,13 @@ const InputField = styled.input<{ $hasError?: boolean; $hasIcon?: boolean }>`
   padding-right: ${({ $hasIcon }) => ($hasIcon ? "2.75rem" : "1rem")};
   font-size: 1rem;
 
-  /* Always show a border; change color when error */
+  border-radius: 12px;
+  outline: none;
+
+  /* Always show border; switch color when error */
   border: 2px solid
     ${({ $hasError, theme }) =>
       $hasError ? "rgba(220, 38, 38, 0.9)" : theme.colors.secondary};
-
-  border-radius: 12px;
-  outline: none;
 
   background-color: ${({ theme }) => theme.colors.fourthly};
   color: ${({ theme }) => theme.colors.text_primary};
@@ -54,7 +64,7 @@ const InputField = styled.input<{ $hasError?: boolean; $hasIcon?: boolean }>`
   &::placeholder {
     font-style: italic;
     font-size: 0.85rem;
-    opacity: 0.8;
+    opacity: 0.85;
     color: ${({ theme }) => theme.colors.text_secondary};
   }
 
@@ -88,10 +98,10 @@ const IconSlot = styled.div`
 `;
 
 const ErrorText = styled.span`
+  margin-top: var(--fi-gap-error);
   font-size: 0.8rem;
-  color: rgb(220, 38, 38);
-  margin-top: 0.25rem;
   font-weight: 600;
+  color: rgb(220, 38, 38);
 `;
 
 const getDefaultLabel = (name: string) =>
