@@ -3,38 +3,14 @@
 import React from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-
-import CreateNewPost from "../components/posts/CreateNewPost";
-import { useUserContext } from "../utils/global/provider/UserProvider";
+import CreateNewPost from "../components/CreateNewPost";
+import { useUserContext } from "../provider/UserProvider";
 import RoutingPath from "../routes/RoutingPath";
 
 
-const CreatePostView: React.FC = () => {
-    const { token } = useUserContext();
-    const navigate = useNavigate();
-
-    if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
-
-    return (
-        <Page>
-            <Shell>
-                <Card>
-                    <Title>Create Post</Title>
-                    <Sub>Share something with your friends.</Sub>
-
-                    <CreateNewPost
-                        onCreated={() => {
-                            navigate(RoutingPath.homeView, { replace: true });
-                        }}
-                    />
-                </Card>
-            </Shell>
-        </Page>
-    );
-};
-
-export default CreatePostView;
-
+/**--------------------------------------
+    Create Post View Styled Component
+-----------------------------------------*/
 const Page = styled.main`
     background: var(--primary-color);
     min-height: calc(100vh - 85px);
@@ -67,3 +43,32 @@ const Sub = styled.p`
     color: var(--fourthly-color);
     font-weight: 700;
 `;
+
+// Create Post View Component
+const CreatePostView: React.FC = () => {
+    // Access user context for authentication status
+    const { token } = useUserContext();
+    const navigate = useNavigate();
+
+    // Redirect to login if not authenticated
+    if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
+
+    return (
+        <Page>
+            <Shell>
+                <Card>
+                    <Title>Create Post</Title>
+                    <Sub>Share something with your friends.</Sub>
+
+                    <CreateNewPost
+                        onCreated={() => {
+                            navigate(RoutingPath.homeView, { replace: true });
+                        }}
+                    />
+                </Card>
+            </Shell>
+        </Page>
+    );
+};
+
+export default CreatePostView;
