@@ -5,28 +5,13 @@ import logo from "../utils/images/logo.png";
 import CopyrightIcon from "@mui/icons-material/Copyright";
 
 
-export default function FooterContainer() {
-  return (
-    <Footer>
-      <Inner>
-        <img src={logo} alt="Bookface logo" />
-        <Meta>
-          <Creator>
-            Created by <strong>Girlie Razon</strong>
-          </Creator>
-          <Copy>
-            BF <CopyrightIcon fontSize="inherit" /> 2021
-          </Copy>
-        </Meta>
-      </Inner>
-    </Footer>
-  );
-}
-
+/**---------------------
+    Styled-Component
+------------------------*/
 const Footer = styled.footer`
   width: 100%;
   border-top: 1px solid rgba(97, 97, 97, 0.2);
-  background: var(--primary-color);
+  background: ${({ theme }) => theme.colors.primary};
   padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
 `;
 
@@ -65,12 +50,30 @@ const Meta = styled.div`
 `;
 
 const Creator = styled.div`
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_primary};
   font-weight: 800;
 `;
 
 const Copy = styled.div`
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_secondary};
   font-weight: 800;
   opacity: 0.9;
 `;
+
+export default function FooterContainer() {
+  return (
+    <Footer>
+      <Inner>
+        <img src={logo} alt="Bookface logo" />
+        <Meta>
+          <Creator>
+            Created by <strong>Girlie Razon</strong>
+          </Creator>
+          <Copy>
+            BF <CopyrightIcon fontSize="inherit" /> 2021
+          </Copy>
+        </Meta>
+      </Inner>
+    </Footer>
+  );
+}
