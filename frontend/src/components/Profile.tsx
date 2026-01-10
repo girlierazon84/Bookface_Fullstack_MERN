@@ -6,13 +6,107 @@ import styled from "styled-components";
 import LogoutSharpIcon from "@mui/icons-material/LogoutSharp";
 import { ListItemIcon, ListItemText } from "@mui/material";
 import PostAddSharpIcon from "@mui/icons-material/PostAddSharp";
-
 import RoutingPath from "../routes/RoutingPath";
-import { useUserContext } from "../utils/global/provider/UserProvider";
-import Avatar from "./ui/Avatar";
+import { useUserContext } from "../provider/UserProvider";
+import Avatar from "./Avatar";
 
 
+/**----------------------
+    Styled Components
+-------------------------*/
+const Wrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const AddPostLink = styled.div`
+  a {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: ${({ theme }) => theme.colors.fourthly};
+    text-decoration: none;
+    font-weight: 900;
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  a:hover {
+    background: ${({ theme }) => theme.colors.thirdly};
+  }
+`;
+
+const ProfileWrapper = styled.section`
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 12px;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.thirdly};
+  }
+
+  &:hover .profileDropdown {
+    display: block;
+  }
+`;
+
+const SpanUserName = styled.span`
+  padding-left: 10px;
+  color: ${({ theme }) => theme.colors.secondary};
+  font-family: "Oleo Script", sans-serif;
+  font-weight: 900;
+
+  @media (max-width: 520px) {
+    display: none; /* mobile app feel */
+  }
+`;
+
+const Dropdown = styled.div`
+  display: none;
+  position: absolute;
+  top: 54px;
+  right: 0;
+  background-color: ${({ theme }) => theme.colors.primary};
+  min-width: 190px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(97, 97, 97, 0.2);
+  box-shadow: ${({ theme }) => theme.colors.card_shadow};
+  z-index: 30;
+`;
+
+const DropdownItem = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: none;
+  background: ${({ theme }) => theme.colors.fourthly};
+  text-align: left;
+  font-weight: 900;
+  color: ${({ theme }) => theme.colors.text_primary};
+  cursor: pointer;
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.secondary};
+  }
+`;
+
+const Hr = styled.hr`
+  border: none;
+  border-top: 1px solid rgba(97, 97, 97, 0.2);
+  margin: 8px 0;
+`;
+
+// Profile Component
 const Profile: React.FC = () => {
+  // Hooks and Context
   const navigate = useNavigate();
   const { user, logout } = useUserContext();
 
@@ -56,93 +150,3 @@ const Profile: React.FC = () => {
 };
 
 export default Profile;
-
-const Wrapper = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const AddPostLink = styled.div`
-  a {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: var(--fourthly-color);
-    text-decoration: none;
-    font-weight: 900;
-    padding: 8px 10px;
-    border-radius: 12px;
-  }
-
-  a:hover {
-    background: rgba(255, 255, 255, 0.6);
-  }
-`;
-
-const ProfileWrapper = styled.section`
-  display: flex;
-  align-items: center;
-  position: relative;
-  cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 12px;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.6);
-  }
-
-  &:hover .profileDropdown {
-    display: block;
-  }
-`;
-
-const SpanUserName = styled.span`
-  padding-left: 10px;
-  color: var(--secondary-color);
-  font-family: "Oleo Script", sans-serif;
-  font-weight: 900;
-
-  @media (max-width: 520px) {
-    display: none; /* mobile app feel */
-  }
-`;
-
-const Dropdown = styled.div`
-  display: none;
-  position: absolute;
-  top: 54px;
-  right: 0;
-  background-color: white;
-  min-width: 190px;
-  padding: 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(97, 97, 97, 0.2);
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
-  z-index: 30;
-`;
-
-const DropdownItem = styled.button`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 12px;
-  border-radius: 12px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  font-weight: 900;
-  color: var(--fourthly-color);
-  cursor: pointer;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.05);
-  }
-`;
-
-const Hr = styled.hr`
-  border: none;
-  border-top: 1px solid rgba(97, 97, 97, 0.2);
-  margin: 8px 0;
-`;
