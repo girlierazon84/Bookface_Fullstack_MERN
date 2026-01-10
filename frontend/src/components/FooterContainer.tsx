@@ -11,7 +11,7 @@ import CopyrightIcon from "@mui/icons-material/Copyright";
 const Footer = styled.footer`
   width: 100%;
   border-top: 1px solid rgba(97, 97, 97, 0.2);
-  background: ${({ theme }) => theme.colors.primary};
+  background: ${({ theme }) => theme.colors.fourthly};
   padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
 `;
 
