@@ -6,11 +6,15 @@ import styled from "styled-components";
 import RoutingPath from "../routes/RoutingPath";
 import AuthService from "../api/service/AuthService";
 import { useUserContext } from "../provider/UserProvider";
-import { PrimaryButton } from "../components/CustomButtonComponent";
+import {
+  PrimaryButton,
+  SecondaryButton
+} from "../components/CustomButtonComponent";
+import FormInput from "../components/FormInput";
 
 
 /**---------------------
-    Styled-Component
+    Styled-Components
 ------------------------*/
 const Page = styled.main`
   background: ${({ theme }) => theme.colors.primary};
@@ -73,26 +77,10 @@ const CardTitle = styled.h2`
   font-weight: 900;
 `;
 
-const Input = styled.input`
-  width: 100%;
-  height: 46px;
-  border: 1px solid rgba(97, 97, 97, 0.25);
-  border-radius: 10px;
-  padding: 0 12px;
-  font-size: 1rem;
-  background: ${({ theme }) => theme.colors.primary};
-  outline: none;
-
-  &:focus {
-    border-color: ${({ theme }) => theme.colors.secondary};
-    box-shadow: ${({ theme }) => theme.colors.card_shadow};
-  }
-`;
-
 const ErrorText = styled.div`
   min-height: 22px;
   font-weight: 800;
-  color: #b00020;
+  color: rgb(220, 38, 38);
 `;
 
 const Divider = styled.hr`
@@ -101,19 +89,10 @@ const Divider = styled.hr`
   margin: 8px 0;
 `;
 
-const SignUpLink = styled(Link)`
-  display: grid;
-  place-items: center;
+// makes Link behave like a block wrapper without changing your button
+const LinkBlock = styled(Link)`
   text-decoration: none;
-  font-weight: 900;
-  background: ${({ theme }) => theme.colors.secondary};
-  color: ${({ theme }) => theme.colors.fourthly};
-  height: 44px;
-  border-radius: 10px;
-
-  &:hover {
-    background: ${({ theme }) => theme.colors.fourthly};
-  }
+  display: block;
 `;
 
 const UsersLogInView: React.FC = () => {
@@ -136,19 +115,21 @@ const UsersLogInView: React.FC = () => {
     try {
       const res = await AuthService.login({
         username: userName.trim(),
-        password: passWord
+        password: passWord,
       });
 
       setAuth(res.data.token, res.data.user);
       navigate(RoutingPath.homeView, { replace: true });
     } catch (e: any) {
-      const msg =
-        e?.response?.data?.message ||
-        "Wrong username or password";
+      const msg = e?.response?.data?.message || "Wrong username or password";
       setLoginText(msg);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const onEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") login();
   };
 
   return (
@@ -163,34 +144,43 @@ const UsersLogInView: React.FC = () => {
           <Card>
             <CardTitle>Log in</CardTitle>
 
-            <Input
-              type="text"
-              placeholder="Username or email"
+            <FormInput
+              name="username"
+              label="Username or email"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && login()}
+              onKeyDown={onEnter}
               autoComplete="username"
+              placeholder="Enter username or email"
+              required
+              disabled={isSubmitting}
             />
-            <Input
+
+            <FormInput
+              name="password"
+              label="Password"
               type="password"
-              placeholder="Password"
               value={passWord}
               onChange={(e) => setPassWord(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && login()}
+              onKeyDown={onEnter}
               autoComplete="current-password"
+              placeholder="Enter password"
+              required
+              disabled={isSubmitting}
             />
 
-            <ErrorText>{loginText}</ErrorText>
+            <ErrorText role="alert">{loginText}</ErrorText>
 
-            <PrimaryButton onClick={login}>
+            <PrimaryButton onClick={login} type="button" disabled={isSubmitting}>
               {isSubmitting ? "Logging in..." : "Log In"}
             </PrimaryButton>
 
             <Divider />
 
-            <SignUpLink to={RoutingPath.signUpFormView}>
-              Create new account
-            </SignUpLink>
+            {/* SecondaryButton doesn't accept `to`, so wrap with Link */}
+            <LinkBlock to={RoutingPath.signUpFormView}>
+              <SecondaryButton type="button">Create new account</SecondaryButton>
+            </LinkBlock>
           </Card>
         </Right>
       </Shell>
