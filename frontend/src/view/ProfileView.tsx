@@ -8,7 +8,6 @@ import React, {
 } from "react";
 import { Navigate } from "react-router-dom";
 import styled from "styled-components";
-
 import { useUserContext } from "../provider/UserProvider";
 import RoutingPath from "../routes/RoutingPath";
 import PostService, {
@@ -16,16 +15,17 @@ import PostService, {
   normalizePostsList
 } from "../api/service/PostService";
 import CreateNewPost from "../components/CreateNewPost";
-
+import Avatar from "../components/Avatar";
 
 
 /*-----------------------
     Styled Components
 -------------------------*/
 const Page = styled.main`
-  background: var(--primary-color);
+  background: ${({ theme }) => theme.colors.primary};
   min-height: calc(100vh - 85px);
-  padding: 20px 0 60px;
+  padding: 16px 0 calc(60px + env(safe-area-inset-bottom));
+  overflow-x: hidden;
 `;
 
 const Shell = styled.section`
@@ -33,55 +33,41 @@ const Shell = styled.section`
   margin: 0 auto;
   display: grid;
   gap: 16px;
+  min-width: 0;
 `;
 
 const Grid = styled.section`
   display: grid;
-  grid-template-columns: 280px 1fr 280px;
+  grid-template-columns: 280px minmax(0, 1fr) 280px;
   gap: 16px;
+  min-width: 0;
 
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
   }
 `;
 
-const Left = styled.aside`
-  @media (max-width: 960px) {
-    order: 2;
-  }
-`;
-
-const Center = styled.section`
-  @media (max-width: 960px) {
-    order: 1;
-  }
-`;
-
-const Right = styled.aside`
-  @media (max-width: 960px) {
-    order: 3;
-  }
-`;
-
 const Card = styled.div`
-  background: var(--fifthly-color);
-  border: 1px solid rgba(97, 97, 97, 0.25);
-  border-radius: 14px;
-  box-shadow: 0 10px 24px rgba(97, 97, 97, 0.2);
+  background: ${({ theme }) => theme.colors.fourthly};
+  border: 1px solid rgba(97, 97, 97, 0.22);
+  border-radius: 16px;
+  box-shadow: ${({ theme }) => theme.colors.card_shadow};
   padding: 14px;
+  min-width: 0;
 `;
 
-const ProfileCard = styled.div`
-  background: var(--fifthly-color);
-  border: 1px solid rgba(97, 97, 97, 0.25);
-  border-radius: 16px;
-  box-shadow: 0 10px 24px rgba(97, 97, 97, 0.25);
+const ProfileCard = styled(Card)`
+  padding: 0;
   overflow: hidden;
 `;
 
 const Cover = styled.div`
-  height: 180px;
-  background: linear-gradient(135deg, var(--secondary-color), var(--thirdly-color));
+  height: 170px;
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.secondary},
+    ${({ theme }) => theme.colors.thirdly}
+  );
 `;
 
 const HeaderRow = styled.div`
@@ -89,61 +75,56 @@ const HeaderRow = styled.div`
   gap: 14px;
   align-items: center;
   padding: 16px;
-  margin-top: -38px;
-`;
-
-const Avatar = styled.img`
-  width: 92px;
-  height: 92px;
-  border-radius: 50%;
-  border: 4px solid var(--fifthly-color);
-  object-fit: cover;
+  margin-top: -34px;
 `;
 
 const HeaderText = styled.div`
   display: grid;
   gap: 6px;
+  min-width: 0;
 `;
 
 const Name = styled.h1`
   margin: 0;
-  color: var(--secondary-color);
+  color: ${({ theme }) => theme.colors.secondary};
   font-weight: 900;
   font-family: "Oleo Script", sans-serif;
+  font-size: 1.6rem;
 `;
 
 const SubText = styled.p`
   margin: 0;
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_secondary};
   font-weight: 700;
+  overflow-wrap: anywhere;
 `;
 
-const ActionRow = styled.div`
+const Pills = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   padding: 0 16px 16px;
 `;
 
-const SmallPill = styled.span`
-  background: white;
+const Pill = styled.span`
+  background: ${({ theme }) => theme.colors.primary};
   border: 1px solid rgba(97, 97, 97, 0.2);
   padding: 8px 10px;
   border-radius: 999px;
   font-weight: 800;
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_primary};
 `;
 
 const CardTitle = styled.h2`
   margin: 0 0 10px;
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_primary};
   font-size: 1rem;
   font-weight: 900;
 `;
 
 const Muted = styled.p`
   margin: 0;
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_secondary};
   line-height: 1.4;
   font-weight: 700;
 `;
@@ -158,16 +139,16 @@ const FeedHeader = styled.div`
 
 const RefreshBtn = styled.button`
   border: 1px solid rgba(97, 97, 97, 0.25);
-  background: white;
-  border-radius: 10px;
-  padding: 8px 12px;
+  background: ${({ theme }) => theme.colors.primary};
+  border-radius: 12px;
+  padding: 10px 12px;
   cursor: pointer;
-  font-weight: 800;
-  color: var(--fourthly-color);
+  font-weight: 900;
+  color: ${({ theme }) => theme.colors.text_primary};
 
   &:hover {
-    border-color: var(--secondary-color);
-    color: var(--secondary-color);
+    border-color: ${({ theme }) => theme.colors.secondary};
+    color: ${({ theme }) => theme.colors.secondary};
   }
 `;
 
@@ -176,10 +157,10 @@ const FeedList = styled.div`
   gap: 12px;
 `;
 
-const PostCard = styled.div`
-  background: white;
+const PostCard = styled.article`
+  background: ${({ theme }) => theme.colors.primary};
   border: 1px solid rgba(97, 97, 97, 0.15);
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 12px;
 `;
 
@@ -189,46 +170,44 @@ const PostTop = styled.div`
   align-items: center;
 `;
 
-const PostAvatar = styled.img`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 1px solid var(--thirdly-color);
-  object-fit: cover;
-`;
-
 const PostName = styled.div`
   font-weight: 900;
-  color: var(--secondary-color);
+  color: ${({ theme }) => theme.colors.secondary};
 `;
 
 const PostTime = styled.div`
   font-size: 0.85rem;
-  color: var(--fourthly-color);
+  color: ${({ theme }) => theme.colors.text_secondary};
+  font-weight: 700;
 `;
 
 const PostContent = styled.p`
   margin: 10px 0 0;
-  color: var(--fourthly-color);
-  line-height: 1.4;
+  color: ${({ theme }) => theme.colors.text_primary};
+  line-height: 1.5;
   white-space: pre-wrap;
+  font-weight: 700;
+  overflow-wrap: anywhere;
 `;
 
 const PostImage = styled.img`
   margin-top: 10px;
   width: 100%;
-  border-radius: 12px;
+  border-radius: 14px;
   border: 1px solid rgba(97, 97, 97, 0.15);
+  display: block;
 `;
 
 const EmptyState = styled.div`
   padding: 14px;
   text-align: center;
-  color: var(--fourthly-color);
-  font-weight: 800;
+  color: ${({ theme }) => theme.colors.text_secondary};
+  font-weight: 900;
 `;
 
-// ✅ local guard to handle "string | AuthUser" situations safely
+/**-----------------------
+    Type guard
+------------------------*/
 const isAuthUser = (
   value: unknown
 ): value is {
@@ -239,66 +218,46 @@ const isAuthUser = (
   email?: string;
   avatarUrl?: string;
   bio?: string;
-} => {
-  // check for required fields
-  return !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
-};
+} => !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
 
-// ProfileView component definition
+/**-----------------------
+    ProfileView
+------------------------*/
 const ProfileView: React.FC = () => {
-  // get user context data
   const { token, user } = useUserContext();
-
-  // memoized authenticated user object or null if not authenticated user data is present
   const me = useMemo(() => (isAuthUser(user) ? user : null), [user]);
 
-  // state for user's posts and loading status
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // function to load user's timeline posts from the API
   const loadMyTimeline = useCallback(async () => {
-    // guard clauses for token and user data presence
     if (!token || !me) return;
 
-    // fetch posts and filter for user's own posts only
     setLoading(true);
     try {
-      // fetch all posts from the API
       const res = await PostService.getFeed();
-
-      // normalize and filter posts authored by the authenticated user
       const allPosts = normalizePostsList(res.data);
-      const myPosts = allPosts.filter((p: PostDTO) => p.author?._id === me._id);
-
-      // update state with user's posts only
-      setPosts(myPosts);
+      setPosts(allPosts.filter((p) => p.author?._id === me._id));
     } catch {
-      // on error, clear posts state to indicate failure to load posts for user timeline
       setPosts([]);
     } finally {
-      // reset loading state after fetch attempt completes (regardless of success or failure)
       setLoading(false);
     }
   }, [token, me]);
 
-  // load user's timeline posts on component mount and when loadMyTimeline changes
   useEffect(() => {
     loadMyTimeline();
   }, [loadMyTimeline]);
 
-  // redirects AFTER hooks
-  if (!token) return <Navigate to={RoutingPath.usersLogInView} replace />;
-  if (!me) return <Navigate to={RoutingPath.usersLogInView} replace />;
+  if (!token || !me) return <Navigate to={RoutingPath.usersLogInView} replace />;
 
   return (
     <Page>
       <Shell>
         <ProfileCard>
           <Cover />
-
           <HeaderRow>
-            <Avatar src={me.avatarUrl || "https://thispersondoesnotexist.com/image"} alt="Profile avatar" />
+            <Avatar src={me.avatarUrl} name={me.username} alt="Profile avatar" size={92} />
             <HeaderText>
               <Name>{me.username}</Name>
               <SubText>
@@ -309,23 +268,21 @@ const ProfileView: React.FC = () => {
             </HeaderText>
           </HeaderRow>
 
-          <ActionRow>
-            <SmallPill>
+          <Pills>
+            <Pill>
               {me.firstname} {me.lastname}
-            </SmallPill>
-            {me.email ? <SmallPill>{me.email}</SmallPill> : null}
-          </ActionRow>
+            </Pill>
+            {me.email ? <Pill>{me.email}</Pill> : null}
+          </Pills>
         </ProfileCard>
 
         <Grid>
-          <Left>
-            <Card>
-              <CardTitle>Intro</CardTitle>
-              <Muted>This section can later show: city, school, relationship, friends count, etc.</Muted>
-            </Card>
-          </Left>
+          <Card>
+            <CardTitle>Intro</CardTitle>
+            <Muted>This section can later show: city, school, relationship, friends count, etc.</Muted>
+          </Card>
 
-          <Center>
+          <div>
             <Card>
               <CardTitle>Create Post</CardTitle>
               <CreateNewPost onCreated={loadMyTimeline} />
@@ -343,10 +300,7 @@ const ProfileView: React.FC = () => {
                 {posts.map((p) => (
                   <PostCard key={p._id}>
                     <PostTop>
-                      <PostAvatar
-                        src={p.author?.avatarUrl || "https://thispersondoesnotexist.com/image"}
-                        alt="Author"
-                      />
+                      <Avatar src={p.author?.avatarUrl} name={p.author?.username} alt="Author" size={42} />
                       <div>
                         <PostName>{p.author?.username ?? "Unknown"}</PostName>
                         <PostTime>{new Date(p.createdAt).toLocaleString()}</PostTime>
@@ -358,19 +312,15 @@ const ProfileView: React.FC = () => {
                   </PostCard>
                 ))}
 
-                {!loading && posts.length === 0 ? (
-                  <EmptyState>No posts yet. Share your first thought ✨</EmptyState>
-                ) : null}
+                {!loading && posts.length === 0 ? <EmptyState>No posts yet. Share your first thought ✨</EmptyState> : null}
               </FeedList>
             </Card>
-          </Center>
+          </div>
 
-          <Right>
-            <Card>
-              <CardTitle>Friends</CardTitle>
-              <Muted>Coming soon: friends list + friend requests (backend FriendRequestModel).</Muted>
-            </Card>
-          </Right>
+          <Card>
+            <CardTitle>Friends</CardTitle>
+            <Muted>Coming soon: friends list + friend requests (backend FriendRequestModel).</Muted>
+          </Card>
         </Grid>
       </Shell>
     </Page>
