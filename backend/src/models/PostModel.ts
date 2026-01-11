@@ -19,7 +19,7 @@ export interface IPost {
     author: Types.ObjectId;
     content: string;
 
-    // legacy field kept for backward compat:
+    // legacy:
     imageUrl?: string;
 
     // new:
@@ -48,7 +48,7 @@ const postSchema = new Schema<IPost>(
         author: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
         content: { type: String, required: true, trim: true, maxlength: 5000 },
 
-        imageUrl: { type: String, default: "", trim: true }, // legacy
+        imageUrl: { type: String, default: "", trim: true },
         media: { type: [postMediaSchema], default: [] },
 
         likes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }]
