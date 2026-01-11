@@ -1,10 +1,12 @@
+// backend/src/routes/aliveRoutes.ts
+
 import type { Express, Request, Response } from "express";
-import StatusCode from "../configurations/StatusCode";
+import statusCode from "../config/statusCode";
 
 
 const routes = (app: Express) => {
     app.get("/", (_req: Request, res: Response) => {
-        res.status(StatusCode.OK).send("My API is Alive!");
+        res.status(statusCode.OK).send("My API is Alive!");
     });
 };
 
