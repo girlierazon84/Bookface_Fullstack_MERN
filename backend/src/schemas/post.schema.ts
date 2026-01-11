@@ -1,16 +1,16 @@
 // backend/src/schemas/post.schema.ts
 
 import { z } from "zod";
-import { objectIdSchema, nonEmptyString } from "./common.schema";
+import { objectIdSchema } from "./common.schema";
 
 
 export const createPostBodySchema = z.object({
-    content: nonEmptyString(1, 5000)
+    content: z.coerce.string().trim().max(5000).optional().default("")
 });
 
 export const updatePostBodySchema = z
     .object({
-        content: nonEmptyString(1, 5000).optional()
+        content: z.coerce.string().trim().min(1).max(5000).optional()
     })
     .refine((v) => Object.keys(v).length > 0, "No fields to update");
 
