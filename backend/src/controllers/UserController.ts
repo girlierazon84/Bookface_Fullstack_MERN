@@ -1,206 +1,122 @@
-import type { Request, Response } from "express";
-import StatusCode from "../configurations/StatusCode";
-import UserModel from "../models/UserModel";
-import type { CreateNewUser } from "../utils/interfaces/Users";
-import Logger from "../utils/Logger";
-import crypt from "../utils/crypt";
+// backend/src/controllers/userController.ts
 
+import type { Request, Response } from "express";
+import statusCode from "../config/statusCode";
+import userModel from "../models/userModel";
+import logger from "../utils/logger";
+import {
+    updateMeSchema,
+    searchUsersSchema,
+    userIdParamsSchema
+} from "../schemas/user.schema";
+
+
+const safeUserSelect = "username firstname lastname email avatarUrl coverUrl bio createdAt updatedAt";
 
 const getErrorMessage = (error: unknown) =>
     error instanceof Error ? error.message : "Unknown error";
 
-interface VerifyUserResponse {
-    message: boolean;
-}
-
-interface SearchForUser {
-    username: string;
-}
-
-const createUser = async (req: Request, res: Response) => {
-    try {
-        Logger.http(req.body);
-
-        const { firstname, lastname, email, username, password } = req.body as CreateNewUser;
-
-        const hashedPassword = await crypt.createPassword(password);
-
-        const user = new UserModel({
-            firstname,
-            lastname,
-            email,
-            username,
-            password: hashedPassword
-        });
-
-        Logger.debug(user);
-
-        const saved = await user.save();
-        Logger.debug(saved);
-
-        res.status(StatusCode.CREATED).send(saved);
-    } catch (error: unknown) {
-        Logger.error("Failed to create user", error);
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
-    }
-};
-
-const verifyUser = async (req: Request, res: Response) => {
-    try {
-        const { username, password } = req.body as { username?: string; password?: string };
-        Logger.http(req.body);
-
-        if (!username || !password) {
-            return res.status(StatusCode.BAD_REQUEST).send({ message: "username and password are required" });
-        }
-
-        const query: SearchForUser = { username: String(username) };
-
-        const user = await UserModel.findOne(query);
-
-        if (!user) {
-            const response: VerifyUserResponse = { message: false };
-            return res.status(StatusCode.OK).send(response);
-        }
-
-        const ok = await crypt.comparePassword(String(password), String(user.password));
-        const response: VerifyUserResponse = { message: ok };
-
-        res.status(StatusCode.OK).send(response);
-    } catch (error: unknown) {
-        Logger.error("Failed to verify user", error);
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).send({
-            message: `Error occurred while trying to verify user`,
-            error: getErrorMessage(error)
-        });
-    }
-};
-
 const getAllUsers = async (_req: Request, res: Response) => {
     try {
-        const users = await UserModel.find();
-        Logger.debug(users);
-        res.status(StatusCode.OK).send(users);
+        const users = await userModel.find().select(safeUserSelect).lean();
+        return res.status(statusCode.OK).send(users);
     } catch (error: unknown) {
-        Logger.error("Failed to fetch users", error);
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
+        logger.error("Failed to fetch users", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
     }
 };
 
-const getUserWithId = async (req: Request, res: Response) => {
+const getUserById = async (req: Request, res: Response) => {
     try {
-        const { userId } = req.params;
-        Logger.http(`userId: ${userId}`);
-
-        const user = await UserModel.findById(userId);
-
-        if (!user) {
-            return res.status(StatusCode.NOT_FOUND).send({ message: `User not found: ${userId}` });
+        const parsed = userIdParamsSchema.safeParse(req.params);
+        if (!parsed.success) {
+            return res.status(statusCode.BAD_REQUEST).send({
+                message: "Validation failed",
+                errors: parsed.error.flatten()
+            });
         }
 
-        res.status(StatusCode.OK).send(user);
+        const user = await userModel.findById(parsed.data.userId).select(safeUserSelect).lean();
+        if (!user) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
+
+        return res.status(statusCode.OK).send(user);
     } catch (error: unknown) {
-        Logger.error("Failed to fetch user by id", error);
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).send({
-            message: `Error occurred while trying to retrieve user with ID: ${req.params.userId}`,
-            error: getErrorMessage(error)
-        });
+        logger.error("Failed to fetch user by id", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
     }
 };
 
-const getUserWithQuery = async (req: Request, res: Response) => {
+const searchUsers = async (req: Request, res: Response) => {
     try {
-        const { username } = req.query;
-        Logger.http(`username: ${username}`);
-
-        if (!username) {
-            return res.status(StatusCode.BAD_REQUEST).send({ message: "username query param is required" });
+        const parsed = searchUsersSchema.safeParse(req.query);
+        if (!parsed.success) {
+            return res.status(statusCode.BAD_REQUEST).send({
+                message: "Validation failed",
+                errors: parsed.error.flatten()
+            });
         }
 
-        const query: SearchForUser = { username: String(username) };
+        const username = parsed.data.username.trim();
 
-        const users = await UserModel.find(query);
-        Logger.debug(users);
+        // partial match, case-insensitive
+        const users = await userModel
+            .find({ username: { $regex: username, $options: "i" } })
+            .select(safeUserSelect)
+            .limit(20)
+            .lean();
 
-        return users.length !== 0
-            ? res.status(StatusCode.OK).send(users)
-            : res.status(StatusCode.NOT_FOUND).send({ message: `Couldn't find user with username: ${username}` });
+        return res.status(statusCode.OK).send(users);
     } catch (error: unknown) {
-        Logger.error("Failed to fetch user by query", error);
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).send({
-            message: "Error occurred while trying to retrieve user with query",
-            error: getErrorMessage(error)
-        });
+        logger.error("Failed to search users", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
     }
 };
 
-const updateUser = async (req: Request, res: Response) => {
+// PATCH /users/me
+const updateMe = async (req: Request, res: Response) => {
     try {
-        const { userId } = req.params;
-        Logger.http(`userId: ${userId}`);
-        Logger.http(req.body);
+        if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
-        if (!req.body || Object.keys(req.body).length === 0) {
-            return res.status(StatusCode.BAD_REQUEST).send({ message: "Can't update with empty body" });
+        const parsed = updateMeSchema.safeParse(req.body);
+        if (!parsed.success) {
+            return res.status(statusCode.BAD_REQUEST).send({
+                message: "Validation failed",
+                errors: parsed.error.flatten()
+            });
         }
 
-        const { firstname, lastname, email, username, password } = req.body as Partial<CreateNewUser>;
+        const updated = await userModel
+            .findByIdAndUpdate(req.user.id, parsed.data, { new: true })
+            .select(safeUserSelect);
 
-        const update: Partial<CreateNewUser> = {
-            firstname,
-            lastname,
-            email,
-            username
-        };
+        if (!updated) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
 
-        if (password) {
-            update.password = await crypt.createPassword(password);
-        }
-
-        const updated = await UserModel.findByIdAndUpdate(userId, update, { new: true });
-
-        if (!updated) {
-            return res.status(StatusCode.NOT_FOUND).send({ message: `User not found: ${userId}` });
-        }
-
-        res.status(StatusCode.OK).send(updated);
+        return res.status(statusCode.OK).send(updated);
     } catch (error: unknown) {
-        Logger.error("Failed to update user", error);
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).send({
-            message: `Error occurred while trying to update user with ID: ${req.params.userId}`,
-            error: getErrorMessage(error)
-        });
+        logger.error("Failed to update me", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
     }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
+// DELETE /users/me
+const deleteMe = async (req: Request, res: Response) => {
     try {
-        const { userId } = req.params;
+        if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
-        const deleted = await UserModel.findByIdAndDelete(userId);
+        const deleted = await userModel.findByIdAndDelete(req.user.id).select(safeUserSelect);
+        if (!deleted) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
 
-        if (!deleted) {
-            return res.status(StatusCode.NOT_FOUND).send({ message: `User not found: ${userId}` });
-        }
-
-        res.status(StatusCode.OK).send({
-            message: `Successfully deleted user with username: ${deleted.username} and ID: ${userId}`
-        });
+        return res.status(statusCode.OK).send({ message: "User deleted" });
     } catch (error: unknown) {
-        Logger.error("Failed to delete user", error);
-        res.status(StatusCode.INTERNAL_SERVER_ERROR).send({
-            message: `Error occurred while trying to delete user with ID: ${req.params.userId}`,
-            error: getErrorMessage(error)
-        });
+        logger.error("Failed to delete me", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
     }
 };
 
 export default {
-    createUser,
-    verifyUser,
     getAllUsers,
-    getUserWithId,
-    getUserWithQuery,
-    updateUser,
-    deleteUser
+    getUserById,
+    searchUsers,
+    updateMe,
+    deleteMe
 };
