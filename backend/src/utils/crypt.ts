@@ -24,4 +24,7 @@ export const comparePassword = async (plaintext: string, hash: string): Promise<
     }
 };
 
-export default { hashPassword, comparePassword }
+// ✅ backward compatible alias for older code
+export const createPassword = hashPassword;
+
+export default { hashPassword, comparePassword, createPassword };
