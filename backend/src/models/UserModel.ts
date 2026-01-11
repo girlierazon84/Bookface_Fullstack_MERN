@@ -59,5 +59,6 @@ const userSchema = new Schema<IUser>(
 
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ username: "text", firstname: "text", lastname: "text" }); // helpful for search
 
 export default model<IUser>("User", userSchema);
