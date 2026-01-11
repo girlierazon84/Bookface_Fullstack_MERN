@@ -1,22 +1,23 @@
 // backend/src/routes/friendRoutes.ts
 
-import type { Express } from "express";
+import { Router } from "express";
+import { requireAuth } from "../middlewares/authMiddleware";
 import friendController from "../controllers/friendController";
 
 
-const routes = (app: Express) => {
-    // Requests
-    app.post("/friends/requests", friendController.sendFriendRequest);
-    app.get("/friends/requests/incoming/:userId", friendController.getIncomingRequests);
-    app.get("/friends/requests/outgoing/:userId", friendController.getOutgoingRequests);
+const router = Router();
 
-    app.post("/friends/requests/:requestId/accept", friendController.acceptFriendRequest);
-    app.post("/friends/requests/:requestId/reject", friendController.rejectFriendRequest);
-    app.delete("/friends/requests/:requestId", friendController.cancelFriendRequest);
+// Requests (should be protected)
+router.post("/friends/requests", requireAuth, friendController.sendFriendRequest);
+router.get("/friends/requests/incoming/:userId", requireAuth, friendController.getIncomingRequests);
+router.get("/friends/requests/outgoing/:userId", requireAuth, friendController.getOutgoingRequests);
 
-    // Friends
-    app.get("/friends/:userId", friendController.getFriends);
-    app.delete("/friends/:userId/:friendId", friendController.unfriend);
-};
+router.post("/friends/requests/:requestId/accept", requireAuth, friendController.acceptFriendRequest);
+router.post("/friends/requests/:requestId/reject", requireAuth, friendController.rejectFriendRequest);
+router.delete("/friends/requests/:requestId", requireAuth, friendController.cancelFriendRequest);
 
-export default { routes };
+// Friends
+router.get("/friends/:userId", requireAuth, friendController.getFriends);
+router.delete("/friends/:userId/:friendId", requireAuth, friendController.unfriend);
+
+export default router;
