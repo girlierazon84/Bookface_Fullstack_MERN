@@ -1,23 +1,26 @@
+// backend/src/userRoutes.spec.ts
+
 import Chai from 'chai'
 import 'mocha'
-import StatusCode from './configurations/StatusCode'
-import app from './Server'
+import statusCode from './config/statusCode'
+import app from './server'
 import chaiHttp from 'chai-http'
-import { CreateNewUser } from './utils/interfaces/Users'
+import { createUser } from './interfaces/users'
+
 
 Chai.use(chaiHttp)
 const expect = Chai.expect
 
 const randomString = Math.random().toString(36).substring(7)
 let userId: string = '616718bda4ab77e25e33ec5b'
-const user: CreateNewUser = {
+const user: createUser = {
     firstname: randomString,
     lastname: randomString,
     email: randomString,
     username: randomString,
     password: randomString,
 }
-const updatedUser: CreateNewUser = {
+const updatedUser: createUser = {
     firstname: randomString + randomString,
     lastname: randomString + randomString,
     email: randomString + randomString,
@@ -32,7 +35,7 @@ const testingNonExistingRoute = () => {
         it('Expecting 404 not found', () => {
             return Chai.request(app).get(`/${ randomString }`)
                 .then((response) => {
-                    expect(response.status).to.equal(StatusCode.NOT_FOUND)
+                    expect(response.status).to.equal(statusCode.NOT_FOUND)
                 })
         })
     })
@@ -45,7 +48,7 @@ const createUser = () => {
                 .post(usersRoute)
                 .send(user)
                 .end((error, response) => {
-                    expect(response.status).to.equal(StatusCode.CREATED)
+                    expect(response.status).to.equal(statusCode.CREATED)
                     expect(response.body).be.a('object')
                     userId = response.body._id
                     expect(response.body).have.property('username').eq(user.username)
@@ -62,7 +65,7 @@ const getAllUsers = () => {
             Chai.request(app)
                 .get(usersRoute)
                 .end((error, response) => {
-                    expect(response.status).to.equal(StatusCode.OK)
+                    expect(response.status).to.equal(statusCode.OK)
                     expect(response.body).be.a('array')
                     expect(response.body.length).be.eq(response.body.length)
                     done()
@@ -78,7 +81,7 @@ const updateUser = () => {
                 .put(`${usersRoute}/${ userId }`)
                 .send(updatedUser)
                 .end((error, response) => {
-                    expect(response.status).to.equal(StatusCode.OK)
+                    expect(response.status).to.equal(statusCode.OK)
                     expect(response.body).be.a('object')
                     expect(response.body).have.property('_id').eq(userId)
                     expect(response.body).have.property('username').eq(updatedUser.username)
@@ -95,7 +98,7 @@ const deleteUser = () => {
             Chai.request(app)
                 .delete(`${usersRoute}/${ userId }`)
                 .end((error, response) => {
-                    expect(response.status).to.equal(StatusCode.OK)
+                    expect(response.status).to.equal(statusCode.OK)
                     done()
                 })
         })
