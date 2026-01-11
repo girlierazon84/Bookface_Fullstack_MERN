@@ -1,47 +1,41 @@
-// backend/src/Server.ts
+// backend/src/server.ts
 
 import "dotenv/config";
 import express from "express";
+import applyMiddleware from "./middlewares/applyMiddleware";
+import configuration from "./config/configuration";
+import { notFound, errorHandler } from "./middlewares/errorMiddleware";
+import logger from "./utils/logger";
 
-import ApplyMiddlewares from "./configurations/ApplyMiddlewares";
-import Configuration from "./configurations/Configuration";
 
-import AliveRoutes from "./routes/AliveRoutes";
-import AuthRoutes from "./routes/AuthRoutes";
-import FeedRoutes from "./routes/FeedRoutes";
-import UserRoutes from "./routes/UserRoutes";
-import PostRoutes from "./routes/PostRoutes";
-import CommentRoutes from "./routes/CommentRoutes";
-import FriendRoutes from "./routes/FriendRoutes";
-
-import { notFound } from "./middlewares/ErrorMiddleware";
-import Logger from "./utils/Logger";
-
+// routers
+import postRouter from "./routes/postRoutes";
+// import authRouter from "./routes/authRoutes" ... (convert similarly)
+// import userRouter from "./routes/userRoutes" ...
+// etc.
 
 const app = express();
+applyMiddleware(app);
 
-// Middlewares first
-ApplyMiddlewares(app);
+// Mount API
+app.use("/api/posts", postRouter);
 
-// Routes
-AliveRoutes.routes(app);
-AuthRoutes.routes(app);
-FeedRoutes.routes(app);
-UserRoutes.routes(app);
-PostRoutes.routes(app);
-CommentRoutes.routes(app);
-FriendRoutes.routes(app);
+// TODO: convert the rest to Router style and mount:
+// app.use("/api/auth", authRouter);
+// app.use("/api/users", userRouter);
+// app.use("/api/feed", feedRouter);
+// app.use("/api/comments", commentRouter);
+// app.use("/api/friends", friendRouter);
 
-// 404 handler (must be after routes)
 app.use(notFound);
+app.use(errorHandler);
 
-// Start server only after DB is connected
 const start = async () => {
     try {
-        await Configuration.connectToDatabase();
-        Configuration.connectToPort(app);
+        await configuration.connectToDatabase();
+        configuration.connectToPort(app);
     } catch (err) {
-        Logger.error("Server startup failed", err);
+        logger.error("Server startup failed", err);
         process.exit(1);
     }
 };
