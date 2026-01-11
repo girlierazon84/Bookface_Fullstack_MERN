@@ -1,4 +1,4 @@
-// backend/src/models/CommentModel.ts
+// backend/src/models/commentModel.ts
 
 import { Schema, model, type Types } from "mongoose";
 
