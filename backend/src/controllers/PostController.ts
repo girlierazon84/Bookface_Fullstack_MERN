@@ -5,77 +5,65 @@ import statusCode from "../config/statusCode";
 import postModel from "../models/postModel";
 import userModel from "../models/userModel";
 import logger from "../utils/logger";
+import { uploadMany } from "../services/mediaService";
+import { destroyByPublicId } from "../services/cloudinary";
 import {
     createPostBodySchema,
-    updatePostBodySchema
+    updatePostBodySchema,
+    postIdSchema
 } from "../schemas/post.schema";
-import {
-    uploadBuffer,
-    deleteByPublicId
-} from "../services/cloudinary";
+import { deleteMediaParamsSchema } from "../schemas/media.schema";
 
-
-const inferMediaType = (mime: string) => (mime.startsWith("video/") ? "video" : "image") as const;
 
 export const createPost = async (req: Request, res: Response) => {
     try {
         if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
-        const parsed = createPostBodySchema.safeParse(req.body);
+        // For multipart: content comes in req.body (string). For json: also req.body.
+        const parsed = createPostBodySchema.safeParse({ content: String(req.body?.content ?? "") });
         if (!parsed.success) {
             return res.status(statusCode.BAD_REQUEST).send({ message: "Validation failed", errors: parsed.error.flatten() });
         }
 
-        const content = parsed.data.content.trim();
         const files = (req.files as Express.Multer.File[] | undefined) ?? [];
-
-        if (!content && files.length === 0) {
-            return res.status(statusCode.BAD_REQUEST).send({ message: "Post must have content or media" });
-        }
-
-        const media = [];
-        for (const f of files) {
-            const type = inferMediaType(f.mimetype);
-            const uploaded = await uploadBuffer(f.buffer, {
-                folder: "bookface/posts",
-                resource_type: type
-            });
-
-            media.push({ url: uploaded.url, publicId: uploaded.publicId, type });
-        }
+        const media = files.length ? await uploadMany(files, "bookface/posts") : [];
 
         const post = await postModel.create({
             author: req.user.id,
-            content: content || " ", // keep required
-            imageUrl: "",            // legacy
+            content: parsed.data.content,
             media,
-            likes: []
+            imageUrl: media.find((m) => m.type === "image")?.url ?? "" // legacy best-effort
         });
 
-        const populated = await post.populate("author", "username firstname lastname avatarUrl");
+        const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.CREATED).send(populated);
     } catch (error: unknown) {
-        logger.error("Failed to create post", error);
+        logger.error("createPost failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to create post" });
     }
 };
 
 export const getAllPosts = async (_req: Request, res: Response) => {
     try {
-        const posts = await postModel.find().sort({ createdAt: -1 }).populate("author", "username firstname lastname avatarUrl");
+        const posts = await postModel
+            .find()
+            .sort({ createdAt: -1 })
+            .populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.OK).send(posts);
     } catch (error: unknown) {
-        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed", error });
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to load posts" });
     }
 };
 
 export const getPostById = async (req: Request, res: Response) => {
     try {
-        const post = await postModel.findById(req.params.postId).populate("author", "username firstname lastname avatarUrl");
+        const post = await postModel
+            .findById(req.params.postId)
+            .populate("author", "username firstname lastname avatarUrl coverUrl");
         if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
         return res.status(statusCode.OK).send(post);
     } catch (error: unknown) {
-        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed", error });
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to load post" });
     }
 };
 
@@ -83,26 +71,26 @@ export const updatePost = async (req: Request, res: Response) => {
     try {
         if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
+        const p1 = postIdSchema.safeParse(req.params);
+        if (!p1.success) return res.status(statusCode.BAD_REQUEST).send({ message: "Invalid postId", errors: p1.error.flatten() });
+
         const parsed = updatePostBodySchema.safeParse(req.body);
         if (!parsed.success) {
             return res.status(statusCode.BAD_REQUEST).send({ message: "Validation failed", errors: parsed.error.flatten() });
         }
 
-        const post = await postModel.findById(req.params.postId);
+        const post = await postModel.findById(p1.data.postId);
         if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
+        if (post.author.toString() !== req.user.id) return res.status(statusCode.FORBIDDEN).send({ message: "Not allowed" });
 
-        if (post.author.toString() !== req.user.id) {
-            return res.status(statusCode.FORBIDDEN).send({ message: "Not allowed" });
-        }
-
-        post.content = parsed.data.content;
-        post.editedAt = new Date();
+        if (parsed.data.content) post.content = parsed.data.content;
         await post.save();
 
-        const populated = await post.populate("author", "username firstname lastname avatarUrl");
+        const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.OK).send(populated);
     } catch (error: unknown) {
-        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed", error });
+        logger.error("updatePost failed", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to update post" });
     }
 };
 
@@ -112,20 +100,50 @@ export const deletePost = async (req: Request, res: Response) => {
 
         const post = await postModel.findById(req.params.postId);
         if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
+        if (post.author.toString() !== req.user.id) return res.status(statusCode.FORBIDDEN).send({ message: "Not allowed" });
 
-        if (post.author.toString() !== req.user.id) {
-            return res.status(statusCode.FORBIDDEN).send({ message: "Not allowed" });
-        }
+        // delete media from Cloudinary
+        if (post.media?.length) await Promise.all(post.media.map((m) => destroyByPublicId(m.publicId)));
 
-        // delete media from cloud
-        for (const m of post.media ?? []) {
-            await deleteByPublicId(m.publicId, m.type);
-        }
-
-        await post.deleteOne();
+        await postModel.findByIdAndDelete(req.params.postId);
         return res.status(statusCode.OK).send({ message: "Post deleted" });
     } catch (error: unknown) {
-        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed", error });
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to delete post" });
+    }
+};
+
+export const deletePostMediaItem = async (req: Request, res: Response) => {
+    try {
+        if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
+
+        const parsed = deleteMediaParamsSchema.safeParse(req.params);
+        if (!parsed.success) {
+            return res.status(statusCode.BAD_REQUEST).send({ message: "Validation failed", errors: parsed.error.flatten() });
+        }
+
+        const post = await postModel.findById(parsed.data.postId);
+        if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
+        if (post.author.toString() !== req.user.id) return res.status(statusCode.FORBIDDEN).send({ message: "Not allowed" });
+
+        const before = post.media.length;
+        const target = post.media.find((m) => m.publicId === parsed.data.publicId);
+        post.media = post.media.filter((m) => m.publicId !== parsed.data.publicId);
+
+        if (post.media.length === before) {
+            return res.status(statusCode.NOT_FOUND).send({ message: "Media not found" });
+        }
+
+        if (target?.publicId) await destroyByPublicId(target.publicId);
+
+        // refresh legacy imageUrl best-effort
+        post.imageUrl = post.media.find((m) => m.type === "image")?.url ?? "";
+        await post.save();
+
+        const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
+        return res.status(statusCode.OK).send(populated);
+    } catch (error: unknown) {
+        logger.error("deletePostMediaItem failed", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to delete media" });
     }
 };
 
@@ -140,47 +158,78 @@ export const toggleLike = async (req: Request, res: Response) => {
         const alreadyLiked = post.likes.some((id) => id.toString() === userId);
 
         post.likes = alreadyLiked ? post.likes.filter((id) => id.toString() !== userId) : [...post.likes, userId as any];
-
         await post.save();
-        logger.debug(`Post ${post._id} likes: ${post.likes.length}`);
 
-        const populated = await post.populate("author", "username firstname lastname avatarUrl");
+        const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.OK).send(populated);
     } catch (error: unknown) {
-        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed", error });
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to toggle like" });
     }
 };
 
-// Save (bookmark) post
-export const savePost = async (req: Request, res: Response) => {
-    if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
+export const toggleSave = async (req: Request, res: Response) => {
+    try {
+        if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
-    const user = await userModel.findById(req.user.id);
-    if (!user) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
+        const post = await postModel.findById(req.params.postId).select("_id").lean();
+        if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
 
-    await userModel.updateOne({ _id: user._id }, { $addToSet: { savedPosts: req.params.postId } });
-    return res.status(statusCode.OK).send({ saved: true });
+        const me = await userModel.findById(req.user.id);
+        if (!me) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
+
+        const postId = post._id.toString();
+        const alreadySaved = me.savedPosts.some((p) => p.toString() === postId);
+
+        if (alreadySaved) me.savedPosts = me.savedPosts.filter((p) => p.toString() !== postId);
+        else me.savedPosts.push(post._id as any);
+
+        await me.save();
+
+        return res.status(statusCode.OK).send({ saved: !alreadySaved });
+    } catch (error: unknown) {
+        logger.error("toggleSave failed", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to toggle save" });
+    }
 };
 
-export const unsavePost = async (req: Request, res: Response) => {
-    if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
+export const copyPost = async (req: Request, res: Response) => {
+    try {
+        if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
-    const user = await userModel.findById(req.user.id);
-    if (!user) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
+        const src = await postModel.findById(req.params.postId).lean();
+        if (!src) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
 
-    await userModel.updateOne({ _id: user._id }, { $pull: { savedPosts: req.params.postId } });
-    return res.status(statusCode.OK).send({ saved: false });
+        // copy content + media references (no re-upload)
+        const copied = await postModel.create({
+            author: req.user.id,
+            content: src.content,
+            media: src.media ?? [],
+            imageUrl: src.imageUrl ?? ""
+        });
+
+        const populated = await copied.populate("author", "username firstname lastname avatarUrl coverUrl");
+        return res.status(statusCode.CREATED).send(populated);
+    } catch (error: unknown) {
+        logger.error("copyPost failed", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to copy post" });
+    }
 };
 
-// Copy payload: return safe content for client-side copy (no duplication)
-export const copyPostPayload = async (req: Request, res: Response) => {
-    const post = await postModel.findById(req.params.postId).populate("author", "username");
-    if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
+export const getMySavedPosts = async (req: Request, res: Response) => {
+    try {
+        if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
-    return res.status(statusCode.OK).send({
-        text: post.content,
-        author: post.author ? (post.author as any).username : "Unknown",
-        createdAt: post.createdAt,
-        mediaUrls: (post.media ?? []).map((m) => m.url)
-    });
+        const me = await userModel.findById(req.user.id).select("savedPosts").lean();
+        if (!me) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
+
+        const posts = await postModel
+            .find({ _id: { $in: me.savedPosts ?? [] } })
+            .sort({ createdAt: -1 })
+            .populate("author", "username firstname lastname avatarUrl coverUrl");
+
+        return res.status(statusCode.OK).send(posts);
+    } catch (error: unknown) {
+        logger.error("getMySavedPosts failed", error);
+        return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to fetch saved posts" });
+    }
 };
