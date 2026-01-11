@@ -1,12 +1,12 @@
-// backend/src/routes/FeedRoutes.ts
+// backend/src/routes/feedRoutes.ts
 
 import type { Express } from "express";
-import { requireAuth } from "../middlewares/AuthMiddleware";
-import FeedController from "../controllers/FeedController";
+import { requireAuth } from "../middlewares/authMiddleware";
+import feedController from "../controllers/feedController";
 
 
 const routes = (app: Express) => {
-    app.get("/feed", requireAuth, FeedController.getFeed);
+    app.get("/feed", requireAuth, feedController.getFeed);
 };
 
 export default { routes };
