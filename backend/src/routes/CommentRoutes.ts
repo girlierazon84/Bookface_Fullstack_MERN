@@ -1,8 +1,8 @@
-// backend/src/routes/CommentRoutes.ts
+// backend/src/routes/commentRoutes.ts
 
 import type { Express } from "express";
-import { requireAuth } from "../middlewares/AuthMiddleware";
-import { getCommentsForPost, createComment } from "../controllers/CommentController";
+import { requireAuth } from "../middlewares/authMiddleware";
+import { getCommentsForPost, createComment } from "../controllers/commentController";
 
 
 const routes = (app: Express) => {
