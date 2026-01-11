@@ -18,7 +18,16 @@ const signToken = (payload: JwtPayload) => {
     return jwt.sign(payload, secret, { expiresIn });
 };
 
-const toAuthUser = (user: any) => ({
+const toAuthUser = (user: {
+    _id: unknown;
+    firstname: string;
+    lastname: string;
+    email: string;
+    username: string;
+    avatarUrl?: string;
+    coverUrl?: string;
+    bio?: string;
+}) => ({
     _id: String(user._id),
     firstname: user.firstname,
     lastname: user.lastname,
@@ -33,10 +42,17 @@ export const register = async (req: Request, res: Response) => {
     try {
         const parsed = registerSchema.safeParse(req.body);
         if (!parsed.success) {
-            return res.status(statusCode.BAD_REQUEST).send({ message: "Validation failed", errors: parsed.error.flatten() });
+            return res.status(statusCode.BAD_REQUEST).send({
+                message: "Validation failed",
+                errors: parsed.error.flatten()
+            });
         }
 
-        const { firstname, lastname, email, username, password } = parsed.data;
+        const firstname = parsed.data.firstname.trim();
+        const lastname = parsed.data.lastname.trim();
+        const email = parsed.data.email.trim().toLowerCase();
+        const username = parsed.data.username.trim();
+        const password = parsed.data.password;
 
         const exists = await userModel.findOne({ $or: [{ email }, { username }] }).select("_id").lean();
         if (exists) return res.status(statusCode.BAD_REQUEST).send({ message: "User already exists" });
@@ -64,10 +80,13 @@ export const login = async (req: Request, res: Response) => {
     try {
         const parsed = loginSchema.safeParse(req.body);
         if (!parsed.success) {
-            return res.status(statusCode.BAD_REQUEST).send({ message: "Validation failed", errors: parsed.error.flatten() });
+            return res.status(statusCode.BAD_REQUEST).send({
+                message: "Validation failed",
+                errors: parsed.error.flatten()
+            });
         }
 
-        const identifierRaw = parsed.data.username;
+        const identifierRaw = parsed.data.username.trim();
         const password = parsed.data.password;
 
         const identifier = identifierRaw.toLowerCase();
