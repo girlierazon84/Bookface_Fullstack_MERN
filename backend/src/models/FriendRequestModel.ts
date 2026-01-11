@@ -1,4 +1,4 @@
-// backend/src/models/FriendRequestModel.ts
+// backend/src/models/friendRequestModel.ts
 
 import { Schema, model, type Types } from "mongoose";
 
