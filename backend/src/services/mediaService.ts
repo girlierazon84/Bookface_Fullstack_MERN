@@ -1,7 +1,10 @@
 // backend/src/services/mediaService.ts
 
 import type { Express } from "express";
-import { destroyByPublicId, uploadBuffer } from "./cloudinary";
+import {
+    destroyByPublicId,
+    uploadBuffer
+} from "./cloudinary";
 
 
 export type MediaType = "image" | "video";
