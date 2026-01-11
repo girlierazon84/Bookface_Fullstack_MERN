@@ -1,20 +1,24 @@
-// backend/src/routes/PostRoutes.ts
+// backend/src/routes/postRoutes.ts
 
-import type { Express } from "express";
-import { requireAuth } from "../middlewares/AuthMiddleware";
-import * as PostController from "../controllers/PostController";
+import { Router } from "express";
+import { requireAuth } from "../middlewares/authMiddleware";
+import * as postController from "../controllers/postController";
+import { uploadPostMedia } from "../middlewares/uploadMiddleware"; // create it (multer)
 
 
-const postUrl = "/posts";
+const router = Router();
 
-const routes = (app: Express) => {
-    app.post(postUrl, requireAuth, PostController.createPost);
-    app.get(postUrl, PostController.getAllPosts);
+router.post("/", requireAuth, uploadPostMedia, postController.createPost);
+router.get("/", postController.getAllPosts);
 
-    app.get(`${postUrl}/:postId`, PostController.getPostById);
-    app.delete(`${postUrl}/:postId`, requireAuth, PostController.deletePost);
+router.get("/:postId", postController.getPostById);
+router.patch("/:postId", requireAuth, postController.updatePost);
+router.delete("/:postId", requireAuth, postController.deletePost);
 
-    app.post(`${postUrl}/:postId/like`, requireAuth, PostController.toggleLike);
-};
+router.post("/:postId/like", requireAuth, postController.toggleLike);
+router.post("/:postId/save", requireAuth, postController.savePost);
+router.delete("/:postId/save", requireAuth, postController.unsavePost);
 
-export default { routes };
+router.get("/:postId/copy", requireAuth, postController.copyPostPayload);
+
+export default router;
