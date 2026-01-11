@@ -1,22 +1,19 @@
-import type { Express } from "express";
-import UserController from "../controllers/UserController";
+// backend/src/routes/userRoutes.ts
+
+import { Router } from "express";
+import userController from "../controllers/userController";
+import { requireAuth } from "../middlewares/authMiddleware";
 
 
-const usersUrl = "/users";
-const usersUrlWithId = `${usersUrl}/:userId`;
-const searchUsersUrl = "/searchUser";
-const verifyUserUrl = "/verifyUser";
+const router = Router();
 
-const routes = (app: Express) => {
-    app.post(usersUrl, UserController.createUser);
-    app.post(verifyUserUrl, UserController.verifyUser);
+// Public
+router.get("/", userController.getAllUsers);
+router.get("/search", userController.searchUsers);
+router.get("/:userId", userController.getUserById);
 
-    app.get(usersUrl, UserController.getAllUsers);
-    app.get(usersUrlWithId, UserController.getUserWithId);
-    app.get(searchUsersUrl, UserController.getUserWithQuery);
+// Protected
+router.patch("/me", requireAuth, userController.updateMe);
+router.delete("/me", requireAuth, userController.deleteMe);
 
-    app.put(usersUrlWithId, UserController.updateUser);
-    app.delete(usersUrlWithId, UserController.deleteUser);
-};
-
-export default { routes };
+export default router;
