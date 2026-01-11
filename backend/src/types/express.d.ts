@@ -9,6 +9,8 @@ declare global {
                 id: string;
                 username?: string;
             };
+            file?: Multer.File;
+            files?: Multer.File[];
         }
     }
 }
