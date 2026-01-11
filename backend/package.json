@@ -12,6 +12,9 @@
     "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
     "test": "ts-mocha -p tsconfig.json \"src/**/*.spec.ts\""
   },
+  "overrides": {
+    "semver": "^7.5.4"
+  },
   "keywords": [
     "MongoDB",
     "Express",
@@ -25,7 +28,6 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.0.1",
-    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
@@ -53,7 +55,7 @@
     "chai": "^4.3.4",
     "chai-http": "^4.3.0",
     "mocha": "^11.7.5",
-    "nodemon": "^2.0.15",
+    "nodemon": "^3.1.11",
     "ts-mocha": "^11.1.0",
     "ts-node": "^10.4.0",
     "tslint": "^6.1.3",
