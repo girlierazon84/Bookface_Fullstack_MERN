@@ -19,7 +19,6 @@ export const createPost = async (req: Request, res: Response) => {
     try {
         if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
-        // For multipart: content comes in req.body (string). For json: also req.body.
         const parsed = createPostBodySchema.safeParse({ content: String(req.body?.content ?? "") });
         if (!parsed.success) {
             return res.status(statusCode.BAD_REQUEST).send({ message: "Validation failed", errors: parsed.error.flatten() });
@@ -28,16 +27,22 @@ export const createPost = async (req: Request, res: Response) => {
         const files = (req.files as Express.Multer.File[] | undefined) ?? [];
         const media = files.length ? await uploadMany(files, "bookface/posts") : [];
 
+        // ✅ enforce: content OR media
+        const content = parsed.data.content?.trim() ?? "";
+        if (!content && media.length === 0) {
+            return res.status(statusCode.BAD_REQUEST).send({ message: "Post must include content or media" });
+        }
+
         const post = await postModel.create({
             author: req.user.id,
-            content: parsed.data.content,
+            content: content || " ", // keep schema required, allow media-only
             media,
-            imageUrl: media.find((m) => m.type === "image")?.url ?? "" // legacy best-effort
+            imageUrl: media.find((m) => m.type === "image")?.url ?? ""
         });
 
         const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.CREATED).send(populated);
-    } catch (error: unknown) {
+    } catch (error) {
         logger.error("createPost failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to create post" });
     }
@@ -50,7 +55,7 @@ export const getAllPosts = async (_req: Request, res: Response) => {
             .sort({ createdAt: -1 })
             .populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.OK).send(posts);
-    } catch (error: unknown) {
+    } catch {
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to load posts" });
     }
 };
@@ -62,7 +67,7 @@ export const getPostById = async (req: Request, res: Response) => {
             .populate("author", "username firstname lastname avatarUrl coverUrl");
         if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
         return res.status(statusCode.OK).send(post);
-    } catch (error: unknown) {
+    } catch {
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to load post" });
     }
 };
@@ -88,7 +93,7 @@ export const updatePost = async (req: Request, res: Response) => {
 
         const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.OK).send(populated);
-    } catch (error: unknown) {
+    } catch (error) {
         logger.error("updatePost failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to update post" });
     }
@@ -102,12 +107,11 @@ export const deletePost = async (req: Request, res: Response) => {
         if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
         if (post.author.toString() !== req.user.id) return res.status(statusCode.FORBIDDEN).send({ message: "Not allowed" });
 
-        // delete media from Cloudinary
-        if (post.media?.length) await Promise.all(post.media.map((m) => destroyByPublicId(m.publicId)));
-
+        if (post.media?.length) await Promise.all(post.media.map((m) => destroyByPublicId(m.publicId, m.type)));
         await postModel.findByIdAndDelete(req.params.postId);
+
         return res.status(statusCode.OK).send({ message: "Post deleted" });
-    } catch (error: unknown) {
+    } catch {
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to delete post" });
     }
 };
@@ -125,23 +129,19 @@ export const deletePostMediaItem = async (req: Request, res: Response) => {
         if (!post) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
         if (post.author.toString() !== req.user.id) return res.status(statusCode.FORBIDDEN).send({ message: "Not allowed" });
 
-        const before = post.media.length;
         const target = post.media.find((m) => m.publicId === parsed.data.publicId);
         post.media = post.media.filter((m) => m.publicId !== parsed.data.publicId);
 
-        if (post.media.length === before) {
-            return res.status(statusCode.NOT_FOUND).send({ message: "Media not found" });
-        }
+        if (!target) return res.status(statusCode.NOT_FOUND).send({ message: "Media not found" });
 
-        if (target?.publicId) await destroyByPublicId(target.publicId);
+        await destroyByPublicId(target.publicId, target.type);
 
-        // refresh legacy imageUrl best-effort
         post.imageUrl = post.media.find((m) => m.type === "image")?.url ?? "";
         await post.save();
 
         const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.OK).send(populated);
-    } catch (error: unknown) {
+    } catch (error) {
         logger.error("deletePostMediaItem failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to delete media" });
     }
@@ -162,7 +162,7 @@ export const toggleLike = async (req: Request, res: Response) => {
 
         const populated = await post.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.OK).send(populated);
-    } catch (error: unknown) {
+    } catch {
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to toggle like" });
     }
 };
@@ -186,7 +186,7 @@ export const toggleSave = async (req: Request, res: Response) => {
         await me.save();
 
         return res.status(statusCode.OK).send({ saved: !alreadySaved });
-    } catch (error: unknown) {
+    } catch (error) {
         logger.error("toggleSave failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to toggle save" });
     }
@@ -199,7 +199,6 @@ export const copyPost = async (req: Request, res: Response) => {
         const src = await postModel.findById(req.params.postId).lean();
         if (!src) return res.status(statusCode.NOT_FOUND).send({ message: "Post not found" });
 
-        // copy content + media references (no re-upload)
         const copied = await postModel.create({
             author: req.user.id,
             content: src.content,
@@ -209,7 +208,7 @@ export const copyPost = async (req: Request, res: Response) => {
 
         const populated = await copied.populate("author", "username firstname lastname avatarUrl coverUrl");
         return res.status(statusCode.CREATED).send(populated);
-    } catch (error: unknown) {
+    } catch (error) {
         logger.error("copyPost failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to copy post" });
     }
@@ -228,7 +227,7 @@ export const getMySavedPosts = async (req: Request, res: Response) => {
             .populate("author", "username firstname lastname avatarUrl coverUrl");
 
         return res.status(statusCode.OK).send(posts);
-    } catch (error: unknown) {
+    } catch (error) {
         logger.error("getMySavedPosts failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Failed to fetch saved posts" });
     }
