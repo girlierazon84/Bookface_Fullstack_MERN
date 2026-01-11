@@ -1,5 +1,7 @@
+// backend/src/middlewares/errorMiddleware.ts
+
 import type { NextFunction, Request, Response } from "express";
-import StatusCode from "../configurations/StatusCode";
+import StatusCode from "../config/statusCode";
 
 
 const env = process.env.NODE_ENV ?? "development";
