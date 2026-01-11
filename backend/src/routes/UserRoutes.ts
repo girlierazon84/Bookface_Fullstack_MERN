@@ -8,12 +8,12 @@ import { requireAuth } from "../middlewares/authMiddleware";
 const router = Router();
 
 // Public
-router.get("/", userController.getAllUsers);
-router.get("/search", userController.searchUsers);
-router.get("/:userId", userController.getUserById);
+router.get("/users", userController.getAllUsers);
+router.get("/users/search", userController.searchUsers);
+router.get("/users/:userId", userController.getUserById);
 
 // Protected
-router.patch("/me", requireAuth, userController.updateMe);
-router.delete("/me", requireAuth, userController.deleteMe);
+router.patch("/users/me", requireAuth, userController.updateMe);
+router.delete("/users/me", requireAuth, userController.deleteMe);
 
 export default router;
