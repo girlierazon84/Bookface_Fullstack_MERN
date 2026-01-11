@@ -2,23 +2,33 @@
 
 import { Router } from "express";
 import { requireAuth } from "../middlewares/authMiddleware";
+import {
+    uploadPostMedia,
+    multerErrorHandler
+} from "../middlewares/uploadMiddleware";
 import * as postController from "../controllers/postController";
-import { uploadPostMedia } from "../middlewares/uploadMiddleware"; // create it (multer)
 
 
 const router = Router();
 
-router.post("/", requireAuth, uploadPostMedia, postController.createPost);
-router.get("/", postController.getAllPosts);
+// Create post (multipart: content + media[])
+router.post("/posts", requireAuth, uploadPostMedia, multerErrorHandler, postController.createPost);
 
-router.get("/:postId", postController.getPostById);
-router.patch("/:postId", requireAuth, postController.updatePost);
-router.delete("/:postId", requireAuth, postController.deletePost);
+// Read
+router.get("/posts", postController.getAllPosts);
+router.get("/posts/saved/me", requireAuth, postController.getMySavedPosts);
+router.get("/posts/:postId", postController.getPostById);
 
-router.post("/:postId/like", requireAuth, postController.toggleLike);
-router.post("/:postId/save", requireAuth, postController.savePost);
-router.delete("/:postId/save", requireAuth, postController.unsavePost);
+// Edit + delete
+router.patch("/posts/:postId", requireAuth, postController.updatePost);
+router.delete("/posts/:postId", requireAuth, postController.deletePost);
 
-router.get("/:postId/copy", requireAuth, postController.copyPostPayload);
+// Like + save + copy
+router.post("/posts/:postId/like", requireAuth, postController.toggleLike);
+router.post("/posts/:postId/save", requireAuth, postController.toggleSave);
+router.post("/posts/:postId/copy", requireAuth, postController.copyPost);
+
+// Media delete
+router.delete("/posts/:postId/media/:publicId", requireAuth, postController.deletePostMediaItem);
 
 export default router;
