@@ -8,13 +8,13 @@ const storage = multer.memoryStorage();
 
 const MAX_AVATAR_MB = 5;
 const MAX_COVER_MB = 8;
-const MAX_POST_FILE_MB = 25; // per file
+const MAX_POST_FILE_MB = 25;
 const MAX_POST_FILES = 4;
 
 const isAllowed = (mime: string) => mime.startsWith("image/") || mime.startsWith("video/");
 
 const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
-    if (!isAllowed(file.mimetype)) return cb(new Error("Only image/video uploads are allowed"));
+    if (!isAllowed(file.mimetype)) return cb(new Error("Only image/* and video/* files are allowed"));
     cb(null, true);
 };
 
@@ -36,10 +36,20 @@ export const uploadPostMedia = multer({
     limits: { fileSize: MAX_POST_FILE_MB * 1024 * 1024, files: MAX_POST_FILES }
 }).array("media", MAX_POST_FILES);
 
-// Optional: express error helper for multer errors
-export const multerErrorHandler = (err: any, _req: any, res: any, next: any) => {
+export const multerErrorHandler = (err: unknown, _req: any, res: any, next: any) => {
     if (!err) return next();
 
-    const msg = err?.message || "Upload failed";
+    if (err instanceof multer.MulterError) {
+        const msg =
+            err.code === "LIMIT_FILE_SIZE"
+                ? "File is too large"
+                : err.code === "LIMIT_FILE_COUNT"
+                    ? "Too many files"
+                    : err.message;
+
+        return res.status(statusCode.BAD_REQUEST).send({ message: msg });
+    }
+
+    const msg = err instanceof Error ? err.message : "Upload failed";
     return res.status(statusCode.BAD_REQUEST).send({ message: msg });
 };
