@@ -1,55 +1,158 @@
 // backend/src/services/cloudinary.ts
 
-import { v2 as cloudinary } from "cloudinary";
+import crypto from "crypto";
+import logger from "../utils/logger";
 
 
-const required = (key: string) => {
-    const v = process.env[key];
-    if (!v) throw new Error(`Missing env var: ${key}`);
-    return v;
-};
+export type ResourceType = "image" | "video" | "raw" | "auto";
 
-cloudinary.config({
-    cloud_name: required("CLOUDINARY_CLOUD_NAME"),
-    api_key: required("CLOUDINARY_API_KEY"),
-    api_secret: required("CLOUDINARY_API_SECRET")
-});
-
-export type CloudinaryUploadResult = {
+export type UploadResult = {
     secure_url: string;
     public_id: string;
-    resource_type: "image" | "video" | "raw" | string;
-    bytes?: number;
+    resource_type: "image" | "video" | "raw";
     format?: string;
+    bytes?: number;
     width?: number;
     height?: number;
     duration?: number;
 };
 
-export const uploadBuffer = (args: {
+const mustGetEnv = (key: string) => {
+    const v = process.env[key];
+    if (!v) throw new Error(`Missing env var: ${key}`);
+    return v;
+};
+
+const cloudName = () => mustGetEnv("CLOUDINARY_CLOUD_NAME").trim();
+const apiKey = () => mustGetEnv("CLOUDINARY_API_KEY").trim();
+const apiSecret = () => mustGetEnv("CLOUDINARY_API_SECRET").trim();
+
+const sha1 = (value: string) => crypto.createHash("sha1").update(value).digest("hex");
+
+const signParams = (params: Record<string, string | number | boolean | undefined | null>) => {
+    const filtered: Record<string, string> = {};
+
+    for (const [k, v] of Object.entries(params)) {
+        if (v === undefined || v === null) continue;
+        if (k === "file" || k === "cloud_name" || k === "resource_type" || k === "api_key" || k === "signature") continue;
+        filtered[k] = String(v);
+    }
+
+    const toSign = Object.keys(filtered)
+        .sort()
+        .map((k) => `${k}=${filtered[k]}`)
+        .join("&");
+
+    return sha1(`${toSign}${apiSecret()}`);
+};
+
+const uploadUrl = (resourceType: ResourceType) =>
+    `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/upload`;
+
+const destroyUrl = (resourceType: Exclude<ResourceType, "auto">) =>
+    `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/destroy`;
+
+export const uploadBuffer = async (opts: {
     buffer: Buffer;
+    filename: string;
     folder: string;
-    filename?: string;
-    mimeType?: string;
-}) =>
-    new Promise<CloudinaryUploadResult>((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-            {
-                folder: args.folder,
-                resource_type: "auto"
-            },
-            (err, result) => {
-                if (err || !result) return reject(err ?? new Error("Cloudinary upload failed"));
-                resolve(result as CloudinaryUploadResult);
-            }
-        );
+    resourceType: ResourceType;
+    publicId?: string;
+    tags?: string[];
+    overwrite?: boolean;
+}) => {
+    const timestamp = Math.floor(Date.now() / 1000);
 
-        stream.end(args.buffer);
-    });
+    const params = {
+        folder: opts.folder,
+        public_id: opts.publicId,
+        tags: opts.tags?.join(","),
+        overwrite: opts.overwrite ?? true,
+        timestamp
+    };
 
-export const destroyByPublicId = async (publicId: string) => {
-    if (!publicId) return;
-    // "auto" delete: try image + video (Cloudinary requires resource_type sometimes)
-    await cloudinary.uploader.destroy(publicId, { resource_type: "image" }).catch(() => undefined);
-    await cloudinary.uploader.destroy(publicId, { resource_type: "video" }).catch(() => undefined);
+    const signature = signParams(params);
+
+    // ✅ TS-safe: convert Buffer -> Uint8Array so it matches BlobPart typing
+    const bytes = Uint8Array.from(opts.buffer);
+    const blob = new Blob([bytes]);
+
+    const form = new FormData();
+    form.append("file", blob, opts.filename);
+    form.append("api_key", apiKey());
+    form.append("timestamp", String(timestamp));
+    form.append("signature", signature);
+
+    if (params.folder) form.append("folder", params.folder);
+    if (params.public_id) form.append("public_id", params.public_id);
+    if (params.tags) form.append("tags", params.tags);
+    form.append("overwrite", String(params.overwrite));
+
+    const res = await fetch(uploadUrl(opts.resourceType), { method: "POST", body: form });
+    const data = (await res.json()) as any;
+
+    if (!res.ok) {
+        logger.error("Cloudinary upload failed", { status: res.status, data });
+        throw new Error(data?.error?.message ?? "Cloudinary upload failed");
+    }
+
+    return data as UploadResult;
+};
+
+export const destroyAsset = async (opts: {
+    publicId: string;
+    resourceType: Exclude<ResourceType, "auto">;
+    invalidate?: boolean;
+}) => {
+    const timestamp = Math.floor(Date.now() / 1000);
+
+    const params = {
+        public_id: opts.publicId,
+        invalidate: opts.invalidate ?? true,
+        timestamp
+    };
+
+    const signature = signParams(params);
+
+    const form = new FormData();
+    form.append("public_id", opts.publicId);
+    form.append("invalidate", String(params.invalidate));
+    form.append("timestamp", String(timestamp));
+    form.append("api_key", apiKey());
+    form.append("signature", signature);
+
+    const res = await fetch(destroyUrl(opts.resourceType), { method: "POST", body: form });
+    const data = (await res.json()) as any;
+
+    if (!res.ok) {
+        logger.error("Cloudinary destroy failed", { status: res.status, data });
+        throw new Error(data?.error?.message ?? "Cloudinary destroy failed");
+    }
+
+    return data as { result: "ok" | "not found" | string };
+};
+
+/**
+ * ✅ matches controller import: { destroyByPublicId } from "../services/cloudinary"
+ * Best effort: try image, then video if not found.
+ */
+export const destroyByPublicId = async (publicId: string, type?: "image" | "video") => {
+    if (!publicId) return { result: "not found" as const };
+
+    const tryDestroy = async (resourceType: "image" | "video") => {
+        try {
+            return await destroyAsset({ publicId, resourceType, invalidate: true });
+        } catch (e) {
+            // Cloudinary sometimes returns errors; keep best-effort behavior
+            logger.warn("Destroy asset failed", { publicId, resourceType, error: e });
+            return { result: "not found" as const };
+        }
+    };
+
+    if (type) return tryDestroy(type);
+
+    const r1 = await tryDestroy("image");
+    if (r1.result === "ok") return r1;
+
+    return tryDestroy("video");
 };
