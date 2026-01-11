@@ -1,21 +1,24 @@
+// backend/src/postRoutes.spec.ts
+
 import Chai from 'chai'
 import 'mocha'
-import StatusCode from './configurations/StatusCode'
-import app from './Server'
+import StatusCode from './config/statusCode'
+import app from './server'
 import chaiHttp from 'chai-http'
-import { CreateNewPost } from './utils/interfaces/Posts'
+import { createPost } from './interfaces/posts'
+
 
 Chai.use(chaiHttp)
 const expect = Chai.expect
 
 const randomString = Math.random().toString(36).substring(7)
 let postId: string = '61f003637edcde522526518a'
-const post: CreateNewPost = {
+const post: createPost = {
     author: randomString,
     title: randomString,
     content: randomString,
 }
-const updatedPost: CreateNewPost = {
+const updatedPost: createPost = {
     author: randomString + randomString,
     title: randomString + randomString,
     content: randomString + randomString,
