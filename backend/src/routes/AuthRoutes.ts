@@ -1,9 +1,8 @@
-// backend/src/routes/AuthRoutes.ts
+// backend/src/routes/authRoutes.ts
 
 import type { Express } from "express";
-
-import { register, login, me } from "../controllers/AuthController";
-import { requireAuth } from "../middlewares/AuthMiddleware";
+import { register, login, me } from "../controllers/authController";
+import { requireAuth } from "../middlewares/authMiddleware";
 
 
 const routes = (app: Express) => {
