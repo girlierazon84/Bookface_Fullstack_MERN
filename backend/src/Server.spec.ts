@@ -1,8 +1,11 @@
+// backend/src/server.spec.ts
+
 import Chai from 'chai'
 import 'mocha'
-import StatusCode from './configurations/StatusCode'
-import app from './Server'
+import statusCode from './config/statusCode'
+import app from './server'
 import chaiHttp = require('chai-http')
+
 
 Chai.use(chaiHttp)
 const expect = Chai.expect
@@ -12,7 +15,7 @@ describe('API Alive Request', () => {
         return Chai.request(app).get('/')
             .then(res => {
                 expect(res.text).to.eql('My API is Alive!...')
-                expect(res.status).to.equal(StatusCode.OK)
+                expect(res.status).to.equal(statusCode.OK)
             })
     })
 })
