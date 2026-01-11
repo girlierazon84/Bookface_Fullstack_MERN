@@ -1,13 +1,16 @@
 // backend/src/routes/commentRoutes.ts
 
-import type { Express } from "express";
+import { Router } from "express";
 import { requireAuth } from "../middlewares/authMiddleware";
-import { getCommentsForPost, createComment } from "../controllers/commentController";
+import {
+    getCommentsForPost,
+    createComment
+} from "../controllers/commentController";
 
 
-const routes = (app: Express) => {
-    app.get("/posts/:postId/comments", getCommentsForPost);
-    app.post("/posts/:postId/comments", requireAuth, createComment);
-};
+const router = Router();
 
-export default { routes };
+router.get("/posts/:postId/comments", getCommentsForPost);
+router.post("/posts/:postId/comments", requireAuth, createComment);
+
+export default router;
