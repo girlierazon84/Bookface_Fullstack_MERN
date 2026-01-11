@@ -1,16 +1,18 @@
+// backend/src/middlewares/morganMiddleware.ts
+
 import morgan, { StreamOptions } from "morgan";
-import Logger from "../utils/Logger";
+import logger from "../utils/logger";
 
 
 const stream: StreamOptions = {
-    write: (message) => Logger.http(message.trim())
+    write: (message) => logger.http(message.trim())
 };
 
 const skip = () => (process.env.NODE_ENV ?? "development") !== "development";
 
-const MorganMiddleware = morgan(
+const morganMiddleware = morgan(
     ":method :url :status :res[content-length] - :response-time ms",
     { stream, skip }
 );
 
-export default MorganMiddleware;
+export default morganMiddleware;
