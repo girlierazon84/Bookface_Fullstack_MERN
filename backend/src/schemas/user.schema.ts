@@ -9,7 +9,7 @@ export const userIdParamsSchema = z.object({
 });
 
 export const searchUsersSchema = z.object({
-    username: z.string().trim().min(1).max(40)
+    username: z.coerce.string().trim().min(1).max(40)
 });
 
 export const updateMeSchema = z
