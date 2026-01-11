@@ -9,43 +9,49 @@ export interface IPostMedia {
     url: string;
     publicId: string;
     type: PostMediaType;
+    mime?: string;
+    width?: number;
+    height?: number;
+    duration?: number;
 }
 
 export interface IPost {
     author: Types.ObjectId;
     content: string;
 
-    // legacy single imageUrl kept for backward compatibility (optional)
+    // legacy field kept for backward compat:
     imageUrl?: string;
 
-    // new: multiple media items
+    // new:
     media: IPostMedia[];
 
     likes: Types.ObjectId[];
-
-    editedAt?: Date;
     createdAt: Date;
     updatedAt: Date;
 }
+
+const postMediaSchema = new Schema<IPostMedia>(
+    {
+        url: { type: String, required: true, trim: true },
+        publicId: { type: String, required: true, trim: true },
+        type: { type: String, enum: ["image", "video"], required: true },
+        mime: { type: String, default: "" },
+        width: { type: Number },
+        height: { type: Number },
+        duration: { type: Number }
+    },
+    { _id: false }
+);
 
 const postSchema = new Schema<IPost>(
     {
         author: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
         content: { type: String, required: true, trim: true, maxlength: 5000 },
 
-        imageUrl: { type: String, default: "", trim: true },
+        imageUrl: { type: String, default: "", trim: true }, // legacy
+        media: { type: [postMediaSchema], default: [] },
 
-        media: [
-            {
-                url: { type: String, required: true },
-                publicId: { type: String, required: true },
-                type: { type: String, enum: ["image", "video"], required: true }
-            }
-        ],
-
-        likes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
-
-        editedAt: { type: Date }
+        likes: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }]
     },
     {
         timestamps: true,
