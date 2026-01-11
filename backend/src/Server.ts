@@ -4,29 +4,19 @@ import "dotenv/config";
 import express from "express";
 import applyMiddleware from "./middlewares/applyMiddleware";
 import configuration from "./config/configuration";
+import routes from "./routes";
 import { notFound, errorHandler } from "./middlewares/errorMiddleware";
 import logger from "./utils/logger";
 
 
-// routers
-import postRouter from "./routes/postRoutes";
-// import authRouter from "./routes/authRoutes" ... (convert similarly)
-// import userRouter from "./routes/userRoutes" ...
-// etc.
-
 const app = express();
+
 applyMiddleware(app);
 
-// Mount API
-app.use("/api/posts", postRouter);
+// Mount all routes
+app.use(routes);
 
-// TODO: convert the rest to Router style and mount:
-// app.use("/api/auth", authRouter);
-// app.use("/api/users", userRouter);
-// app.use("/api/feed", feedRouter);
-// app.use("/api/comments", commentRouter);
-// app.use("/api/friends", friendRouter);
-
+// 404 + error handler
 app.use(notFound);
 app.use(errorHandler);
 
