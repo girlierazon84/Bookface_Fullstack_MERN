@@ -1,3 +1,5 @@
+// backend/src/utils/logger.ts
+
 import winston from "winston";
 import fs from "fs";
 import path from "path";
@@ -55,11 +57,11 @@ const transports: winston.transport[] = [
     })
 ];
 
-const Logger = winston.createLogger({
+const logger = winston.createLogger({
     level: getLevel(),
     levels,
     format,
     transports
 });
 
-export default Logger;
+export default logger;
