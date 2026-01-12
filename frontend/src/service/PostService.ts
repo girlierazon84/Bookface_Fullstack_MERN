@@ -67,7 +67,7 @@ export const normalizeCreatedPost = (input: CreatePostApiResponse | unknown): Po
     return null;
 };
 
-const PostService = {
+const postService = {
     // Feed (protected backend endpoint)
     getFeed: () => http.get<PostsApiResponse>("/feed"),
 
@@ -104,4 +104,4 @@ const PostService = {
     copy: (id: string) => http.post<PostDTO>(`/posts/${id}/copy`)
 };
 
-export default PostService;
+export default postService;
