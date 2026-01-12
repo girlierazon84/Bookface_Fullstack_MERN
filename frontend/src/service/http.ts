@@ -1,4 +1,4 @@
-// frontend/src/utils/api/http.ts
+// frontend/src/service/http.ts
 
 import axios from "axios";
 import { authStorage } from "../utils/auth/authStorage";
