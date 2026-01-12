@@ -1,16 +1,18 @@
-// frontend/src/components/posts/CreateNewPost.tsx
+// frontend/src/components/CreateNewPost.tsx
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import styled from "styled-components";
-import PostService, { normalizeCreatedPost } from "../api/service/PostService";
+import postService, {
+  normalizeCreatedPost
+} from "../service/postService";
 import { useUserContext } from "../provider/UserProvider";
 import { PrimaryButton } from "./CustomButtonComponent";
 import Avatar from "./Avatar";
 
 
-/**----------------------------------------
-    Styled components for CreateNewPost
--------------------------------------------*/
+/**----------------------
+    Styled-components
+-------------------------*/
 const Composer = styled.div`
   display: grid;
   gap: 12px;
@@ -53,18 +55,25 @@ const TextArea = styled.textarea`
     border-color: ${({ theme }) => theme.colors.text_secondary};
     box-shadow: ${({ theme }) => theme.colors.card_shadow};
   }
+`;
 
-  &:disabled {
-    opacity: 0.85;
-    cursor: not-allowed;
-  }
+const MediaRow = styled.div`
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+const MediaHint = styled.div`
+  font-weight: 800;
+  color: ${({ theme }) => theme.colors.text_secondary};
+  font-size: 0.9rem;
 `;
 
 const BottomRow = styled.div`
   display: grid;
   gap: 10px;
 
-  /* mobile-first: button full width, status above */
   @media (min-width: 640px) {
     grid-template-columns: 1fr 160px;
     align-items: center;
@@ -77,54 +86,55 @@ const Status = styled.div`
   color: ${({ theme }) => theme.colors.text_primary};
 `;
 
-// Props type definition
 type Props = {
   onCreated?: () => void | Promise<void>;
 };
 
-// CreateNewPost component definition export
+const MAX_FILES = 4;
+
 const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
-  // Access user from context
   const { user } = useUserContext();
 
-  // Local state for content, status message, and submission state
   const [content, setContent] = useState("");
   const [status, setStatus] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Function to handle post submission
+  const [files, setFiles] = useState<File[]>([]);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const pickFiles = () => inputRef.current?.click();
+
+  const onFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const list = Array.from(e.target.files ?? []);
+    const next = list.slice(0, MAX_FILES);
+    setFiles(next);
+    e.target.value = "";
+  };
+
   const submit = async () => {
-    // Reset status message
     setStatus("");
 
-    // Trim content and validate
     const trimmed = content.trim();
     if (!trimmed) {
-      // If content is empty, set status and return
       setStatus("Write something first 🙂");
       return;
     }
-    // Prevent multiple submissions
     if (submitting) return;
 
-    // Set submitting state to true
     setSubmitting(true);
     try {
-      // Call PostService to create a new post
-      const res = await PostService.createPost({ content: trimmed });
+      const res = await postService.createPost({ content: trimmed, files });
       const created = normalizeCreatedPost(res.data);
       if (!created) console.warn("Unexpected create post response shape:", res.data);
 
-      // Clear content and set success status
       setContent("");
+      setFiles([]);
       setStatus("Posted ✅");
       await onCreated?.();
     } catch (e) {
-      // Log error and set failure status
       console.warn("Failed to create post:", e);
       setStatus("Failed to post ❌");
     } finally {
-      // Reset submitting state
       setSubmitting(false);
     }
   };
@@ -145,6 +155,23 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
         onChange={(e) => setContent(e.target.value)}
         disabled={submitting}
       />
+
+      <MediaRow>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*,video/*"
+          multiple
+          hidden
+          onChange={onFilesSelected}
+        />
+        <PrimaryButton type="button" onClick={pickFiles} disabled={submitting}>
+          Add media
+        </PrimaryButton>
+        <MediaHint>
+          {files.length ? `${files.length} file(s) selected (max ${MAX_FILES})` : "Optional: images/videos"}
+        </MediaHint>
+      </MediaRow>
 
       <BottomRow>
         <Status aria-live="polite">{status}</Status>
