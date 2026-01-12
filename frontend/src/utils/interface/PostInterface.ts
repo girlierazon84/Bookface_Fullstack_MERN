@@ -8,11 +8,29 @@ export type PostAuthorDTO = {
     avatarUrl?: string;
 };
 
+export type PostMediaType = "image" | "video";
+
+export type PostMediaDTO = {
+    url: string;
+    publicId: string;
+    type: PostMediaType;
+    mime?: string;
+    width?: number;
+    height?: number;
+    duration?: number;
+};
+
 export type PostDataObject = {
     _id: string;
     author?: PostAuthorDTO;
     content: string;
+
+    // legacy fallback
     imageUrl?: string;
+
+    // new
+    media?: PostMediaDTO[];
+
     createdAt: string;
     updatedAt: string;
 };
@@ -20,7 +38,7 @@ export type PostDataObject = {
 // payloads
 export type CreatePostObject = {
     content: string;
-    imageUrl?: string;
+    files?: File[]; // ✅ allow multipart create
 };
 
-export type UpdatePostObject = Partial<CreatePostObject>;
+export type UpdatePostObject = Partial<Pick<CreatePostObject, "content">>;
