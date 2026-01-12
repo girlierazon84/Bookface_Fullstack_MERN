@@ -10,12 +10,13 @@ import { Navigate } from "react-router-dom";
 import styled from "styled-components";
 import { useUserContext } from "../provider/UserProvider";
 import RoutingPath from "../routes/RoutingPath";
-import PostService, {
+import postService, {
   type PostDTO,
   normalizePostsList
-} from "../api/service/PostService";
+} from "../service/postService";
 import CreateNewPost from "../components/CreateNewPost";
 import Avatar from "../components/Avatar";
+import PostMedia from "../components/PostMedia";
 
 
 /*-----------------------
@@ -190,14 +191,6 @@ const PostContent = styled.p`
   overflow-wrap: anywhere;
 `;
 
-const PostImage = styled.img`
-  margin-top: 10px;
-  width: 100%;
-  border-radius: 14px;
-  border: 1px solid rgba(97, 97, 97, 0.15);
-  display: block;
-`;
-
 const EmptyState = styled.div`
   padding: 14px;
   text-align: center;
@@ -217,6 +210,7 @@ const isAuthUser = (
   lastname: string;
   email?: string;
   avatarUrl?: string;
+  coverUrl?: string;
   bio?: string;
 } => !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
 
@@ -235,7 +229,7 @@ const ProfileView: React.FC = () => {
 
     setLoading(true);
     try {
-      const res = await PostService.getFeed();
+      const res = await postService.getFeed();
       const allPosts = normalizePostsList(res.data);
       setPosts(allPosts.filter((p) => p.author?._id === me._id));
     } catch {
@@ -263,7 +257,7 @@ const ProfileView: React.FC = () => {
               <SubText>
                 {me.bio?.trim()
                   ? me.bio
-                  : "Welcome to your profile. Add a bio later (backend update endpoint coming soon)."}
+                  : "Welcome to your profile. Add a bio in Settings (PATCH /users/me)."}
               </SubText>
             </HeaderText>
           </HeaderRow>
@@ -308,18 +302,22 @@ const ProfileView: React.FC = () => {
                     </PostTop>
 
                     <PostContent>{p.content}</PostContent>
-                    {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
+
+                    {/* ✅ NEW backend structure: media[] (fallback to legacy imageUrl) */}
+                    <PostMedia media={p.media} legacyImageUrl={p.imageUrl} />
                   </PostCard>
                 ))}
 
-                {!loading && posts.length === 0 ? <EmptyState>No posts yet. Share your first thought ✨</EmptyState> : null}
+                {!loading && posts.length === 0 ? (
+                  <EmptyState>No posts yet. Share your first thought ✨</EmptyState>
+                ) : null}
               </FeedList>
             </Card>
           </div>
 
           <Card>
             <CardTitle>Friends</CardTitle>
-            <Muted>Coming soon: friends list + friend requests (backend FriendRequestModel).</Muted>
+            <Muted>Coming soon: friends list + friend requests.</Muted>
           </Card>
         </Grid>
       </Shell>
