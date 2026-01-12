@@ -10,15 +10,24 @@ export type UploadedMedia = IPostMedia;
 
 const inferType = (mime?: string): MediaType => (mime?.startsWith("video/") ? "video" : "image");
 
+/**---------------------------------------------------------------------------------------------------------------------
+    Upload a single file to Cloudinary.
+    For posts, we upload with resourceType "auto" to support both images + videos.
+    For avatars/covers, you can still call uploadBuffer with resourceType "image" directly (via controller/service).
+------------------------------------------------------------------------------------------------------------------------*/
 export const uploadSingle = async (file: Express.Multer.File, folder: string): Promise<UploadedMedia> => {
-    const type = inferType(file.mimetype);
+    const inferred = inferType(file.mimetype);
 
     const res = await uploadBuffer({
         buffer: file.buffer,
         folder,
         filename: file.originalname,
-        resourceType: type
+        resourceType: "auto", // ✅ supports both image + video reliably
+        mimeType: file.mimetype
     });
+
+    // Cloudinary tells us what it actually stored:
+    const type: MediaType = res.resource_type === "video" ? "video" : inferred;
 
     return {
         url: res.secure_url,
@@ -37,7 +46,7 @@ export const uploadMany = async (files: Express.Multer.File[], folder: string): 
 
 export const replaceMedia = async (args: {
     previousPublicId?: string;
-    previousType?: MediaType; // optional but avoids extra Cloudinary attempts
+    previousType?: MediaType; // optional: faster delete
     file: Express.Multer.File;
     folder: string;
 }) => {
