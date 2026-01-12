@@ -7,7 +7,7 @@ import friendController from "../controllers/friendController";
 
 const router = Router();
 
-// Requests (should be protected)
+// Requests
 router.post("/friends/requests", requireAuth, friendController.sendFriendRequest);
 router.get("/friends/requests/incoming/:userId", requireAuth, friendController.getIncomingRequests);
 router.get("/friends/requests/outgoing/:userId", requireAuth, friendController.getOutgoingRequests);
