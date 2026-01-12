@@ -35,7 +35,6 @@ type Props = {
 
 const PostMedia: React.FC<Props> = ({ media, legacyImageUrl }) => {
     const list = media ?? [];
-
     if (!list.length && !legacyImageUrl) return null;
 
     return (
