@@ -1,4 +1,4 @@
-// frontend/src/api/service/PostService.ts
+// frontend/src/service/postService.ts
 
 import http from "./http";
 
