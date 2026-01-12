@@ -1,4 +1,4 @@
-// frontend/src/utils/api/http.ts
+// frontend/src/api/http.ts
 
 import axios from "axios";
 import { authStorage } from "../utils/auth/authStorage";
@@ -14,10 +14,10 @@ const serverPort = process.env.REACT_APP_SERVER_PORT ?? "3001";
 export const API_BASE_URL = (envBaseUrl ?? `${serverUrl}:${serverPort}`).replace(/\/+$/, "");
 
 const http = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: API_BASE_URL
 });
 
-// Attach token for every request (FB-like session)
+// Attach token for every request
 http.interceptors.request.use((config) => {
     const token = authStorage.getToken();
     if (token) {
@@ -27,14 +27,12 @@ http.interceptors.request.use((config) => {
     return config;
 });
 
-// If token is invalid/expired => clear local auth
+// If token invalid/expired => clear local auth
 http.interceptors.response.use(
     (res) => res,
     (error) => {
         const status = error?.response?.status;
-        if (status === 401) {
-            authStorage.clearAuth();
-        }
+        if (status === 401) authStorage.clearAuth();
         return Promise.reject(error);
     }
 );
