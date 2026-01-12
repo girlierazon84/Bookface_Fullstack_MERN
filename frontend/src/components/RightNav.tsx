@@ -1,4 +1,4 @@
-// frontend/src/components/nav/RightNav.tsx
+// frontend/src/components/RightNav.tsx
 
 import React from "react";
 import styled from "styled-components";
@@ -7,7 +7,7 @@ import { ListItemIcon, ListItemText } from "@mui/material";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
 import { useUserContext } from "../provider/UserProvider";
-import RoutingPath from "../routes/RoutingPath";
+import RoutingPath from "../routes/routingPath";
 import Profile from "./Profile";
 
 
@@ -15,7 +15,6 @@ import Profile from "./Profile";
     styled-components: use transient props ($open) to avoid passing to DOM
 ----------------------------------------------------------------------------*/
 const Panel = styled.aside<{ $open: boolean }>`
-  /* Desktop: no overlay, no positioning */
   @media (min-width: 769px) {
     position: static;
     inset: auto;
@@ -23,7 +22,6 @@ const Panel = styled.aside<{ $open: boolean }>`
     pointer-events: auto;
   }
 
-  /* Mobile: overlay */
   @media (max-width: 768px) {
     position: fixed;
     inset: 0;
@@ -43,7 +41,6 @@ const Menu = styled.ul<{ $open: boolean }>`
   margin: 0;
   padding: 0;
 
-  /* Desktop: inline actions */
   display: flex;
   flex-flow: row nowrap;
   align-items: center;
@@ -66,7 +63,6 @@ const Menu = styled.ul<{ $open: boolean }>`
     background: ${({ theme }) => theme.colors.fourthly};
   }
 
-  /* Mobile: slide-in drawer */
   @media (max-width: 768px) {
     height: 100%;
     width: min(82vw, 340px);
@@ -82,7 +78,6 @@ const Menu = styled.ul<{ $open: boolean }>`
     transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
     transition: transform 0.25s ease;
 
-    /* keep icons/text aligned nicely */
     a {
       padding: 10px 12px;
     }
@@ -107,13 +102,7 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
 
   return (
     <Panel $open={open} aria-hidden={!open} onClick={close}>
-      <Menu
-        id="primary-navigation"
-        $open={open}
-        onClick={stop}
-        role="menu"
-        aria-label="Primary navigation"
-      >
+      <Menu id="primary-navigation" $open={open} onClick={stop} role="menu" aria-label="Primary navigation">
         <Li>
           <Link to={RoutingPath.homeView} onClick={close}>
             <ListItemIcon>
