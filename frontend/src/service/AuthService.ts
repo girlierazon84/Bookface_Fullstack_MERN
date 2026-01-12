@@ -1,4 +1,4 @@
-// frontend/src/api/service/AuthService.ts
+// frontend/src/service/authService.ts
 
 import http from "./http";
 import type { AuthUser } from "../utils/auth/authStorage";
@@ -22,7 +22,7 @@ export type AuthResponse = {
     user: AuthUser;
 };
 
-const AuthService = {
+const authService = {
     register: (payload: RegisterPayload) => http.post<AuthResponse>("/auth/register", payload),
     login: (payload: LoginPayload) => http.post<AuthResponse>("/auth/login", payload),
 
@@ -30,4 +30,4 @@ const AuthService = {
     me: () => http.get<AuthUser>("/auth/me")
 };
 
-export default AuthService;
+export default authService;
