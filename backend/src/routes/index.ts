@@ -4,22 +4,26 @@ import { Router } from "express";
 
 import aliveRoutes from "./aliveRoutes";
 import authRoutes from "./authRoutes";
-import feedRoutes from "./feedRoutes";
 import userRoutes from "./userRoutes";
 import postRoutes from "./postRoutes";
+import feedRoutes from "./feedRoutes";
 import commentRoutes from "./commentRoutes";
 import friendRoutes from "./friendRoutes";
-import userMediaRoutes from "./userMediaRoutes";
+
 
 const router = Router();
 
+// health
 router.use(aliveRoutes);
+
+// auth
 router.use(authRoutes);
-router.use(feedRoutes);
+
+// app features
 router.use(userRoutes);
 router.use(postRoutes);
+router.use(feedRoutes);
 router.use(commentRoutes);
 router.use(friendRoutes);
-router.use(userMediaRoutes);
 
 export default router;
