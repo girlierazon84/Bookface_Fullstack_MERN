@@ -1,4 +1,4 @@
-// client/src/styles/theme.ts
+// frontend/src/styles/theme.ts
 
 import "styled-components";
 
@@ -11,7 +11,7 @@ export const theme = {
         fourthly: "#e6e6e6",
         card_shadow: "0px 2px 6px rgba(0,0,0,0.08)",
         text_primary: "#2c2e2e",
-        text_secondary: "#616161",
+        text_secondary: "#616161"
     },
     spacing: (factor: number) => `${0.25 * factor}rem`,
     radius: {
@@ -23,7 +23,6 @@ export const theme = {
 
 export type AppTheme = typeof theme;
 
-// 👇 Integrate strongly typed theme into styled-components
 declare module "styled-components" {
     export interface DefaultTheme extends AppTheme { }
 }
