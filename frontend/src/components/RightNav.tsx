@@ -7,7 +7,7 @@ import { ListItemIcon, ListItemText } from "@mui/material";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
 import { useUserContext } from "../provider/UserProvider";
-import RoutingPath from "../routes/routingPath";
+import routingPath from "../routes/routingPath";
 import Profile from "./Profile";
 
 
@@ -104,7 +104,7 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
     <Panel $open={open} aria-hidden={!open} onClick={close}>
       <Menu id="primary-navigation" $open={open} onClick={stop} role="menu" aria-label="Primary navigation">
         <Li>
-          <Link to={RoutingPath.homeView} onClick={close}>
+          <Link to={routingPath.homeView} onClick={close}>
             <ListItemIcon>
               <HomeSharpIcon color="primary" fontSize="medium" />
             </ListItemIcon>
@@ -118,7 +118,7 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
           </Li>
         ) : (
           <Li>
-            <Link to={RoutingPath.usersLogInView} onClick={close}>
+            <Link to={routingPath.usersLogInView} onClick={close}>
               <ListItemIcon>
                 <LoginSharpIcon color="action" fontSize="medium" />
               </ListItemIcon>
