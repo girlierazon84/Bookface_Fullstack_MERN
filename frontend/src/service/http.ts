@@ -1,7 +1,7 @@
 // frontend/src/utils/api/http.ts
 
 import axios from "axios";
-import { authStorage } from "../auth/authStorage";
+import { authStorage } from "../utils/auth/authStorage";
 
 
 // Prefer a single base url in env for production/deploy:
