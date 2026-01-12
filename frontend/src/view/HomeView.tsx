@@ -1,13 +1,22 @@
 // frontend/src/view/HomeView.tsx
 
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from "react";
 import styled from "styled-components";
 import { Link, Navigate } from "react-router-dom";
 import RoutingPath from "../routes/RoutingPath";
 import { useUserContext } from "../provider/UserProvider";
-import PostService, { type PostDTO, normalizePostsList } from "../api/service/PostService";
+import PostService, {
+  type PostDTO,
+  normalizePostsList
+} from "../service/postService";
 import CreateNewPost from "../components/CreateNewPost";
 import Avatar from "../components/Avatar";
+import PostMedia from "../components/PostMedia";
 
 
 /**--------------------------------
@@ -18,11 +27,8 @@ const Page = styled.main`
   min-height: calc(100vh - 85px);
   padding: 14px 0 calc(60px + env(safe-area-inset-bottom));
   width: 100%;
-
-  /* Fix: prevent horizontal overflow that can show "white panels" */
   overflow-x: clip;
 
-  /* Fallback for browsers that don't support clip */
   @supports not (overflow: clip) {
     overflow-x: hidden;
   }
@@ -33,8 +39,6 @@ const Shell = styled.section`
   margin: 0 auto;
   display: grid;
   gap: 12px;
-
-  /* Allow grid children to shrink without forcing overflow */
   min-width: 0;
 
   @media (min-width: 1024px) {
@@ -62,8 +66,6 @@ const Card = styled.div`
   border-radius: 16px;
   box-shadow: ${({ theme }) => theme.colors.card_shadow};
   padding: 14px;
-
-  /* Fix: prevent child content from stretching the card */
   min-width: 0;
 `;
 
@@ -181,18 +183,8 @@ const PostContent = styled.p`
   line-height: 1.5;
   white-space: pre-wrap;
   font-weight: 700;
-
-  /* Fix: prevent long strings from forcing horizontal overflow */
   overflow-wrap: anywhere;
   word-break: break-word;
-`;
-
-const PostImage = styled.img`
-  margin-top: 10px;
-  width: 100%;
-  display: block;
-  border-radius: 14px;
-  border: 1px solid rgba(97, 97, 97, 0.15);
 `;
 
 const RightTitle = styled.h3`
@@ -295,7 +287,8 @@ const HomeView: React.FC = () => {
 
                   <PostContent>{p.content}</PostContent>
 
-                  {p.imageUrl ? <PostImage src={p.imageUrl} alt="Post media" /> : null}
+                  {/* ✅ NEW backend structure: media[] (fallback to legacy imageUrl) */}
+                  <PostMedia media={p.media} legacyImageUrl={p.imageUrl} />
                 </PostCard>
               ))}
 
