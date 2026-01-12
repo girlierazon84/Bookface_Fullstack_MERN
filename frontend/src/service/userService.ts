@@ -2,7 +2,6 @@
 
 import http from "./http";
 
-
 export type UserDTO = {
     _id: string;
     firstname: string;
