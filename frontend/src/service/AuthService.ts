@@ -3,7 +3,6 @@
 import http from "./http";
 import type { AuthUser } from "../utils/auth/authStorage";
 
-
 export type RegisterPayload = {
     firstname: string;
     lastname: string;
