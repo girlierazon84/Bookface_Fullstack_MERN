@@ -1,4 +1,4 @@
-// frontend/src/utils/interface/PostInterface.ts
+// frontend/src/utils/interface/postInterface.ts
 
 export type PostAuthorDTO = {
     _id: string;
