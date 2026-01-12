@@ -7,6 +7,7 @@ export type AuthUser = {
     lastname: string;
     email?: string;
     avatarUrl?: string;
+    coverUrl?: string;
     bio?: string;
 };
 
@@ -17,11 +18,9 @@ export const authStorage = Object.freeze({
     getToken(): string | null {
         return localStorage.getItem(TOKEN_KEY);
     },
-
     setToken(token: string) {
         localStorage.setItem(TOKEN_KEY, token);
     },
-
     clearToken() {
         localStorage.removeItem(TOKEN_KEY);
     },
@@ -39,7 +38,6 @@ export const authStorage = Object.freeze({
     setUser(user: AuthUser) {
         localStorage.setItem(USER_KEY, JSON.stringify(user));
     },
-
     clearUser() {
         localStorage.removeItem(USER_KEY);
     },
@@ -54,7 +52,6 @@ export const authStorage = Object.freeze({
         this.clearUser();
     },
 
-    // ✅ alias for convenience (used in provider)
     clear() {
         this.clearAuth();
     }
