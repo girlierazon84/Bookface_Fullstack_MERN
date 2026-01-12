@@ -56,7 +56,8 @@ export const uploadBuffer = async (opts: {
     buffer: Buffer;
     filename: string;
     folder: string;
-    resourceType: ResourceType;
+    resourceType: ResourceType; // "image" | "video" | "auto"
+    mimeType?: string;
     publicId?: string;
     tags?: string[];
     overwrite?: boolean;
@@ -68,14 +69,16 @@ export const uploadBuffer = async (opts: {
         public_id: opts.publicId,
         tags: opts.tags?.join(","),
         overwrite: opts.overwrite ?? true,
+        // Cloudinary REST supports "resource_type" in URL, but also "context"/"metadata".
+        // We include "timestamp" for signature.
         timestamp
     };
 
     const signature = signParams(params);
 
-    // ✅ TS-safe: convert Buffer -> Uint8Array so it matches BlobPart typing
+    // TS-safe: Buffer -> Uint8Array -> Blob
     const bytes = Uint8Array.from(opts.buffer);
-    const blob = new Blob([bytes]);
+    const blob = new Blob([bytes], opts.mimeType ? { type: opts.mimeType } : undefined);
 
     const form = new FormData();
     form.append("file", blob, opts.filename);
@@ -125,6 +128,7 @@ export const destroyAsset = async (opts: {
     const data = (await res.json()) as any;
 
     if (!res.ok) {
+        // Cloudinary destroy can return 200 with "not found" OR errors depending on account/settings.
         logger.error("Cloudinary destroy failed", { status: res.status, data });
         throw new Error(data?.error?.message ?? "Cloudinary destroy failed");
     }
@@ -132,10 +136,13 @@ export const destroyAsset = async (opts: {
     return data as { result: "ok" | "not found" | string };
 };
 
-/**
- * ✅ matches controller import: { destroyByPublicId } from "../services/cloudinary"
- * Best effort: try image, then video if not found.
- */
+/**----------------------------------------------------------------------------------------------------
+    Destroy by publicId:
+        - Signature matches controllers/services usage: destroyByPublicId(publicId, optionalType?)
+        - Best effort:
+        - if type provided => only try that type
+        - else try image, then video
+-------------------------------------------------------------------------------------------------------*/
 export const destroyByPublicId = async (publicId: string, type?: "image" | "video") => {
     if (!publicId) return { result: "not found" as const };
 
@@ -143,8 +150,7 @@ export const destroyByPublicId = async (publicId: string, type?: "image" | "vide
         try {
             return await destroyAsset({ publicId, resourceType, invalidate: true });
         } catch (e) {
-            // Cloudinary sometimes returns errors; keep best-effort behavior
-            logger.warn("Destroy asset failed", { publicId, resourceType, error: e });
+            logger.warn("Cloudinary destroy attempt failed", { publicId, resourceType, error: e });
             return { result: "not found" as const };
         }
     };
