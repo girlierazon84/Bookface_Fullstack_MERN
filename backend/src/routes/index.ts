@@ -1,7 +1,6 @@
 // backend/src/routes/index.ts
 
 import { Router } from "express";
-
 import aliveRoutes from "./aliveRoutes";
 import authRoutes from "./authRoutes";
 import userRoutes from "./userRoutes";
@@ -13,13 +12,13 @@ import friendRoutes from "./friendRoutes";
 
 const router = Router();
 
-// health
+// Health check
 router.use(aliveRoutes);
 
-// auth
+// Auth
 router.use(authRoutes);
 
-// app features
+// Core features
 router.use(userRoutes);
 router.use(postRoutes);
 router.use(feedRoutes);
