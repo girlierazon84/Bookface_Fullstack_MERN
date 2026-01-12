@@ -10,5 +10,5 @@ export const postIdParamsSchema = z.object({
 
 export const deleteMediaParamsSchema = z.object({
     postId: objectIdSchema,
-    publicId: z.string().min(1)
+    publicId: z.string().trim().min(1, { message: "publicId is required" })
 });
