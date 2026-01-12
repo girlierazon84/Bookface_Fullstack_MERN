@@ -18,7 +18,7 @@ export type UserDTO = {
 
 export type UpdateMePayload = Partial<Pick<UserDTO, "firstname" | "lastname" | "bio">>;
 
-const UserService = {
+const userService = {
     // Public
     getAllUsers: () => http.get<UserDTO[]>("/users"),
     getUserById: (id: string) => http.get<UserDTO>(`/users/${id}`),
@@ -45,4 +45,4 @@ const UserService = {
     deleteMyCover: () => http.delete<UserDTO>("/users/me/cover")
 };
 
-export default UserService;
+export default userService;
