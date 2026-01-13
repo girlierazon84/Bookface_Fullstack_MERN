@@ -7,14 +7,13 @@ import userModel from "../models/userModel";
 import { hashPassword, comparePassword } from "../utils/crypt";
 import logger from "../utils/logger";
 import { registerSchema, loginSchema } from "../schemas/auth.schema";
+import { getEnv, getRequiredEnv } from "../utils/env";
+import type { JwtPayloadDTO, AuthUserDTO, AuthResponseDTO } from "../interfaces/auth";
 
 
-type JwtPayload = { id: string; username: string };
-
-const signToken = (payload: JwtPayload) => {
-    const secret = process.env.JWT_SECRET;
-    const expiresIn = process.env.JWT_EXPIRES_IN ?? "7d";
-    if (!secret) throw new Error("JWT_SECRET is not set");
+const signToken = (payload: JwtPayloadDTO) => {
+    const secret = getRequiredEnv("JWT_SECRET");
+    const expiresIn = getEnv("JWT_EXPIRES_IN") || "7d";
     return jwt.sign(payload, secret, { expiresIn });
 };
 
@@ -27,7 +26,7 @@ const toAuthUser = (user: {
     avatarUrl?: string;
     coverUrl?: string;
     bio?: string;
-}) => ({
+}): AuthUserDTO => ({
     _id: String(user._id),
     firstname: user.firstname,
     lastname: user.lastname,
@@ -54,7 +53,11 @@ export const register = async (req: Request, res: Response) => {
         const username = parsed.data.username.trim();
         const password = parsed.data.password;
 
-        const exists = await userModel.findOne({ $or: [{ email }, { username }] }).select("_id").lean();
+        const exists = await userModel
+            .findOne({ $or: [{ email }, { username }] })
+            .select("_id")
+            .lean();
+
         if (exists) return res.status(statusCode.BAD_REQUEST).send({ message: "User already exists" });
 
         const passwordHash = await hashPassword(password);
@@ -69,7 +72,8 @@ export const register = async (req: Request, res: Response) => {
 
         const token = signToken({ id: user._id.toString(), username: user.username });
 
-        return res.status(statusCode.CREATED).send({ token, user: toAuthUser(user) });
+        const body: AuthResponseDTO = { token, user: toAuthUser(user) };
+        return res.status(statusCode.CREATED).send(body);
     } catch (error: unknown) {
         logger.error("Register failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Register failed" });
@@ -86,13 +90,13 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
-        const identifierRaw = parsed.data.username.trim();
+        const identifierRaw = parsed.data.username.trim(); // username OR email
         const password = parsed.data.password;
 
-        const identifier = identifierRaw.toLowerCase();
+        const emailCandidate = identifierRaw.toLowerCase();
 
         const user = await userModel.findOne({
-            $or: [{ username: identifierRaw }, { email: identifier }]
+            $or: [{ username: identifierRaw }, { email: emailCandidate }]
         });
 
         if (!user) return res.status(statusCode.UNAUTHORIZED).send({ message: "Invalid credentials" });
@@ -102,7 +106,8 @@ export const login = async (req: Request, res: Response) => {
 
         const token = signToken({ id: user._id.toString(), username: user.username });
 
-        return res.status(statusCode.OK).send({ token, user: toAuthUser(user) });
+        const body: AuthResponseDTO = { token, user: toAuthUser(user) };
+        return res.status(statusCode.OK).send(body);
     } catch (error: unknown) {
         logger.error("Login failed", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: "Login failed" });
