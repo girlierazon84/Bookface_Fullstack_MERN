@@ -1,10 +1,10 @@
-// frontend/src/components/nav/NavigationBar.tsx
+// frontend/src/components/NavigationBar.tsx
 
 import React from "react";
 import styled from "styled-components";
 import { Link, useLocation } from "react-router-dom";
 import Burger from "./Burger";
-import RoutingPath from "../routes/RoutingPath";
+import routingPath from "../routes/routingPath";
 import logo from "../assets/logo.png";
 
 
@@ -84,14 +84,13 @@ const Right = styled.div`
   gap: 10px;
 `;
 
-/**----------------------
-    Component
--------------------------*/
+/**-------------------
+    Main Component
+----------------------*/
 const NavigationBar: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const location = useLocation();
 
-  // Close drawer on route change
   React.useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
@@ -100,7 +99,7 @@ const NavigationBar: React.FC = () => {
     <Nav>
       <Inner>
         <Left>
-          <BrandLink to={RoutingPath.homeView} aria-label="Go to home">
+          <BrandLink to={routingPath.homeView} aria-label="Go to home">
             <LogoTile aria-hidden="true">
               <img src={logo} alt="" />
             </LogoTile>
