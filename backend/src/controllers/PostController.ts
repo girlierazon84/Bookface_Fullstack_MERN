@@ -6,8 +6,13 @@ import postModel from "../models/postModel";
 import userModel from "../models/userModel";
 import logger from "../utils/logger";
 import { uploadMany } from "../services/mediaService";
-import { destroyByPublicId, isCloudinaryConfigured } from "../services/cloudinary";
-import { createPostBodySchema, updatePostBodySchema, postIdSchema } from "../schemas/post.schema";
+import { destroyByPublicId } from "../services/cloudinary";
+import { isCloudinaryConfigured } from "../utils/env";
+import {
+    createPostBodySchema,
+    updatePostBodySchema,
+    postIdSchema
+} from "../schemas/post.schema";
 import { deleteMediaParamsSchema } from "../schemas/media.schema";
 
 
@@ -23,7 +28,7 @@ export const createPost = async (req: Request, res: Response) => {
         }
 
         const content = parsed.data.content?.trim() ?? "";
-        const files = ((req.files as Express.Multer.File[] | undefined) ?? []).filter(Boolean);
+        const files = (req.files as Express.Multer.File[] | undefined) ?? [];
 
         // ✅ enforce: content OR media (before any uploads)
         if (!content && files.length === 0) {
@@ -31,10 +36,9 @@ export const createPost = async (req: Request, res: Response) => {
         }
 
         // ✅ if user attached media but Cloudinary not configured => clear 400
-        if (files.length > 0 && !isCloudinaryConfigured()) {
-            return res.status(statusCode.BAD_REQUEST).send({
-                message:
-                    "Media upload is not available. Configure Cloudinary env vars (CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET)."
+        if (files.length && !isCloudinaryConfigured()) {
+            return res.status(503).send({
+                message: "Media upload is not configured. Set CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET."
             });
         }
 
