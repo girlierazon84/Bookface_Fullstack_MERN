@@ -17,12 +17,23 @@ const MAX_POST_FILES = 4;
 
 const mb = (n: number) => n * 1024 * 1024;
 
-const isAllowedMime = (mime: string) => mime.startsWith("image/") || mime.startsWith("video/");
+// ✅ avatars/covers: image only
+const isImage = (mime: string) => mime.startsWith("image/");
+// ✅ posts: allow both
+const isPostAllowed = (mime: string) => mime.startsWith("image/") || mime.startsWith("video/");
 
-const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
-    if (!isAllowedMime(file.mimetype)) {
-        return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "file"));
-    }
+const avatarFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+    if (!isImage(file.mimetype)) return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "avatar"));
+    cb(null, true);
+};
+
+const coverFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+    if (!isImage(file.mimetype)) return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "cover"));
+    cb(null, true);
+};
+
+const postFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+    if (!isPostAllowed(file.mimetype)) return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "media"));
     cb(null, true);
 };
 
@@ -34,19 +45,19 @@ const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
 --------------------------------------------------*/
 export const uploadAvatar = multer({
     storage,
-    fileFilter,
+    fileFilter: avatarFilter,
     limits: { fileSize: mb(MAX_AVATAR_MB), files: 1 }
 }).single("avatar");
 
 export const uploadCover = multer({
     storage,
-    fileFilter,
+    fileFilter: coverFilter,
     limits: { fileSize: mb(MAX_COVER_MB), files: 1 }
 }).single("cover");
 
 export const uploadPostMedia = multer({
     storage,
-    fileFilter,
+    fileFilter: postFilter,
     limits: { fileSize: mb(MAX_POST_FILE_MB), files: MAX_POST_FILES }
 }).array("media", MAX_POST_FILES);
 
@@ -64,7 +75,9 @@ export const multerErrorHandler = (err: unknown, _req: Request, res: Response, n
                 : err.code === "LIMIT_FILE_COUNT"
                     ? `Too many files (max ${MAX_POST_FILES})`
                     : err.code === "LIMIT_UNEXPECTED_FILE"
-                        ? "Only image/* and video/* files are allowed"
+                        ? err.field === "media"
+                            ? "Only image/* and video/* files are allowed for posts"
+                            : "Only image/* files are allowed"
                         : err.message;
 
         return res.status(statusCode.BAD_REQUEST).send({ message: msg });
