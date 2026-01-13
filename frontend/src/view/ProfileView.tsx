@@ -4,16 +4,18 @@ import React, {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from "react";
 import { Navigate } from "react-router-dom";
 import styled from "styled-components";
 import { useUserContext } from "../provider/UserProvider";
-import RoutingPath from "../routes/RoutingPath";
+import routingPath from "../routes/routingPath";
 import postService, {
   type PostDTO,
   normalizePostsList
 } from "../service/postService";
+import userService from "../service/userService";
 import CreateNewPost from "../components/CreateNewPost";
 import Avatar from "../components/Avatar";
 import PostMedia from "../components/PostMedia";
@@ -62,13 +64,33 @@ const ProfileCard = styled(Card)`
   overflow: hidden;
 `;
 
-const Cover = styled.div`
+const CoverBtn = styled.button<{ $src?: string }>`
   height: 170px;
-  background: linear-gradient(
-    135deg,
-    ${({ theme }) => theme.colors.secondary},
-    ${({ theme }) => theme.colors.thirdly}
-  );
+  width: 100%;
+  border: 0;
+  cursor: pointer;
+  display: block;
+  padding: 0;
+
+  background: ${({ $src, theme }) =>
+    $src
+      ? `url(${$src}) center/cover no-repeat`
+      : `linear-gradient(135deg, ${theme.colors.secondary}, ${theme.colors.thirdly})`};
+
+  position: relative;
+
+  &:after {
+    content: "Change cover";
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    font-weight: 900;
+    color: ${({ theme }) => theme.colors.text_primary};
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+  }
 `;
 
 const HeaderRow = styled.div`
@@ -77,6 +99,19 @@ const HeaderRow = styled.div`
   align-items: center;
   padding: 16px;
   margin-top: -34px;
+`;
+
+const AvatarBtn = styled.button`
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  background: transparent;
+  border-radius: 999px;
+
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.secondary};
+    outline-offset: 4px;
+  }
 `;
 
 const HeaderText = styled.div`
@@ -214,15 +249,16 @@ const isAuthUser = (
   bio?: string;
 } => !!value && typeof value === "object" && "_id" in (value as any) && "username" in (value as any);
 
-/**-----------------------
-    ProfileView
-------------------------*/
 const ProfileView: React.FC = () => {
-  const { token, user } = useUserContext();
+  const { token, user, setAuth } = useUserContext();
   const me = useMemo(() => (isAuthUser(user) ? user : null), [user]);
 
   const [posts, setPosts] = useState<PostDTO[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState<"avatar" | "cover" | null>(null);
+
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadMyTimeline = useCallback(async () => {
     if (!token || !me) return;
@@ -243,21 +279,73 @@ const ProfileView: React.FC = () => {
     loadMyTimeline();
   }, [loadMyTimeline]);
 
-  if (!token || !me) return <Navigate to={RoutingPath.usersLogInView} replace />;
+  const refreshMe = useCallback(async () => {
+    if (!token) return;
+    const res = await userService.me();
+    // keep token, update user in storage/context
+    setAuth(token, res.data as any);
+  }, [token, setAuth]);
+
+  const onPickAvatar = async (file?: File) => {
+    if (!file) return;
+    setUploading("avatar");
+    try {
+      await userService.uploadMyAvatar(file);
+      await refreshMe();
+    } finally {
+      setUploading(null);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  };
+
+  const onPickCover = async (file?: File) => {
+    if (!file) return;
+    setUploading("cover");
+    try {
+      await userService.uploadMyCover(file);
+      await refreshMe();
+    } finally {
+      setUploading(null);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  };
+
+  if (!token || !me) return <Navigate to={routingPath.usersLogInView} replace />;
 
   return (
     <Page>
       <Shell>
         <ProfileCard>
-          <Cover />
+          <CoverBtn
+            type="button"
+            $src={me.coverUrl}
+            onClick={() => coverInputRef.current?.click()}
+            aria-label="Change cover photo"
+          />
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={(e) => onPickCover(e.target.files?.[0])}
+          />
+
           <HeaderRow>
-            <Avatar src={me.avatarUrl} name={me.username} alt="Profile avatar" size={92} />
+            <AvatarBtn type="button" onClick={() => avatarInputRef.current?.click()} aria-label="Change avatar">
+              <Avatar src={me.avatarUrl} name={me.username} alt="Profile avatar" size={92} />
+            </AvatarBtn>
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => onPickAvatar(e.target.files?.[0])}
+            />
+
             <HeaderText>
               <Name>{me.username}</Name>
               <SubText>
-                {me.bio?.trim()
-                  ? me.bio
-                  : "Welcome to your profile. Add a bio in Settings (PATCH /users/me)."}
+                {uploading ? `Uploading ${uploading}…` : me.bio?.trim() ? me.bio : "Welcome to your profile. Add a bio in Settings."}
               </SubText>
             </HeaderText>
           </HeaderRow>
@@ -302,15 +390,11 @@ const ProfileView: React.FC = () => {
                     </PostTop>
 
                     <PostContent>{p.content}</PostContent>
-
-                    {/* ✅ NEW backend structure: media[] (fallback to legacy imageUrl) */}
                     <PostMedia media={p.media} legacyImageUrl={p.imageUrl} />
                   </PostCard>
                 ))}
 
-                {!loading && posts.length === 0 ? (
-                  <EmptyState>No posts yet. Share your first thought ✨</EmptyState>
-                ) : null}
+                {!loading && posts.length === 0 ? <EmptyState>No posts yet. Share your first thought ✨</EmptyState> : null}
               </FeedList>
             </Card>
           </div>

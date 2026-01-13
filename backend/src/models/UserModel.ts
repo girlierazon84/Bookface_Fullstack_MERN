@@ -34,13 +34,13 @@ const userSchema = new Schema<IUser>(
 
         passwordHash: { type: String, required: true },
 
-        avatarUrl: { type: String, default: "" },
-        avatarPublicId: { type: String, default: "" },
+        avatarUrl: { type: String, default: "", trim: true },
+        avatarPublicId: { type: String, default: "", trim: true },
 
-        coverUrl: { type: String, default: "" },
-        coverPublicId: { type: String, default: "" },
+        coverUrl: { type: String, default: "", trim: true },
+        coverPublicId: { type: String, default: "", trim: true },
 
-        bio: { type: String, default: "", maxlength: 280 },
+        bio: { type: String, default: "", trim: true, maxlength: 280 },
 
         friends: [{ type: Schema.Types.ObjectId, ref: "User", default: [] }],
         savedPosts: [{ type: Schema.Types.ObjectId, ref: "Post", default: [] }]
@@ -59,6 +59,6 @@ const userSchema = new Schema<IUser>(
 
 userSchema.index({ username: 1 }, { unique: true });
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ username: "text", firstname: "text", lastname: "text" }); // helpful for search
+userSchema.index({ username: "text", firstname: "text", lastname: "text" });
 
 export default model<IUser>("User", userSchema);

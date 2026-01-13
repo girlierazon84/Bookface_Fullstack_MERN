@@ -33,7 +33,6 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [token, setToken] = useState<string | null>(() => authStorage.getToken());
     const [user, setUser] = useState<AuthUser | null>(() => authStorage.getUser());
 
-    // ✅ stable callbacks (won't change identity every render)
     const setAuth = useCallback((newToken: string, newUser: AuthUser) => {
         authStorage.setAuth(newToken, newUser);
         setToken(newToken);
@@ -46,9 +45,7 @@ export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     }, []);
 
-    const value = useMemo<AuthContextValue>(() => {
-        return { token, user, setAuth, logout };
-    }, [token, user, setAuth, logout]);
+    const value = useMemo<AuthContextValue>(() => ({ token, user, setAuth, logout }), [token, user, setAuth, logout]);
 
     return <UserContext.Provider value={value}>{children}</UserContext.Provider>;
 };

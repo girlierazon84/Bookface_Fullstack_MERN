@@ -6,18 +6,15 @@ import { Link } from "react-router-dom";
 import { ListItemIcon, ListItemText } from "@mui/material";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
+import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import { useUserContext } from "../provider/UserProvider";
 import routingPath from "../routes/routingPath";
 import Profile from "./Profile";
 
 
-/**-------------------------------------------------------------------------
-    styled-components: use transient props ($open) to avoid passing to DOM
-----------------------------------------------------------------------------*/
-const Panel = styled.aside<{ $open: boolean }>`
+const Overlay = styled.aside<{ $open: boolean }>`
   @media (min-width: 769px) {
     position: static;
-    inset: auto;
     background: transparent;
     pointer-events: auto;
   }
@@ -25,18 +22,69 @@ const Panel = styled.aside<{ $open: boolean }>`
   @media (max-width: 768px) {
     position: fixed;
     inset: 0;
-    z-index: 40;
-
-    display: flex;
-    justify-content: flex-end;
-
+    z-index: 60;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.35 : 0)});
     pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-    background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.28 : 0)});
-    transition: background 0.25s ease;
+    transition: background 0.2s ease;
   }
 `;
 
-const Menu = styled.ul<{ $open: boolean }>`
+const Drawer = styled.div<{ $open: boolean }>`
+  @media (min-width: 769px) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  @media (max-width: 768px) {
+    width: min(86vw, 360px);
+    height: 100%;
+    background: ${({ theme }) => theme.colors.fourthly};
+    border-left: 1px solid rgba(97, 97, 97, 0.18);
+    box-shadow: ${({ theme }) => theme.colors.card_shadow};
+    transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
+    transition: transform 0.22s ease;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+`;
+
+const MobileHeader = styled.div`
+  display: none;
+
+  @media (max-width: 768px) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px;
+    border-bottom: 1px solid rgba(97, 97, 97, 0.18);
+  }
+`;
+
+const Brand = styled.div`
+  font-weight: 900;
+  color: ${({ theme }) => theme.colors.secondary};
+  font-family: "Oleo Script", sans-serif;
+  font-size: 1.25rem;
+`;
+
+const CloseBtn = styled.button`
+  border: 1px solid rgba(97, 97, 97, 0.18);
+  background: ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.text_primary};
+  border-radius: 12px;
+  padding: 8px;
+  cursor: pointer;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.secondary};
+    color: ${({ theme }) => theme.colors.secondary};
+  }
+`;
+
+const Menu = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
@@ -46,47 +94,48 @@ const Menu = styled.ul<{ $open: boolean }>`
   align-items: center;
   gap: 12px;
 
-  a {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-
-    color: ${({ theme }) => theme.colors.secondary};
-    font-weight: 900;
-
-    padding: 8px 10px;
-    border-radius: 12px;
-  }
-
-  a:hover {
-    background: ${({ theme }) => theme.colors.fourthly};
-  }
-
   @media (max-width: 768px) {
-    height: 100%;
-    width: min(82vw, 340px);
-    background: ${({ theme }) => theme.colors.primary};
-    border-left: 1px solid rgba(97, 97, 97, 0.2);
-
-    padding: 90px 14px 14px;
-
+    padding: 14px;
     display: grid;
-    gap: 8px;
+    gap: 10px;
     align-content: start;
-
-    transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
-    transition: transform 0.25s ease;
-
-    a {
-      padding: 10px 12px;
-    }
   }
 `;
 
-const Li = styled.li`
+const Item = styled.li`
   display: flex;
   align-items: center;
+`;
+
+const MenuLink = styled(Link)`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+
+  color: ${({ theme }) => theme.colors.text_primary};
+  font-weight: 900;
+
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: ${({ theme }) => theme.colors.primary};
+  border: 1px solid rgba(97, 97, 97, 0.18);
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.secondary};
+    color: ${({ theme }) => theme.colors.secondary};
+  }
+
+  @media (min-width: 769px) {
+    background: transparent;
+    border: none;
+
+    &:hover {
+      background: ${({ theme }) => theme.colors.primary};
+      border: 1px solid rgba(97, 97, 97, 0.18);
+      color: ${({ theme }) => theme.colors.secondary};
+    }
+  }
 `;
 
 type Props = {
@@ -100,34 +149,51 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
   const close = () => setOpen(false);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-  return (
-    <Panel $open={open} aria-hidden={!open} onClick={close}>
-      <Menu id="primary-navigation" $open={open} onClick={stop} role="menu" aria-label="Primary navigation">
-        <Li>
-          <Link to={routingPath.homeView} onClick={close}>
-            <ListItemIcon>
-              <HomeSharpIcon color="primary" fontSize="medium" />
-            </ListItemIcon>
-            <ListItemText primary="Home" />
-          </Link>
-        </Li>
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") close();
+    };
+    if (open) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
 
-        {token ? (
-          <Li>
-            <Profile />
-          </Li>
-        ) : (
-          <Li>
-            <Link to={routingPath.usersLogInView} onClick={close}>
+  return (
+    <Overlay $open={open} aria-hidden={!open} onClick={close}>
+      <Drawer $open={open} onClick={stop} role="navigation" aria-label="Primary navigation">
+        <MobileHeader>
+          <Brand>Bookface</Brand>
+          <CloseBtn type="button" onClick={close} aria-label="Close menu">
+            <CloseRoundedIcon fontSize="small" />
+          </CloseBtn>
+        </MobileHeader>
+
+        <Menu id="primary-navigation">
+          <Item>
+            <MenuLink to={routingPath.homeView} onClick={close}>
               <ListItemIcon>
-                <LoginSharpIcon color="action" fontSize="medium" />
+                <HomeSharpIcon color="primary" fontSize="medium" />
               </ListItemIcon>
-              <ListItemText primary="Log in" />
-            </Link>
-          </Li>
-        )}
-      </Menu>
-    </Panel>
+              <ListItemText primary="Home" />
+            </MenuLink>
+          </Item>
+
+          {token ? (
+            <Item>
+              <Profile />
+            </Item>
+          ) : (
+            <Item>
+              <MenuLink to={routingPath.usersLogInView} onClick={close}>
+                <ListItemIcon>
+                  <LoginSharpIcon color="action" fontSize="medium" />
+                </ListItemIcon>
+                <ListItemText primary="Log in" />
+              </MenuLink>
+            </Item>
+          )}
+        </Menu>
+      </Drawer>
+    </Overlay>
   );
 };
 

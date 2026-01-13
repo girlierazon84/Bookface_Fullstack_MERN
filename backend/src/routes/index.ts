@@ -12,13 +12,9 @@ import friendRoutes from "./friendRoutes";
 
 const router = Router();
 
-// Health check
 router.use(aliveRoutes);
-
-// Auth
 router.use(authRoutes);
 
-// Core features
 router.use(userRoutes);
 router.use(postRoutes);
 router.use(feedRoutes);

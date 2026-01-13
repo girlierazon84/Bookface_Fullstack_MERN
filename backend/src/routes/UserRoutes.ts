@@ -3,7 +3,11 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/authMiddleware";
 import userController from "../controllers/userController";
-import { uploadAvatar, uploadCover, multerErrorHandler } from "../middlewares/uploadMiddleware";
+import {
+    uploadAvatar,
+    uploadCover,
+    multerErrorHandler
+} from "../middlewares/uploadMiddleware";
 
 
 const router = Router();

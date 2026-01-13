@@ -6,14 +6,11 @@ import styled from "styled-components";
 import LogoutSharpIcon from "@mui/icons-material/LogoutSharp";
 import { ListItemIcon, ListItemText } from "@mui/material";
 import PostAddSharpIcon from "@mui/icons-material/PostAddSharp";
-import RoutingPath from "../routes/RoutingPath";
+import routingPath from "../routes/routingPath";
 import { useUserContext } from "../provider/UserProvider";
 import Avatar from "./Avatar";
 
 
-/**----------------------
-    Styled Components
--------------------------*/
 const Wrapper = styled.div`
   display: flex;
   align-items: center;
@@ -61,7 +58,7 @@ const SpanUserName = styled.span`
   font-weight: 900;
 
   @media (max-width: 520px) {
-    display: none; /* mobile app feel */
+    display: none;
   }
 `;
 
@@ -104,16 +101,14 @@ const Hr = styled.hr`
   margin: 8px 0;
 `;
 
-// Profile Component
 const Profile: React.FC = () => {
-  // Hooks and Context
   const navigate = useNavigate();
   const { user, logout } = useUserContext();
 
   return (
     <Wrapper>
       <AddPostLink>
-        <Link to={RoutingPath.createPostView} aria-label="Add post">
+        <Link to={routingPath.createPostView} aria-label="Add post">
           <ListItemIcon>
             <PostAddSharpIcon color="primary" fontSize="medium" />
           </ListItemIcon>
@@ -126,10 +121,10 @@ const Profile: React.FC = () => {
         <SpanUserName>{user?.username}</SpanUserName>
 
         <Dropdown className="profileDropdown" role="menu">
-          <DropdownItem role="menuitem" onClick={() => navigate(RoutingPath.settingsView)}>
+          <DropdownItem role="menuitem" onClick={() => navigate(routingPath.settingsView)}>
             Settings
           </DropdownItem>
-          <DropdownItem role="menuitem" onClick={() => navigate(RoutingPath.profileView)}>
+          <DropdownItem role="menuitem" onClick={() => navigate(routingPath.profileView)}>
             Profile
           </DropdownItem>
           <Hr />
@@ -137,7 +132,7 @@ const Profile: React.FC = () => {
             role="menuitem"
             onClick={() => {
               logout();
-              navigate(RoutingPath.usersLogInView, { replace: true });
+              navigate(routingPath.usersLogInView, { replace: true });
             }}
           >
             <LogoutSharpIcon color="action" fontSize="small" />

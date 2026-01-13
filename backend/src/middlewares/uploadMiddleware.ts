@@ -26,12 +26,12 @@ const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
     cb(null, true);
 };
 
-/**----------------------------------------------
+/**-----------------------------------------------
     Multer instances
-        - avatar field name: "avatar"
-        - cover field name:  "cover"
-        - post media field:  "media" (array)
--------------------------------------------------*/
+        - avatar field name: "avatar" (single)
+        - cover field name:  "cover"  (single)
+        - post media field:  "media"  (array)
+--------------------------------------------------*/
 export const uploadAvatar = multer({
     storage,
     fileFilter,
@@ -57,7 +57,6 @@ export const uploadPostMedia = multer({
 export const multerErrorHandler = (err: unknown, _req: Request, res: Response, next: NextFunction) => {
     if (!err) return next();
 
-    // Multer known errors
     if (err instanceof multer.MulterError) {
         const msg =
             err.code === "LIMIT_FILE_SIZE"
@@ -71,7 +70,6 @@ export const multerErrorHandler = (err: unknown, _req: Request, res: Response, n
         return res.status(statusCode.BAD_REQUEST).send({ message: msg });
     }
 
-    // Other errors
     const msg = err instanceof Error ? err.message : "Upload failed";
     return res.status(statusCode.BAD_REQUEST).send({ message: msg });
 };
