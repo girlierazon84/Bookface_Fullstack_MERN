@@ -17,15 +17,24 @@ export type UploadResult = {
     duration?: number;
 };
 
-const mustGetEnv = (key: string) => {
-    const v = process.env[key];
-    if (!v) throw new Error(`Missing env var: ${key}`);
-    return v;
+const getEnv = (key: string) => process.env[key]?.trim() ?? "";
+
+/** ✅ non-throwing check (used to avoid dev crashes) */
+export const isCloudinaryConfigured = () =>
+    Boolean(getEnv("CLOUDINARY_CLOUD_NAME") && getEnv("CLOUDINARY_API_KEY") && getEnv("CLOUDINARY_API_SECRET"));
+
+/** ✅ throw only when you actually need Cloudinary */
+const assertCloudinaryConfigured = () => {
+    if (!isCloudinaryConfigured()) {
+        throw new Error(
+            "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
+        );
+    }
 };
 
-const cloudName = () => mustGetEnv("CLOUDINARY_CLOUD_NAME").trim();
-const apiKey = () => mustGetEnv("CLOUDINARY_API_KEY").trim();
-const apiSecret = () => mustGetEnv("CLOUDINARY_API_SECRET").trim();
+const cloudName = () => getEnv("CLOUDINARY_CLOUD_NAME");
+const apiKey = () => getEnv("CLOUDINARY_API_KEY");
+const apiSecret = () => getEnv("CLOUDINARY_API_SECRET");
 
 const sha1 = (value: string) => crypto.createHash("sha1").update(value).digest("hex");
 
@@ -46,8 +55,7 @@ const signParams = (params: Record<string, string | number | boolean | undefined
     return sha1(`${toSign}${apiSecret()}`);
 };
 
-const uploadUrl = (resourceType: ResourceType) =>
-    `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/upload`;
+const uploadUrl = (resourceType: ResourceType) => `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/upload`;
 
 const destroyUrl = (resourceType: Exclude<ResourceType, "auto">) =>
     `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/destroy`;
@@ -62,6 +70,8 @@ export const uploadBuffer = async (opts: {
     tags?: string[];
     overwrite?: boolean;
 }) => {
+    assertCloudinaryConfigured();
+
     const timestamp = Math.floor(Date.now() / 1000);
 
     const params = {
@@ -69,8 +79,6 @@ export const uploadBuffer = async (opts: {
         public_id: opts.publicId,
         tags: opts.tags?.join(","),
         overwrite: opts.overwrite ?? true,
-        // Cloudinary REST supports "resource_type" in URL, but also "context"/"metadata".
-        // We include "timestamp" for signature.
         timestamp
     };
 
@@ -107,6 +115,8 @@ export const destroyAsset = async (opts: {
     resourceType: Exclude<ResourceType, "auto">;
     invalidate?: boolean;
 }) => {
+    assertCloudinaryConfigured();
+
     const timestamp = Math.floor(Date.now() / 1000);
 
     const params = {
@@ -128,7 +138,6 @@ export const destroyAsset = async (opts: {
     const data = (await res.json()) as any;
 
     if (!res.ok) {
-        // Cloudinary destroy can return 200 with "not found" OR errors depending on account/settings.
         logger.error("Cloudinary destroy failed", { status: res.status, data });
         throw new Error(data?.error?.message ?? "Cloudinary destroy failed");
     }
@@ -137,14 +146,18 @@ export const destroyAsset = async (opts: {
 };
 
 /**----------------------------------------------------------------------------------------------------
-    Destroy by publicId:
-        - Signature matches controllers/services usage: destroyByPublicId(publicId, optionalType?)
-        - Best effort:
-        - if type provided => only try that type
-        - else try image, then video
+ * Destroy by publicId (best-effort)
+ * - If Cloudinary not configured => no-op to avoid dev crashes.
+ * - If type provided => only try that type
+ * - else try image, then video
 -------------------------------------------------------------------------------------------------------*/
 export const destroyByPublicId = async (publicId: string, type?: "image" | "video") => {
     if (!publicId) return { result: "not found" as const };
+
+    if (!isCloudinaryConfigured()) {
+        logger.warn("Cloudinary not configured; skipping destroyByPublicId", { publicId, type });
+        return { result: "not found" as const };
+    }
 
     const tryDestroy = async (resourceType: "image" | "video") => {
         try {
