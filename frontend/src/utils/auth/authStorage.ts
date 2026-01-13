@@ -9,10 +9,46 @@ export type AuthUser = {
     avatarUrl?: string;
     coverUrl?: string;
     bio?: string;
+    createdAt?: string;
+    updatedAt?: string;
 };
 
 const TOKEN_KEY = "auth_token" as const;
 const USER_KEY = "auth_user" as const;
+
+const safeParseUser = (raw: string | null): AuthUser | null => {
+    if (!raw) return null;
+    try {
+        const parsed = JSON.parse(raw) as unknown;
+        if (!parsed || typeof parsed !== "object") return null;
+
+        const u = parsed as Partial<AuthUser>;
+
+        // Minimum identity to treat as an AuthUser
+        if (typeof u._id !== "string") return null;
+        if (typeof u.username !== "string") return null;
+        if (typeof u.firstname !== "string") return null;
+        if (typeof u.lastname !== "string") return null;
+
+        // Normalize optional strings (avoid null)
+        const norm = (v: unknown) => (typeof v === "string" ? v : undefined);
+
+        return {
+            _id: u._id,
+            username: u.username,
+            firstname: u.firstname,
+            lastname: u.lastname,
+            email: norm(u.email),
+            avatarUrl: norm(u.avatarUrl),
+            coverUrl: norm(u.coverUrl),
+            bio: norm(u.bio),
+            createdAt: norm(u.createdAt),
+            updatedAt: norm(u.updatedAt)
+        };
+    } catch {
+        return null;
+    }
+};
 
 export const authStorage = Object.freeze({
     getToken(): string | null {
@@ -26,13 +62,7 @@ export const authStorage = Object.freeze({
     },
 
     getUser(): AuthUser | null {
-        const raw = localStorage.getItem(USER_KEY);
-        if (!raw) return null;
-        try {
-            return JSON.parse(raw) as AuthUser;
-        } catch {
-            return null;
-        }
+        return safeParseUser(localStorage.getItem(USER_KEY));
     },
 
     setUser(user: AuthUser) {
