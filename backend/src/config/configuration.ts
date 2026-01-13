@@ -3,16 +3,11 @@
 import type { Express } from "express";
 import mongoose from "mongoose";
 import logger from "../utils/logger";
+import { getEnv, getMongoUri } from "../utils/env";
 
-
-const getRequiredEnv = (key: string): string => {
-    const value = process.env[key];
-    if (!value) throw new Error(`Missing required environment variable: ${key}`);
-    return value;
-};
 
 const getPort = (key: string, fallback: number): number => {
-    const raw = process.env[key];
+    const raw = getEnv(key);
     if (!raw) return fallback;
 
     const port = Number(raw);
@@ -23,51 +18,42 @@ const getPort = (key: string, fallback: number): number => {
 };
 
 const port = getPort("SERVER_PORT", 3001);
-const env = process.env.NODE_ENV ?? "development";
-
-/**------------------------------------------------------------------------------
-    Prefer using ONE env var for the full mongo connection string:
-    MONGO_URI=mongodb://127.0.0.1:27017/bookface-mern
-    If you also keep DB_NAME, we only append it if MONGO_URI has no db path.
----------------------------------------------------------------------------------*/
-const buildMongoUri = (): string => {
-    const mongoUri = getRequiredEnv("MONGO_URI").trim();
-    const dbName = (process.env.DB_NAME ?? "").trim();
-
-    // If uri already includes a db name path (mongodb://host:port/mydb)
-    const hasDbPath = /mongodb(\+srv)?:\/\/[^/]+\/[^?]+/i.test(mongoUri);
-
-    if (hasDbPath) return mongoUri;
-
-    if (!dbName) return mongoUri; // allow connecting without selecting db explicitly
-
-    if (dbName.includes("/") || dbName.includes("\\")) {
-        throw new Error(`Invalid DB_NAME "${dbName}". Do not include "/" or "\\".`);
-    }
-
-    return mongoUri.endsWith("/") ? `${mongoUri}${dbName}` : `${mongoUri}/${dbName}`;
-};
+const env = getEnv("NODE_ENV") || "development";
 
 const connectToDatabase = async () => {
     mongoose.set("strictQuery", false);
 
-    const mongodbUri = buildMongoUri();
+    // ✅ validate + build correct uri
+    const mongodbUri = getMongoUri();
 
     let attempt = 0;
-    // retry forever in dev/watch so tsx doesn't restart-loop
-    while (true) {
+    const maxAttempts = env === "development" ? Infinity : 10;
+
+    while (attempt < maxAttempts) {
         attempt += 1;
         try {
-            await mongoose.connect(mongodbUri, {
-                serverSelectionTimeoutMS: 5000
-            });
+            await mongoose.connect(mongodbUri, { serverSelectionTimeoutMS: 5000 });
             logger.info("✅ Connected to MongoDB");
             return;
-        } catch (error) {
+        } catch (error: any) {
+            // ✅ do NOT retry on config/parse errors (they will never succeed)
+            const msg = String(error?.message ?? "");
+            const isConfigError =
+                msg.includes("Invalid MONGO_URI scheme") ||
+                msg.includes("Missing required environment variable") ||
+                msg.includes("Invalid scheme");
+
             logger.error(`❌ MongoDB connect failed (attempt ${attempt})`, error);
+
+            if (isConfigError) {
+                throw error;
+            }
+
             await new Promise((r) => setTimeout(r, 2000));
         }
     }
+
+    throw new Error("MongoDB connect failed: exceeded max retry attempts");
 };
 
 const connectToPort = (app: Express) => {
