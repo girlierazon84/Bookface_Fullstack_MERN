@@ -146,7 +146,7 @@ type Props = {
 const RightNav: React.FC<Props> = ({ open, setOpen }) => {
   const { token } = useUserContext();
 
-  const close = () => setOpen(false);
+  const close = React.useCallback(() => setOpen(false), [setOpen]);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
   React.useEffect(() => {
@@ -155,7 +155,7 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
     };
     if (open) window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open]);
+  }, [open, close]);
 
   return (
     <Overlay $open={open} aria-hidden={!open} onClick={close}>
