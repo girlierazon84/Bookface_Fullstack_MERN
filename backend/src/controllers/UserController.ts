@@ -23,6 +23,21 @@ const SAFE_USER_SELECT =
 
 const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : "Unknown error");
 
+const sendValidationError = (res: Response, parsed: { error: any }) =>
+    res.status(statusCode.BAD_REQUEST).send({ message: "Validation failed", errors: parsed.error.flatten() });
+
+const sendCloudinaryNotConfigured = (res: Response) =>
+    res.status(503).send({
+        message: "Media upload is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
+    });
+
+const mapMediaError = (e: unknown, res: Response) => {
+    if (e instanceof MediaServiceError) {
+        return res.status(e.status).send({ message: e.message, code: e.code });
+    }
+    return null;
+};
+
 /**---------------
     GET /users
 ------------------*/
@@ -42,12 +57,7 @@ const getAllUsers = async (_req: Request, res: Response) => {
 const getUserById = async (req: Request, res: Response) => {
     try {
         const parsed = userIdParamsSchema.safeParse(req.params);
-        if (!parsed.success) {
-            return res.status(statusCode.BAD_REQUEST).send({
-                message: "Validation failed",
-                errors: parsed.error.flatten()
-            });
-        }
+        if (!parsed.success) return sendValidationError(res, parsed);
 
         const user = await userModel.findById(parsed.data.userId).select(SAFE_USER_SELECT).lean();
         if (!user) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
@@ -65,12 +75,7 @@ const getUserById = async (req: Request, res: Response) => {
 const searchUsers = async (req: Request, res: Response) => {
     try {
         const parsed = searchUsersSchema.safeParse(req.query);
-        if (!parsed.success) {
-            return res.status(statusCode.BAD_REQUEST).send({
-                message: "Validation failed",
-                errors: parsed.error.flatten()
-            });
-        }
+        if (!parsed.success) return sendValidationError(res, parsed);
 
         const username = parsed.data.username.trim();
 
@@ -112,17 +117,9 @@ const updateMe = async (req: Request, res: Response) => {
         if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
         const parsed = updateMeSchema.safeParse(req.body);
-        if (!parsed.success) {
-            return res.status(statusCode.BAD_REQUEST).send({
-                message: "Validation failed",
-                errors: parsed.error.flatten()
-            });
-        }
+        if (!parsed.success) return sendValidationError(res, parsed);
 
-        const updated = await userModel
-            .findByIdAndUpdate(req.user.id, parsed.data, { new: true })
-            .select(SAFE_USER_SELECT);
-
+        const updated = await userModel.findByIdAndUpdate(req.user.id, parsed.data, { new: true }).select(SAFE_USER_SELECT);
         if (!updated) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
 
         return res.status(statusCode.OK).send(updated);
@@ -130,13 +127,6 @@ const updateMe = async (req: Request, res: Response) => {
         logger.error("Failed to update me", error);
         return res.status(statusCode.INTERNAL_SERVER_ERROR).send({ message: getErrorMessage(error) });
     }
-};
-
-const mapMediaError = (e: unknown, res: Response) => {
-    if (e instanceof MediaServiceError) {
-        return res.status(e.status).send({ message: e.message, code: e.code });
-    }
-    return null;
 };
 
 /**----------------------------------------------------
@@ -147,11 +137,7 @@ const uploadMyAvatar = async (req: Request, res: Response) => {
         if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
         if (!req.file) return res.status(statusCode.BAD_REQUEST).send({ message: "Missing avatar file" });
 
-        if (!isCloudinaryConfigured()) {
-            return res.status(503).send({
-                message: "Media upload is not configured. Set CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET."
-            });
-        }
+        if (!isCloudinaryConfigured()) return sendCloudinaryNotConfigured(res);
 
         const me = await userModel.findById(req.user.id);
         if (!me) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
@@ -192,7 +178,6 @@ const deleteMyAvatar = async (req: Request, res: Response) => {
         const me = await userModel.findById(req.user.id);
         if (!me) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
 
-        // best-effort delete
         if (me.avatarPublicId) await destroyByPublicId(me.avatarPublicId, "image");
 
         me.avatarUrl = "";
@@ -215,11 +200,7 @@ const uploadMyCover = async (req: Request, res: Response) => {
         if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
         if (!req.file) return res.status(statusCode.BAD_REQUEST).send({ message: "Missing cover file" });
 
-        if (!isCloudinaryConfigured()) {
-            return res.status(503).send({
-                message: "Media upload is not configured. Set CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET."
-            });
-        }
+        if (!isCloudinaryConfigured()) return sendCloudinaryNotConfigured(res);
 
         const me = await userModel.findById(req.user.id);
         if (!me) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
