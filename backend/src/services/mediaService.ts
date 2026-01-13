@@ -22,44 +22,33 @@ export class MediaServiceError extends Error {
 
 const inferType = (mime?: string): MediaType => (mime?.startsWith("video/") ? "video" : "image");
 
-const assertCloudinaryConfigured = () => {
+/**------------------------------------------------------------------------------------
+    Upload a single file to Cloudinary.
+    Notes:
+        - Posts use `resourceType: "auto"` (supports both image + video).
+        - Avatars/covers should still be images only (enforced by multer filters).
+            @param file - Multer file (memory storage)
+            @param folder - Cloudinary folder (e.g. "bookface/posts")
+            @throws MediaServiceError when Cloudinary is not configured
+---------------------------------------------------------------------------------------*/
+export const uploadSingle = async (file: Express.Multer.File, folder: string): Promise<UploadedMedia> => {
     if (!isCloudinaryConfigured()) {
         throw new MediaServiceError(
-            "Media upload is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET.",
+            "Media upload is not configured. Set CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET.",
             { status: 503, code: "CLOUDINARY_NOT_CONFIGURED" }
         );
     }
-};
-
-const assertValidFile = (file: Express.Multer.File) => {
-    // Multer memoryStorage should always provide buffer, but guarding helps avoid mysterious errors.
-    if (!file?.buffer || file.buffer.length === 0) {
-        throw new MediaServiceError("Upload failed: empty file buffer.", { status: 400, code: "EMPTY_FILE" });
-    }
-    if (!file.mimetype) {
-        throw new MediaServiceError("Upload failed: missing file mimetype.", { status: 400, code: "MISSING_MIMETYPE" });
-    }
-};
-
-/**--------------------------------------------------------------
-    Upload a single file to Cloudinary.
-    Posts: resourceType "auto" supports both images + videos.
------------------------------------------------------------------*/
-export const uploadSingle = async (file: Express.Multer.File, folder: string): Promise<UploadedMedia> => {
-    assertCloudinaryConfigured();
-    assertValidFile(file);
 
     const inferred = inferType(file.mimetype);
 
     const res = await uploadBuffer({
         buffer: file.buffer,
         folder,
-        filename: file.originalname || "upload",
+        filename: file.originalname,
         resourceType: "auto",
         mimeType: file.mimetype
     });
 
-    // Cloudinary tells us what it actually stored:
     const type: MediaType = res.resource_type === "video" ? "video" : inferred;
 
     return {
@@ -73,26 +62,30 @@ export const uploadSingle = async (file: Express.Multer.File, folder: string): P
     };
 };
 
+/**-------------------------------------------
+    Upload multiple files to Cloudinary.
+        @param files - Multer files
+        @param folder - Cloudinary folder
+----------------------------------------------*/
 export const uploadMany = async (files: Express.Multer.File[], folder: string): Promise<UploadedMedia[]> => {
-    assertCloudinaryConfigured();
-
-    if (!Array.isArray(files) || files.length === 0) return [];
     return Promise.all(files.map((f) => uploadSingle(f, folder)));
 };
 
+/**-------------------------------------------------------------------------------
+    Replace an existing asset with a new file (best-effort delete first).
+        @param args.previousPublicId - existing Cloudinary publicId (optional)
+        @param args.previousType - resource type hint (optional)
+        @param args.file - new file
+        @param args.folder - Cloudinary folder
+----------------------------------------------------------------------------------*/
 export const replaceMedia = async (args: {
     previousPublicId?: string;
     previousType?: MediaType;
     file: Express.Multer.File;
     folder: string;
 }): Promise<UploadedMedia> => {
-    assertCloudinaryConfigured();
-    assertValidFile(args.file);
-
     if (args.previousPublicId) {
-        // best-effort delete (destroyByPublicId already handles missing config / failures safely)
         await destroyByPublicId(args.previousPublicId, args.previousType);
     }
-
     return uploadSingle(args.file, args.folder);
 };
