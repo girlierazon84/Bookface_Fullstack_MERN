@@ -1,23 +1,16 @@
 // backend/src/utils/env.ts
 
-export const getEnv = (key: string) => (process.env[key] ?? "").trim();
-
-const stripWrappingQuotes = (value: string) => value.replace(/^["']|["']$/g, "");
+export const getEnv = (key: string) =>
+    (process.env[key] ?? "").trim().replace(/^["']|["']$/g, "");
 
 export const getRequiredEnv = (key: string) => {
-    const raw = stripWrappingQuotes(getEnv(key));
-    if (!raw) throw new Error(`Missing required environment variable: ${key}`);
-    return raw;
+    const v = getEnv(key);
+    if (!v) throw new Error(`Missing required environment variable: ${key}`);
+    return v;
 };
 
-/**----------------------------------------------------------------
-    Builds a valid Mongo URI.
-    Supports:
-        - MONGO_URI or MONGODB_URI
-        - optional DB_NAME appended only if URI has no db path
--------------------------------------------------------------------*/
 export const getMongoUri = () => {
-    const raw = stripWrappingQuotes(getEnv("MONGO_URI") || getEnv("MONGODB_URI"));
+    const raw = getEnv("MONGO_URI") || getEnv("MONGODB_URI");
     if (!raw) throw new Error("Missing required environment variable: MONGO_URI (or MONGODB_URI)");
 
     if (!raw.startsWith("mongodb://") && !raw.startsWith("mongodb+srv://")) {
@@ -26,7 +19,7 @@ export const getMongoUri = () => {
         );
     }
 
-    const dbName = stripWrappingQuotes(getEnv("DB_NAME"));
+    const dbName = getEnv("DB_NAME");
     const hasDbPath = /mongodb(\+srv)?:\/\/[^/]+\/[^?]+/i.test(raw);
     if (hasDbPath || !dbName) return raw;
 
@@ -34,7 +27,6 @@ export const getMongoUri = () => {
         throw new Error(`Invalid DB_NAME "${dbName}". Do not include "/" or "\\".`);
     }
 
-    // preserve query string if any
     const [base, query] = raw.split("?");
     const joined = base.endsWith("/") ? `${base}${dbName}` : `${base}/${dbName}`;
     return query ? `${joined}?${query}` : joined;
