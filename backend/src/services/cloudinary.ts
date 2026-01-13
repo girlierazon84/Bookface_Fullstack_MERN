@@ -2,6 +2,11 @@
 
 import crypto from "crypto";
 import logger from "../utils/logger";
+import {
+    getEnv,
+    getRequiredEnv,
+    isCloudinaryConfigured
+} from "../utils/env";
 
 
 export type ResourceType = "image" | "video" | "raw" | "auto";
@@ -17,24 +22,9 @@ export type UploadResult = {
     duration?: number;
 };
 
-const getEnv = (key: string) => process.env[key]?.trim() ?? "";
-
-/** ✅ non-throwing check (used to avoid dev crashes) */
-export const isCloudinaryConfigured = () =>
-    Boolean(getEnv("CLOUDINARY_CLOUD_NAME") && getEnv("CLOUDINARY_API_KEY") && getEnv("CLOUDINARY_API_SECRET"));
-
-/** ✅ throw only when you actually need Cloudinary */
-const assertCloudinaryConfigured = () => {
-    if (!isCloudinaryConfigured()) {
-        throw new Error(
-            "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET."
-        );
-    }
-};
-
-const cloudName = () => getEnv("CLOUDINARY_CLOUD_NAME");
-const apiKey = () => getEnv("CLOUDINARY_API_KEY");
-const apiSecret = () => getEnv("CLOUDINARY_API_SECRET");
+const cloudName = () => getRequiredEnv("CLOUDINARY_CLOUD_NAME").trim();
+const apiKey = () => getRequiredEnv("CLOUDINARY_API_KEY").trim();
+const apiSecret = () => getRequiredEnv("CLOUDINARY_API_SECRET").trim();
 
 const sha1 = (value: string) => crypto.createHash("sha1").update(value).digest("hex");
 
@@ -55,7 +45,8 @@ const signParams = (params: Record<string, string | number | boolean | undefined
     return sha1(`${toSign}${apiSecret()}`);
 };
 
-const uploadUrl = (resourceType: ResourceType) => `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/upload`;
+const uploadUrl = (resourceType: ResourceType) =>
+    `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/upload`;
 
 const destroyUrl = (resourceType: Exclude<ResourceType, "auto">) =>
     `https://api.cloudinary.com/v1_1/${cloudName()}/${resourceType}/destroy`;
@@ -64,13 +55,15 @@ export const uploadBuffer = async (opts: {
     buffer: Buffer;
     filename: string;
     folder: string;
-    resourceType: ResourceType; // "image" | "video" | "auto"
+    resourceType: ResourceType;
     mimeType?: string;
     publicId?: string;
     tags?: string[];
     overwrite?: boolean;
 }) => {
-    assertCloudinaryConfigured();
+    if (!isCloudinaryConfigured()) {
+        throw new Error("Cloudinary is not configured. Missing CLOUDINARY_* env vars.");
+    }
 
     const timestamp = Math.floor(Date.now() / 1000);
 
@@ -84,7 +77,6 @@ export const uploadBuffer = async (opts: {
 
     const signature = signParams(params);
 
-    // TS-safe: Buffer -> Uint8Array -> Blob
     const bytes = Uint8Array.from(opts.buffer);
     const blob = new Blob([bytes], opts.mimeType ? { type: opts.mimeType } : undefined);
 
@@ -115,7 +107,10 @@ export const destroyAsset = async (opts: {
     resourceType: Exclude<ResourceType, "auto">;
     invalidate?: boolean;
 }) => {
-    assertCloudinaryConfigured();
+    if (!isCloudinaryConfigured()) {
+        // best effort: if not configured, do not crash delete flows
+        return { result: "not found" as const };
+    }
 
     const timestamp = Math.floor(Date.now() / 1000);
 
@@ -145,19 +140,8 @@ export const destroyAsset = async (opts: {
     return data as { result: "ok" | "not found" | string };
 };
 
-/**----------------------------------------------------------------------------------------------------
- * Destroy by publicId (best-effort)
- * - If Cloudinary not configured => no-op to avoid dev crashes.
- * - If type provided => only try that type
- * - else try image, then video
--------------------------------------------------------------------------------------------------------*/
 export const destroyByPublicId = async (publicId: string, type?: "image" | "video") => {
     if (!publicId) return { result: "not found" as const };
-
-    if (!isCloudinaryConfigured()) {
-        logger.warn("Cloudinary not configured; skipping destroyByPublicId", { publicId, type });
-        return { result: "not found" as const };
-    }
 
     const tryDestroy = async (resourceType: "image" | "video") => {
         try {
