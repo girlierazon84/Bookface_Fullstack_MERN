@@ -260,6 +260,13 @@ const ProfileView: React.FC = () => {
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
 
+  const refreshMe = useCallback(async () => {
+    if (!token) return;
+    const res = await userService.me();
+    // ✅ keep token, replace user in context/storage
+    setAuth(token, res.data as any);
+  }, [token, setAuth]);
+
   const loadMyTimeline = useCallback(async () => {
     if (!token || !me) return;
 
@@ -279,36 +286,37 @@ const ProfileView: React.FC = () => {
     loadMyTimeline();
   }, [loadMyTimeline]);
 
-  const refreshMe = useCallback(async () => {
-    if (!token) return;
-    const res = await userService.me();
-    // keep token, update user in storage/context
-    setAuth(token, res.data as any);
-  }, [token, setAuth]);
+  const onPickAvatar = useCallback(
+    async (file?: File) => {
+      if (!file || !token) return;
 
-  const onPickAvatar = async (file?: File) => {
-    if (!file) return;
-    setUploading("avatar");
-    try {
-      await userService.uploadMyAvatar(file);
-      await refreshMe();
-    } finally {
-      setUploading(null);
-      if (avatarInputRef.current) avatarInputRef.current.value = "";
-    }
-  };
+      setUploading("avatar");
+      try {
+        await userService.uploadMyAvatar(file);
+        await refreshMe();
+      } finally {
+        setUploading(null);
+        if (avatarInputRef.current) avatarInputRef.current.value = "";
+      }
+    },
+    [token, refreshMe]
+  );
 
-  const onPickCover = async (file?: File) => {
-    if (!file) return;
-    setUploading("cover");
-    try {
-      await userService.uploadMyCover(file);
-      await refreshMe();
-    } finally {
-      setUploading(null);
-      if (coverInputRef.current) coverInputRef.current.value = "";
-    }
-  };
+  const onPickCover = useCallback(
+    async (file?: File) => {
+      if (!file || !token) return;
+
+      setUploading("cover");
+      try {
+        await userService.uploadMyCover(file);
+        await refreshMe();
+      } finally {
+        setUploading(null);
+        if (coverInputRef.current) coverInputRef.current.value = "";
+      }
+    },
+    [token, refreshMe]
+  );
 
   if (!token || !me) return <Navigate to={routingPath.usersLogInView} replace />;
 
@@ -334,6 +342,7 @@ const ProfileView: React.FC = () => {
             <AvatarBtn type="button" onClick={() => avatarInputRef.current?.click()} aria-label="Change avatar">
               <Avatar src={me.avatarUrl} name={me.username} alt="Profile avatar" size={92} />
             </AvatarBtn>
+
             <input
               ref={avatarInputRef}
               type="file"
@@ -345,7 +354,11 @@ const ProfileView: React.FC = () => {
             <HeaderText>
               <Name>{me.username}</Name>
               <SubText>
-                {uploading ? `Uploading ${uploading}…` : me.bio?.trim() ? me.bio : "Welcome to your profile. Add a bio in Settings."}
+                {uploading
+                  ? `Uploading ${uploading}…`
+                  : me.bio?.trim()
+                    ? me.bio
+                    : "Welcome to your profile. Add a bio in Settings."}
               </SubText>
             </HeaderText>
           </HeaderRow>
@@ -390,6 +403,8 @@ const ProfileView: React.FC = () => {
                     </PostTop>
 
                     <PostContent>{p.content}</PostContent>
+
+                    {/* ✅ NEW backend structure: media[] (fallback to legacy imageUrl) */}
                     <PostMedia media={p.media} legacyImageUrl={p.imageUrl} />
                   </PostCard>
                 ))}
