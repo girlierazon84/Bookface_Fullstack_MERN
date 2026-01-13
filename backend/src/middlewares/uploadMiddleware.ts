@@ -17,9 +17,9 @@ const MAX_POST_FILES = 4;
 
 const mb = (n: number) => n * 1024 * 1024;
 
-// ✅ avatars/covers: image only
+// avatars/covers: image only
 const isImage = (mime: string) => mime.startsWith("image/");
-// ✅ posts: allow both
+// posts: allow both image + video
 const isPostAllowed = (mime: string) => mime.startsWith("image/") || mime.startsWith("video/");
 
 const avatarFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
@@ -61,6 +61,30 @@ export const uploadPostMedia = multer({
     limits: { fileSize: mb(MAX_POST_FILE_MB), files: MAX_POST_FILES }
 }).array("media", MAX_POST_FILES);
 
+const makeMulterErrorMessage = (err: multer.MulterError) => {
+    switch (err.code) {
+        case "LIMIT_FILE_SIZE": {
+            if (err.field === "avatar") return `Avatar is too large (max ${MAX_AVATAR_MB}MB)`;
+            if (err.field === "cover") return `Cover is too large (max ${MAX_COVER_MB}MB)`;
+            if (err.field === "media") return `Media file is too large (max ${MAX_POST_FILE_MB}MB per file)`;
+            return "File is too large";
+        }
+        case "LIMIT_FILE_COUNT":
+            return `Too many files (max ${MAX_POST_FILES})`;
+        case "LIMIT_UNEXPECTED_FILE": {
+            if (err.field === "media") return "Only image/* and video/* files are allowed for posts";
+            return "Only image/* files are allowed";
+        }
+        case "LIMIT_PART_COUNT":
+        case "LIMIT_FIELD_COUNT":
+        case "LIMIT_FIELD_KEY":
+        case "LIMIT_FIELD_VALUE":
+            return "Upload payload is too large or malformed";
+        default:
+            return err.message || "Upload failed";
+    }
+};
+
 /**---------------------------------
     Central upload error handler
     Use AFTER multer middleware.
@@ -69,18 +93,11 @@ export const multerErrorHandler = (err: unknown, _req: Request, res: Response, n
     if (!err) return next();
 
     if (err instanceof multer.MulterError) {
-        const msg =
-            err.code === "LIMIT_FILE_SIZE"
-                ? "File is too large"
-                : err.code === "LIMIT_FILE_COUNT"
-                    ? `Too many files (max ${MAX_POST_FILES})`
-                    : err.code === "LIMIT_UNEXPECTED_FILE"
-                        ? err.field === "media"
-                            ? "Only image/* and video/* files are allowed for posts"
-                            : "Only image/* files are allowed"
-                        : err.message;
-
-        return res.status(statusCode.BAD_REQUEST).send({ message: msg });
+        return res.status(statusCode.BAD_REQUEST).send({
+            message: makeMulterErrorMessage(err),
+            code: err.code,
+            field: err.field
+        });
     }
 
     const msg = err instanceof Error ? err.message : "Upload failed";
