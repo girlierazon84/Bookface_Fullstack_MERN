@@ -1,6 +1,6 @@
 // frontend/src/components/Avatar.tsx
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 
 
@@ -43,9 +43,9 @@ const Initials = styled.div`
     background: ${({ theme }) => theme.colors.fourthly};
 `;
 
-/**-----------------------
+/**------------
     Helpers
-------------------------*/
+---------------*/
 const DEFAULT_AVATAR = "/images/default-avatar.png"; // /public/images/default-avatar.png
 
 const getInitials = (name?: string) => {
@@ -60,9 +60,9 @@ const isProbablyUrl = (value?: string | null) => {
     return value.startsWith("http://") || value.startsWith("https://") || value.startsWith("/");
 };
 
-/**-----------------------
+/**----------
     Types
-------------------------*/
+-------------*/
 type Props = {
     src?: string | null;
     alt?: string;
@@ -73,17 +73,22 @@ type Props = {
 
 type Mode = "img" | "fallback" | "initials";
 
-/**-----------------------
+/**-----------
     Avatar
-------------------------*/
+--------------*/
 const Avatar: React.FC<Props> = ({ src, alt = "Avatar", name, size = 42, className }) => {
     const initials = useMemo(() => getInitials(name), [name]);
 
-    // start with provided src if valid; otherwise default
-    const initialSrc = useMemo(() => (isProbablyUrl(src) ? src! : DEFAULT_AVATAR), [src]);
+    const computeInitialSrc = useCallbackSrc(src);
 
     const [mode, setMode] = useState<Mode>("img");
-    const [resolvedSrc, setResolvedSrc] = useState<string>(initialSrc);
+    const [resolvedSrc, setResolvedSrc] = useState<string>(computeInitialSrc);
+
+    // ✅ if src changes after avatar upload, reset internal state
+    useEffect(() => {
+        setMode("img");
+        setResolvedSrc(computeInitialSrc);
+    }, [computeInitialSrc]);
 
     const handleError = () => {
         // first failure -> try default avatar
@@ -102,16 +107,15 @@ const Avatar: React.FC<Props> = ({ src, alt = "Avatar", name, size = 42, classNa
             {mode === "initials" ? (
                 <Initials aria-hidden="true">{initials}</Initials>
             ) : (
-                <Img
-                    src={resolvedSrc}
-                    alt={alt}
-                    onError={handleError}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                />
+                <Img src={resolvedSrc} alt={alt} onError={handleError} loading="lazy" referrerPolicy="no-referrer" />
             )}
         </Wrap>
     );
 };
+
+// small helper to keep compute stable and readable
+function useCallbackSrc(src?: string | null) {
+    return useMemo(() => (isProbablyUrl(src) ? (src as string) : DEFAULT_AVATAR), [src]);
+}
 
 export default Avatar;
