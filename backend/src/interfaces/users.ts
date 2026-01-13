@@ -1,6 +1,6 @@
 // backend/src/interfaces/users.ts
 
-export interface createUser {
+export interface CreateUserInput {
     firstname: string
     lastname: string
     email: string
