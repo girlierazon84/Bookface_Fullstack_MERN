@@ -2,11 +2,7 @@
 
 import crypto from "crypto";
 import logger from "../utils/logger";
-import {
-    getEnv,
-    getRequiredEnv,
-    isCloudinaryConfigured
-} from "../utils/env";
+import { getRequiredEnv, isCloudinaryConfigured } from "../utils/env";
 
 
 export type ResourceType = "image" | "video" | "raw" | "auto";
@@ -21,6 +17,17 @@ export type UploadResult = {
     height?: number;
     duration?: number;
 };
+
+// Optional: share the same error shape used by mediaService without importing it (keeps layers clean)
+export class CloudinaryConfigError extends Error {
+    status = 503 as const;
+    code = "CLOUDINARY_NOT_CONFIGURED" as const;
+
+    constructor(message = "Media upload is not configured. Set CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET.") {
+        super(message);
+        this.name = "CloudinaryConfigError";
+    }
+}
 
 const cloudName = () => getRequiredEnv("CLOUDINARY_CLOUD_NAME").trim();
 const apiKey = () => getRequiredEnv("CLOUDINARY_API_KEY").trim();
@@ -60,9 +67,10 @@ export const uploadBuffer = async (opts: {
     publicId?: string;
     tags?: string[];
     overwrite?: boolean;
-}) => {
+}): Promise<UploadResult> => {
     if (!isCloudinaryConfigured()) {
-        throw new Error("Cloudinary is not configured. Missing CLOUDINARY_* env vars.");
+        // ✅ predictable error type for services/controllers to map to 503
+        throw new CloudinaryConfigError();
     }
 
     const timestamp = Math.floor(Date.now() / 1000);
@@ -77,6 +85,7 @@ export const uploadBuffer = async (opts: {
 
     const signature = signParams(params);
 
+    // Buffer -> Blob (Node 18+ has Blob + FormData globally)
     const bytes = Uint8Array.from(opts.buffer);
     const blob = new Blob([bytes], opts.mimeType ? { type: opts.mimeType } : undefined);
 
@@ -106,9 +115,9 @@ export const destroyAsset = async (opts: {
     publicId: string;
     resourceType: Exclude<ResourceType, "auto">;
     invalidate?: boolean;
-}) => {
+}): Promise<{ result: "ok" | "not found" | string }> => {
     if (!isCloudinaryConfigured()) {
-        // best effort: if not configured, do not crash delete flows
+        // ✅ best effort: don’t crash delete flows if env missing
         return { result: "not found" as const };
     }
 
@@ -140,6 +149,11 @@ export const destroyAsset = async (opts: {
     return data as { result: "ok" | "not found" | string };
 };
 
+/**-------------------------------------------------
+    Destroy by publicId:
+        - if type provided => only try that type
+        - else try image, then video
+----------------------------------------------------*/
 export const destroyByPublicId = async (publicId: string, type?: "image" | "video") => {
     if (!publicId) return { result: "not found" as const };
 
