@@ -10,24 +10,36 @@ const getPort = (key: string, fallback: number): number => {
     const raw = getEnv(key);
     if (!raw) return fallback;
 
-    const port = Number(raw);
-    if (!Number.isInteger(port) || port < 0 || port > 65535) {
+    const parsedPort = Number(raw);
+    if (!Number.isInteger(parsedPort) || parsedPort < 0 || parsedPort > 65535) {
         throw new Error(`Invalid ${key} value: "${raw}"`);
     }
-    return port;
+    return parsedPort;
 };
 
-const port = getPort("SERVER_PORT", 3001);
+const serverPort = getPort("SERVER_PORT", 3001);
 const env = getEnv("NODE_ENV") || "development";
+
+const isMongoConfigError = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err ?? "");
+    return (
+        msg.includes("Invalid MONGO_URI scheme") ||
+        msg.includes("Missing required environment variable") ||
+        msg.includes("Invalid scheme") ||
+        msg.includes("MongoParseError")
+    );
+};
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const connectToDatabase = async () => {
     mongoose.set("strictQuery", false);
 
-    // ✅ validate + build correct uri
+    // ✅ validate + build correct uri (throws early if bad)
     const mongodbUri = getMongoUri();
 
     let attempt = 0;
-    const maxAttempts = env === "development" ? Infinity : 10;
+    const maxAttempts = env === "development" ? Number.POSITIVE_INFINITY : 10;
 
     while (attempt < maxAttempts) {
         attempt += 1;
@@ -35,21 +47,13 @@ const connectToDatabase = async () => {
             await mongoose.connect(mongodbUri, { serverSelectionTimeoutMS: 5000 });
             logger.info("✅ Connected to MongoDB");
             return;
-        } catch (error: any) {
-            // ✅ do NOT retry on config/parse errors (they will never succeed)
-            const msg = String(error?.message ?? "");
-            const isConfigError =
-                msg.includes("Invalid MONGO_URI scheme") ||
-                msg.includes("Missing required environment variable") ||
-                msg.includes("Invalid scheme");
-
+        } catch (error: unknown) {
             logger.error(`❌ MongoDB connect failed (attempt ${attempt})`, error);
 
-            if (isConfigError) {
-                throw error;
-            }
+            // ✅ do NOT retry on config/parse errors (won't ever succeed)
+            if (isMongoConfigError(error)) throw error;
 
-            await new Promise((r) => setTimeout(r, 2000));
+            await sleep(2000);
         }
     }
 
@@ -57,8 +61,8 @@ const connectToDatabase = async () => {
 };
 
 const connectToPort = (app: Express) => {
-    app.listen(port, () => {
-        logger.info(`Server started at http://localhost:${port}`);
+    app.listen(serverPort, () => {
+        logger.info(`Server started at http://localhost:${serverPort}`);
         if (env === "development") logger.warn("SERVER RUNNING IN DEVELOPMENT MODE!");
     });
 };
