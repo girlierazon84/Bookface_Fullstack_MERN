@@ -1,7 +1,6 @@
 // backend/src/interfaces/posts.ts
 
-export interface createPost {
+export interface CreatePostInput {
     author: string
-    title: string
     content: string
 }
