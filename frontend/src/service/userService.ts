@@ -22,7 +22,7 @@ const userService = {
     // Public
     getAllUsers: () => http.get<UserDTO[]>("/users"),
     getUserById: (id: string) => http.get<UserDTO>(`/users/${id}`),
-    searchUsers: (username: string) => http.get<UserDTO[]>(`/users/search`, { params: { username } }),
+    searchUsers: (username: string) => http.get<UserDTO[]>("/users/search", { params: { username } }),
 
     // Protected: me
     me: () => http.get<UserDTO>("/users/me"),
