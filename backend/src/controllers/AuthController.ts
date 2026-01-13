@@ -4,11 +4,21 @@ import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import statusCode from "../config/statusCode";
 import userModel from "../models/userModel";
-import { hashPassword, comparePassword } from "../utils/crypt";
+import {
+    hashPassword,
+    comparePassword
+} from "../utils/crypt";
 import logger from "../utils/logger";
-import { registerSchema, loginSchema } from "../schemas/auth.schema";
+import {
+    registerSchema,
+    loginSchema
+} from "../schemas/auth.schema";
 import { getEnv, getRequiredEnv } from "../utils/env";
-import type { JwtPayloadDTO, AuthUserDTO, AuthResponseDTO } from "../interfaces/auth";
+import type {
+    JwtPayloadDTO,
+    AuthUserDTO,
+    AuthResponseDTO
+} from "../interfaces/auth";
 
 
 const signToken = (payload: JwtPayloadDTO) => {
@@ -47,11 +57,8 @@ export const register = async (req: Request, res: Response) => {
             });
         }
 
-        const firstname = parsed.data.firstname.trim();
-        const lastname = parsed.data.lastname.trim();
-        const email = parsed.data.email.trim().toLowerCase();
-        const username = parsed.data.username.trim();
-        const password = parsed.data.password;
+        // ✅ No extra trimming/lowercasing here — schema already normalized.
+        const { firstname, lastname, email, username, password } = parsed.data;
 
         const exists = await userModel
             .findOne({ $or: [{ email }, { username }] })
@@ -90,14 +97,19 @@ export const login = async (req: Request, res: Response) => {
             });
         }
 
-        const identifierRaw = parsed.data.username.trim(); // username OR email
+        /**------------------------------------------------
+            ✅ parsed.data.username is already:
+                - trimmed
+                - lowercased if it looks like an email
+        ---------------------------------------------------*/
+        const identifier = parsed.data.username;
         const password = parsed.data.password;
 
-        const emailCandidate = identifierRaw.toLowerCase();
+        const isEmail = identifier.includes("@");
 
-        const user = await userModel.findOne({
-            $or: [{ username: identifierRaw }, { email: emailCandidate }]
-        });
+        const user = await userModel.findOne(
+            isEmail ? { email: identifier } : { username: identifier }
+        );
 
         if (!user) return res.status(statusCode.UNAUTHORIZED).send({ message: "Invalid credentials" });
 
@@ -118,6 +130,7 @@ export const me = async (req: Request, res: Response) => {
     try {
         if (!req.user?.id) return res.status(statusCode.UNAUTHORIZED).send({ message: "Unauthorized" });
 
+        // keep passwordHash out; return the same user shape your frontend expects
         const user = await userModel.findById(req.user.id).select("-passwordHash");
         if (!user) return res.status(statusCode.NOT_FOUND).send({ message: "User not found" });
 
