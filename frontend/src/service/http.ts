@@ -17,13 +17,23 @@ const http = axios.create({
     baseURL: API_BASE_URL
 });
 
-// Attach token for every request
+// Attach token for every request + allow multipart uploads (FormData)
 http.interceptors.request.use((config) => {
     const token = authStorage.getToken();
+
+    config.headers = config.headers ?? {};
+
     if (token) {
-        config.headers = config.headers ?? {};
-        config.headers.Authorization = `Bearer ${token}`;
+        (config.headers as any).Authorization = `Bearer ${token}`;
     }
+
+    // ✅ CRITICAL: Do NOT force Content-Type for FormData.
+    // If Content-Type is set manually, the browser can't add the multipart boundary => 400.
+    if (config.data instanceof FormData) {
+        delete (config.headers as any)["Content-Type"];
+        delete (config.headers as any)["content-type"];
+    }
+
     return config;
 });
 
