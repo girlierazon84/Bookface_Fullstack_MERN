@@ -15,54 +15,92 @@ import { useUserContext } from "../provider/UserProvider";
 import routingPath from "../routes/routingPath";
 
 
+/**----------------------------
+  Hook: media query (typed)
+-------------------------------*/
+const useMediaQuery = (query: string) => {
+  const getMatches = () => (typeof window !== "undefined" ? window.matchMedia(query).matches : false);
+  const [matches, setMatches] = React.useState<boolean>(getMatches);
+
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const mql: MediaQueryList = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
+
+    // Modern browsers
+    if (typeof mql.addEventListener === "function") {
+      mql.addEventListener("change", onChange);
+      setMatches(mql.matches);
+      return () => mql.removeEventListener("change", onChange);
+    }
+
+    // Safari fallback (older)
+    const legacyOnChange = () => setMatches(mql.matches);
+    mql.addListener(legacyOnChange);
+    setMatches(mql.matches);
+    return () => mql.removeListener(legacyOnChange);
+  }, [query]);
+
+  return matches;
+};
+
 const Overlay = styled.aside<{ $open: boolean }>`
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  grid-template-columns: 1fr auto;
+
+  background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.4 : 0)});
+  pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
+  transition: background 0.18s ease;
+
+  /* Desktop: don't use overlay */
   @media (min-width: 769px) {
     position: static;
+    inset: unset;
+    display: block;
     background: transparent;
     pointer-events: auto;
-  }
-
-  @media (max-width: 768px) {
-    position: fixed;
-    inset: 0;
-    z-index: 60;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.4 : 0)});
-    pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
-    transition: background 0.18s ease;
+    transition: none;
   }
 `;
 
 const Drawer = styled.div<{ $open: boolean }>`
-  @media (min-width: 769px) {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+  width: min(88vw, 380px);
+  height: 100%;
+  background: ${({ theme }) => theme.colors.fourthly};
+  border-left: 1px solid rgba(97, 97, 97, 0.18);
+  box-shadow: ${({ theme }) => theme.colors.card_shadow};
 
-  @media (max-width: 768px) {
-    width: min(88vw, 380px);
-    height: 100%;
-    background: ${({ theme }) => theme.colors.fourthly};
-    border-left: 1px solid rgba(97, 97, 97, 0.18);
-    box-shadow: ${({ theme }) => theme.colors.card_shadow};
-    transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
-    transition: transform 0.22s ease;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+
+  transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
+  transition: transform 0.22s ease;
+
+  @media (min-width: 769px) {
+    height: auto;
+    width: auto;
+    border-left: none;
+    box-shadow: none;
+    background: transparent;
+    transform: none;
+    transition: none;
+    display: block;
   }
 `;
 
 const MobileHeader = styled.div`
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(97, 97, 97, 0.18);
 
-  @media (max-width: 768px) {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px;
-    border-bottom: 1px solid rgba(97, 97, 97, 0.18);
+  @media (min-width: 769px) {
+    display: none;
   }
 `;
 
@@ -88,13 +126,13 @@ const CloseBtn = styled.button`
 `;
 
 const UserHeader = styled.div`
-  display: none;
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(97, 97, 97, 0.18);
 
-  @media (max-width: 768px) {
-    display: grid;
-    gap: 10px;
-    padding: 14px 16px;
-    border-bottom: 1px solid rgba(97, 97, 97, 0.18);
+  @media (min-width: 769px) {
+    display: none;
   }
 `;
 
@@ -128,11 +166,14 @@ const UserMeta = styled.div`
 `;
 
 const Section = styled.div`
-  @media (max-width: 768px) {
-    padding: 14px;
-    display: grid;
-    gap: 10px;
-    align-content: start;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+
+  @media (min-width: 769px) {
+    padding: 0;
+    display: block;
   }
 `;
 
@@ -141,29 +182,28 @@ const Menu = styled.ul`
   margin: 0;
   padding: 0;
 
-  display: flex;
-  flex-flow: row nowrap;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  gap: 10px;
 
-  @media (max-width: 768px) {
-    display: grid;
-    gap: 10px;
+  @media (min-width: 769px) {
+    display: flex;
+    align-items: center;
+    gap: 12px;
   }
 `;
 
 const Item = styled.li`
   display: flex;
-  align-items: center;
 `;
 
 const NavButton = styled(Link)<{ $active?: boolean }>`
+  width: 100%;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
 
-  padding: 10px 12px;
+  padding: 12px 12px;
   border-radius: 14px;
 
   font-weight: 900;
@@ -179,8 +219,9 @@ const NavButton = styled(Link)<{ $active?: boolean }>`
   }
 
   @media (min-width: 769px) {
-    background: transparent;
+    width: auto;
     border: 1px solid transparent;
+    background: transparent;
 
     &:hover {
       border: 1px solid rgba(97, 97, 97, 0.18);
@@ -198,16 +239,9 @@ const Hr = styled.hr`
   border: none;
   border-top: 1px solid rgba(97, 97, 97, 0.18);
   margin: 6px 0;
-`;
 
-const Footer = styled.div`
-  display: none;
-
-  @media (max-width: 768px) {
-    display: grid;
-    gap: 10px;
-    padding: 14px;
-    border-top: 1px solid rgba(97, 97, 97, 0.18);
+  @media (min-width: 769px) {
+    display: none;
   }
 `;
 
@@ -232,6 +266,11 @@ const ActionBtn = styled.button`
     border-color: ${({ theme }) => theme.colors.secondary};
     color: ${({ theme }) => theme.colors.secondary};
   }
+
+  @media (min-width: 769px) {
+    width: auto;
+    padding: 10px 12px;
+  }
 `;
 
 type Props = {
@@ -244,14 +283,18 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
   const close = React.useCallback(() => setOpen(false), [setOpen]);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
+  // ✅ Hooks always run. We ONLY decide rendering after hooks.
   React.useEffect(() => {
+    if (!open) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") close();
     };
-    if (open) window.addEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
 
@@ -263,6 +306,9 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
     navigate(routingPath.usersLogInView, { replace: true });
   };
 
+  // ✅ Fully hide on mobile when closed (WITHOUT breaking hooks)
+  if (isMobile && !open) return null;
+
   return (
     <Overlay $open={open} aria-hidden={!open} onClick={close}>
       <Drawer $open={open} onClick={stop} role="navigation" aria-label="Primary navigation">
@@ -273,7 +319,6 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
           </CloseBtn>
         </MobileHeader>
 
-        {/* Mobile user header = discoverable + modern */}
         <UserHeader>
           {token ? (
             <UserRow>
@@ -355,11 +400,6 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
             )}
           </Menu>
         </Section>
-
-        {/* Optional mobile footer for extra CTA space */}
-        <Footer>
-          {/* Keep empty or add "About" / "Help" later */}
-        </Footer>
       </Drawer>
     </Overlay>
   );
