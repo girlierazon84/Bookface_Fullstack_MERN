@@ -64,7 +64,6 @@ const WordmarkLink = styled.a`
   text-decoration: none;
   line-height: 0;
 
-  /* Nice focus ring */
   &:focus-visible {
     outline: 2px solid ${({ theme }) => theme.colors.secondary};
     outline-offset: 4px;
@@ -76,8 +75,6 @@ const WordmarkImg = styled.img`
   height: 34px;
   width: auto;
   display: block;
-
-  /* prevent layout jump if slow */
   min-width: 120px;
 
   @media (max-width: 520px) {
@@ -92,16 +89,10 @@ const Right = styled.div`
   gap: 10px;
 `;
 
-/** -----------------------
- * Helpers
- * ---------------------- */
 const toHexNoHash = (color: unknown, fallback: string) => {
   if (typeof color !== "string") return fallback;
-
-  // Accept "#RRGGBB" or "RRGGBB"
   const raw = color.trim();
   const hex = raw.startsWith("#") ? raw.slice(1) : raw;
-
   if (/^[0-9a-fA-F]{6}$/.test(hex)) return hex.toUpperCase();
   return fallback;
 };
@@ -112,7 +103,6 @@ const setQueryParam = (url: string, key: string, value: string) => {
     u.searchParams.set(key, value);
     return u.toString();
   } catch {
-    // if URL parsing fails for any reason, return original
     return url;
   }
 };
@@ -126,11 +116,9 @@ const NavigationBar: React.FC = () => {
     setOpen(false);
   }, [location.pathname]);
 
-  // Your FontSpace wordmark
   const baseWordmark =
     "https://see.fontimg.com/api/rf5/OV9ee/MmRkOTg0YTA5Y2U4NDcxMDg4MmM2NWVlNzE2MzgyM2UudHRm/Qm9va0ZhY2U/lucy-said-ok-personal-use-italic.png?r=fs&h=98&w=1500&fg=000000&bg=FFFFFF&tb=1&s=65";
 
-  // Make it match theme colors (best effort: works great if your theme uses hex colors)
   const fg = toHexNoHash(theme?.colors?.secondary, "000000");
   const bg = toHexNoHash(theme?.colors?.fourthly, "FFFFFF");
 
@@ -145,14 +133,12 @@ const NavigationBar: React.FC = () => {
     <Nav>
       <Inner>
         <Left>
-          {/* Home logo link */}
           <HomeLink to={routingPath.homeView} aria-label="Go to home">
             <LogoTile aria-hidden="true">
               <img src={logo} alt="" />
             </LogoTile>
           </HomeLink>
 
-          {/* External wordmark link (NOT nested inside <Link>) */}
           <WordmarkLink
             href="https://www.fontspace.com/category/calligraphy"
             target="_blank"
