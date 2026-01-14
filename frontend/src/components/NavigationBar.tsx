@@ -140,7 +140,6 @@ const NavigationBar: React.FC = () => {
           </HomeLink>
 
           <WordmarkLink
-            href="https://www.fontspace.com/category/calligraphy"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Font credit: FontSpace (opens in a new tab)"
