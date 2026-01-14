@@ -5,7 +5,6 @@ import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
-import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
 import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
@@ -15,9 +14,9 @@ import { useUserContext } from "../provider/UserProvider";
 import routingPath from "../routes/routingPath";
 
 
-/**----------------------------
-  Hook: media query (typed)
--------------------------------*/
+/** ----------------------------
+ * Hook: media query (typed)
+ * ---------------------------- */
 const useMediaQuery = (query: string) => {
   const getMatches = () => (typeof window !== "undefined" ? window.matchMedia(query).matches : false);
   const [matches, setMatches] = React.useState<boolean>(getMatches);
@@ -28,14 +27,12 @@ const useMediaQuery = (query: string) => {
     const mql: MediaQueryList = window.matchMedia(query);
     const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
 
-    // Modern browsers
     if (typeof mql.addEventListener === "function") {
       mql.addEventListener("change", onChange);
       setMatches(mql.matches);
       return () => mql.removeEventListener("change", onChange);
     }
 
-    // Safari fallback (older)
     const legacyOnChange = () => setMatches(mql.matches);
     mql.addListener(legacyOnChange);
     setMatches(mql.matches);
@@ -45,10 +42,13 @@ const useMediaQuery = (query: string) => {
   return matches;
 };
 
+const NAVBAR_HEIGHT = 72;
+
 const Overlay = styled.aside<{ $open: boolean }>`
   position: fixed;
   inset: 0;
   z-index: 60;
+
   display: grid;
   grid-template-columns: 1fr auto;
 
@@ -56,7 +56,6 @@ const Overlay = styled.aside<{ $open: boolean }>`
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
   transition: background 0.18s ease;
 
-  /* Desktop: don't use overlay */
   @media (min-width: 769px) {
     position: static;
     inset: unset;
@@ -75,10 +74,13 @@ const Drawer = styled.div<{ $open: boolean }>`
   box-shadow: ${({ theme }) => theme.colors.card_shadow};
 
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto 1fr;
 
   transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
   transition: transform 0.22s ease;
+
+  /* ✅ Make drawer feel aligned with navbar (burger line) */
+  padding-top: ${NAVBAR_HEIGHT}px;
 
   @media (min-width: 769px) {
     height: auto;
@@ -88,40 +90,8 @@ const Drawer = styled.div<{ $open: boolean }>`
     background: transparent;
     transform: none;
     transition: none;
+    padding-top: 0;
     display: block;
-  }
-`;
-
-const MobileHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid rgba(97, 97, 97, 0.18);
-
-  @media (min-width: 769px) {
-    display: none;
-  }
-`;
-
-const Brand = styled.div`
-  font-weight: 900;
-  color: ${({ theme }) => theme.colors.secondary};
-  font-family: "Oleo Script", sans-serif;
-  font-size: 1.25rem;
-`;
-
-const CloseBtn = styled.button`
-  border: 1px solid rgba(97, 97, 97, 0.18);
-  background: ${({ theme }) => theme.colors.primary};
-  color: ${({ theme }) => theme.colors.text_primary};
-  border-radius: 12px;
-  padding: 8px;
-  cursor: pointer;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.colors.secondary};
-    color: ${({ theme }) => theme.colors.secondary};
   }
 `;
 
@@ -288,7 +258,6 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
   const close = React.useCallback(() => setOpen(false), [setOpen]);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
-  // ✅ Hooks always run. We ONLY decide rendering after hooks.
   React.useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -306,100 +275,99 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
     navigate(routingPath.usersLogInView, { replace: true });
   };
 
-  // ✅ Fully hide on mobile when closed (WITHOUT breaking hooks)
+  // ✅ Fully hide on mobile when closed
   if (isMobile && !open) return null;
 
   return (
     <Overlay $open={open} aria-hidden={!open} onClick={close}>
       <Drawer $open={open} onClick={stop} role="navigation" aria-label="Primary navigation">
-        <MobileHeader>
-          <Brand>Bookface</Brand>
-          <CloseBtn type="button" onClick={close} aria-label="Close menu">
-            <CloseRoundedIcon fontSize="small" />
-          </CloseBtn>
-        </MobileHeader>
-
-        <UserHeader>
-          {token ? (
-            <UserRow>
-              <Avatar src={user?.avatarUrl} name={user?.username} alt="Profile avatar" size={44} />
-              <UserText>
-                <UserName>{user?.username ?? "Me"}</UserName>
-                <UserMeta>{user?.email ?? "Signed in"}</UserMeta>
-              </UserText>
-            </UserRow>
-          ) : (
-            <UserRow>
-              <Avatar src={null} name="Guest" alt="Guest" size={44} />
-              <UserText>
-                <UserName>Guest</UserName>
-                <UserMeta>Log in to post & customize</UserMeta>
-              </UserText>
-            </UserRow>
-          )}
-        </UserHeader>
-
-        <Section>
-          <Menu id="primary-navigation">
-            <Item>
-              <NavButton to={routingPath.homeView} onClick={close} $active={isActive(routingPath.homeView)}>
-                <ButtonIcon>
-                  <HomeSharpIcon fontSize="medium" />
-                </ButtonIcon>
-                Home
-              </NavButton>
-            </Item>
-
+        <div>
+          <UserHeader>
             {token ? (
-              <>
-                <Item>
-                  <NavButton to={routingPath.createPostView} onClick={close} $active={isActive(routingPath.createPostView)}>
-                    <ButtonIcon>
-                      <PostAddSharpIcon fontSize="medium" />
-                    </ButtonIcon>
-                    Create post
-                  </NavButton>
-                </Item>
-
-                <Item>
-                  <NavButton to={routingPath.profileView} onClick={close} $active={isActive(routingPath.profileView)}>
-                    <ButtonIcon>
-                      <PersonRoundedIcon fontSize="medium" />
-                    </ButtonIcon>
-                    Profile
-                  </NavButton>
-                </Item>
-
-                <Item>
-                  <NavButton to={routingPath.settingsView} onClick={close} $active={isActive(routingPath.settingsView)}>
-                    <ButtonIcon>
-                      <SettingsRoundedIcon fontSize="medium" />
-                    </ButtonIcon>
-                    Settings
-                  </NavButton>
-                </Item>
-
-                <Hr />
-
-                <Item>
-                  <ActionBtn type="button" onClick={doLogout} aria-label="Log out">
-                    <LogoutRoundedIcon fontSize="small" />
-                    Logout
-                  </ActionBtn>
-                </Item>
-              </>
+              <UserRow>
+                <Avatar src={user?.avatarUrl} name={user?.username} alt="Profile avatar" size={44} />
+                <UserText>
+                  <UserName>{user?.username ?? "Me"}</UserName>
+                  <UserMeta>{user?.email ?? "Signed in"}</UserMeta>
+                </UserText>
+              </UserRow>
             ) : (
+              <UserRow>
+                <Avatar src={null} name="Guest" alt="Guest" size={44} />
+                <UserText>
+                  <UserName>Guest</UserName>
+                  <UserMeta>Log in to post & customize</UserMeta>
+                </UserText>
+              </UserRow>
+            )}
+          </UserHeader>
+
+          <Section>
+            <Menu id="primary-navigation">
               <Item>
-                <NavButton to={routingPath.usersLogInView} onClick={close} $active={isActive(routingPath.usersLogInView)}>
+                <NavButton to={routingPath.homeView} onClick={close} $active={isActive(routingPath.homeView)}>
                   <ButtonIcon>
-                    <LoginSharpIcon fontSize="medium" />
+                    <HomeSharpIcon fontSize="medium" />
                   </ButtonIcon>
-                  Log in
+                  Home
                 </NavButton>
               </Item>
-            )}
-          </Menu>
-        </Section>
+
+              {token ? (
+                <>
+                  <Item>
+                    <NavButton
+                      to={routingPath.createPostView}
+                      onClick={close}
+                      $active={isActive(routingPath.createPostView)}
+                    >
+                      <ButtonIcon>
+                        <PostAddSharpIcon fontSize="medium" />
+                      </ButtonIcon>
+                      Create post
+                    </NavButton>
+                  </Item>
+
+                  <Item>
+                    <NavButton to={routingPath.profileView} onClick={close} $active={isActive(routingPath.profileView)}>
+                      <ButtonIcon>
+                        <PersonRoundedIcon fontSize="medium" />
+                      </ButtonIcon>
+                      Profile
+                    </NavButton>
+                  </Item>
+
+                  <Item>
+                    <NavButton to={routingPath.settingsView} onClick={close} $active={isActive(routingPath.settingsView)}>
+                      <ButtonIcon>
+                        <SettingsRoundedIcon fontSize="medium" />
+                      </ButtonIcon>
+                      Settings
+                    </NavButton>
+                  </Item>
+
+                  <Hr />
+
+                  <Item>
+                    <ActionBtn type="button" onClick={doLogout} aria-label="Log out">
+                      <LogoutRoundedIcon fontSize="small" />
+                      Logout
+                    </ActionBtn>
+                  </Item>
+                </>
+              ) : (
+                <Item>
+                  <NavButton to={routingPath.usersLogInView} onClick={close} $active={isActive(routingPath.usersLogInView)}>
+                    <ButtonIcon>
+                      <LoginSharpIcon fontSize="medium" />
+                    </ButtonIcon>
+                    Log in
+                  </NavButton>
+                </Item>
+              )}
+            </Menu>
+          </Section>
+        </div>
       </Drawer>
     </Overlay>
   );
