@@ -11,11 +11,14 @@ type Props = {
 };
 
 const Burger: React.FC<Props> = ({ open, setOpen }) => {
+    const btnRef = React.useRef<HTMLButtonElement | null>(null);
+
     const toggle = () => setOpen((prev) => !prev);
 
     return (
         <>
             <StyledBurger
+                ref={btnRef}
                 $open={open}
                 type="button"
                 aria-label={open ? "Close navigation menu" : "Open navigation menu"}
@@ -31,7 +34,8 @@ const Burger: React.FC<Props> = ({ open, setOpen }) => {
                 </div>
             </StyledBurger>
 
-            <RightNav open={open} setOpen={setOpen} />
+            {/* ✅ pass anchorRef so RightNav can attach to burger */}
+            <RightNav open={open} setOpen={setOpen} anchorRef={btnRef} />
         </>
     );
 };
