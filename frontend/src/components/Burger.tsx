@@ -21,6 +21,7 @@ const Burger: React.FC<Props> = ({ open, setOpen }) => {
                 aria-label={open ? "Close navigation menu" : "Open navigation menu"}
                 aria-expanded={open}
                 aria-controls="primary-navigation"
+                aria-haspopup="dialog"
                 onClick={toggle}
             >
                 <div className="lines" aria-hidden="true">
