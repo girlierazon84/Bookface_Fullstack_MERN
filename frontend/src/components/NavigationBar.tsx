@@ -52,7 +52,6 @@ const BrandLink = styled(Link)`
 `;
 
 const LogoTile = styled.span`
-  border: none;
   display: grid;
   place-items: center;
 
@@ -65,10 +64,14 @@ const LogoTile = styled.span`
 `;
 
 const Title = styled.span`
-  font-weight: 900;
+  /* ✅ Use your cursive title font */
+  font-family: "Ananda Black", "Oleo Script", cursive;
+  font-weight: 400;
+
   color: ${({ theme }) => theme.colors.secondary};
-  font-size: 1.1rem;
+  font-size: 1.25rem;
   letter-spacing: 0.2px;
+
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -91,6 +94,7 @@ const NavigationBar: React.FC = () => {
   const [open, setOpen] = React.useState(false);
   const location = useLocation();
 
+  // Close drawer on route change
   React.useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
