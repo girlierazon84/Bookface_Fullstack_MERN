@@ -8,29 +8,25 @@ type Props = {
 };
 
 export const StyledBurger = styled.button<Props>`
-  z-index: 60;
+  z-index: 70;
   cursor: pointer;
 
   width: 44px;
   height: 44px;
   border-radius: 14px;
 
-  /* ✅ Always visible background */
   background: transparent;
-  border: none;
-
-  /* modern “glass” */
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid transparent;
 
   display: grid;
   place-items: center;
   padding: 0;
 
-  transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+  transition: transform 0.12s ease, background 0.18s ease, border-color 0.18s ease;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.fourthly};
+    background: ${({ theme }) => theme.colors.primary};
+    border-color: rgba(97, 97, 97, 0.18);
   }
 
   &:active {
@@ -40,8 +36,11 @@ export const StyledBurger = styled.button<Props>`
   &:focus-visible {
     outline: none;
     box-shadow: 0 0 0 3px rgba(0, 0, 153, 0.18), ${({ theme }) => theme.colors.card_shadow};
+    border-color: rgba(97, 97, 97, 0.25);
+    background: ${({ theme }) => theme.colors.primary};
   }
 
+  /* ✅ Burger ONLY on mobile */
   @media (min-width: 769px) {
     display: none;
   }
@@ -58,15 +57,12 @@ export const StyledBurger = styled.button<Props>`
     height: 3px;
     width: 100%;
     border-radius: 999px;
-
-    /* ✅ lines visible and consistent */
     background-color: ${({ theme }) => theme.colors.secondary};
 
     transition: transform 0.2s ease, opacity 0.15s ease;
     transform-origin: center;
   }
 
-  /* ✅ Turn into a clean X */
   span:nth-child(1) {
     transform: ${({ $open }) => ($open ? "translateY(7px) rotate(45deg)" : "none")};
   }
@@ -82,7 +78,6 @@ export const StyledBurger = styled.button<Props>`
 
   @media (prefers-reduced-motion: reduce) {
     transition: none;
-
     span {
       transition: none;
     }
