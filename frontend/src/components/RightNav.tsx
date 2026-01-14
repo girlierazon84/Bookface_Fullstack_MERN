@@ -42,15 +42,16 @@ const useMediaQuery = (query: string) => {
   return matches;
 };
 
-const NAVBAR_HEIGHT = 72;
+type AnchorPos = {
+  top: number;
+  right: number;
+  bottom: number;
+};
 
 const Overlay = styled.aside<{ $open: boolean }>`
   position: fixed;
   inset: 0;
   z-index: 60;
-
-  display: grid;
-  grid-template-columns: 1fr auto;
 
   background: rgba(0, 0, 0, ${({ $open }) => ($open ? 0.4 : 0)});
   pointer-events: ${({ $open }) => ($open ? "auto" : "none")};
@@ -59,38 +60,52 @@ const Overlay = styled.aside<{ $open: boolean }>`
   @media (min-width: 769px) {
     position: static;
     inset: unset;
-    display: block;
     background: transparent;
     pointer-events: auto;
     transition: none;
   }
 `;
 
-const Drawer = styled.div<{ $open: boolean }>`
+const FloatingPanel = styled.div<{ $open: boolean }>`
+  position: fixed;
+  z-index: 61;
+
   width: min(88vw, 380px);
-  height: 100%;
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+
   background: ${({ theme }) => theme.colors.fourthly};
-  border-left: 1px solid rgba(97, 97, 97, 0.18);
+  border: 1px solid rgba(97, 97, 97, 0.18);
   box-shadow: ${({ theme }) => theme.colors.card_shadow};
+  border-radius: 18px;
 
-  display: grid;
-  grid-template-rows: auto 1fr;
-
-  transform: translateX(${({ $open }) => ($open ? "0" : "100%")});
-  transition: transform 0.22s ease;
-
-  /* ✅ Make drawer feel aligned with navbar (burger line) */
-  padding-top: ${NAVBAR_HEIGHT}px;
+  /* popover animation */
+  opacity: ${({ $open }) => ($open ? 1 : 0)};
+  transform: ${({ $open }) => ($open ? "translateY(0) scale(1)" : "translateY(-6px) scale(0.98)")};
+  transform-origin: top right;
+  transition: opacity 0.16s ease, transform 0.18s ease;
 
   @media (min-width: 769px) {
-    height: auto;
+    position: static;
     width: auto;
-    border-left: none;
+    max-height: none;
+    overflow: visible;
+    border: none;
     box-shadow: none;
-    background: transparent;
+    border-radius: 0;
+    opacity: 1;
     transform: none;
     transition: none;
-    padding-top: 0;
+  }
+`;
+
+const Section = styled.div`
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+
+  @media (min-width: 769px) {
+    padding: 0;
     display: block;
   }
 `;
@@ -98,7 +113,7 @@ const Drawer = styled.div<{ $open: boolean }>`
 const UserHeader = styled.div`
   display: grid;
   gap: 10px;
-  padding: 14px 16px;
+  padding: 14px 14px 12px;
   border-bottom: 1px solid rgba(97, 97, 97, 0.18);
 
   @media (min-width: 769px) {
@@ -133,18 +148,6 @@ const UserMeta = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-`;
-
-const Section = styled.div`
-  padding: 14px;
-  display: grid;
-  gap: 10px;
-  align-content: start;
-
-  @media (min-width: 769px) {
-    padding: 0;
-    display: block;
-  }
 `;
 
 const Menu = styled.ul`
@@ -246,18 +249,21 @@ const ActionBtn = styled.button`
 type Props = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  anchorRef: React.RefObject<HTMLButtonElement>;
 };
 
-const RightNav: React.FC<Props> = ({ open, setOpen }) => {
+const RightNav: React.FC<Props> = ({ open, setOpen, anchorRef }) => {
   const { token, user, logout } = useUserContext();
   const navigate = useNavigate();
   const location = useLocation();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [anchorPos, setAnchorPos] = React.useState<AnchorPos | null>(null);
 
   const close = React.useCallback(() => setOpen(false), [setOpen]);
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
+  // ESC close (only when open)
   React.useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -266,6 +272,36 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, close]);
+
+  // Measure anchor (burger) and keep panel attached on resize/scroll
+  React.useLayoutEffect(() => {
+    if (!isMobile || !open) return;
+
+    const measure = () => {
+      const el = anchorRef.current;
+      if (!el) return;
+
+      const rect = el.getBoundingClientRect();
+      const right = Math.max(12, window.innerWidth - rect.right); // keep a small edge gutter
+      const top = Math.max(8, rect.top);
+      const bottom = Math.max(8, rect.bottom);
+
+      setAnchorPos({ top, right, bottom });
+    };
+
+    measure();
+
+    const onResize = () => measure();
+    const onScroll = () => measure();
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("scroll", onScroll, true);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("scroll", onScroll, true);
+    };
+  }, [isMobile, open, anchorRef]);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -278,97 +314,170 @@ const RightNav: React.FC<Props> = ({ open, setOpen }) => {
   // ✅ Fully hide on mobile when closed
   if (isMobile && !open) return null;
 
-  return (
-    <Overlay $open={open} aria-hidden={!open} onClick={close}>
-      <Drawer $open={open} onClick={stop} role="navigation" aria-label="Primary navigation">
-        <div>
-          <UserHeader>
-            {token ? (
-              <UserRow>
-                <Avatar src={user?.avatarUrl} name={user?.username} alt="Profile avatar" size={44} />
-                <UserText>
-                  <UserName>{user?.username ?? "Me"}</UserName>
-                  <UserMeta>{user?.email ?? "Signed in"}</UserMeta>
-                </UserText>
-              </UserRow>
-            ) : (
-              <UserRow>
-                <Avatar src={null} name="Guest" alt="Guest" size={44} />
-                <UserText>
-                  <UserName>Guest</UserName>
-                  <UserMeta>Log in to post & customize</UserMeta>
-                </UserText>
-              </UserRow>
-            )}
-          </UserHeader>
+  // Desktop: inline nav (no overlay)
+  if (!isMobile) {
+    return (
+      <nav aria-label="Primary navigation">
+        <Menu id="primary-navigation">
+          <Item>
+            <NavButton to={routingPath.homeView} $active={isActive(routingPath.homeView)}>
+              <ButtonIcon>
+                <HomeSharpIcon fontSize="medium" />
+              </ButtonIcon>
+              Home
+            </NavButton>
+          </Item>
 
-          <Section>
-            <Menu id="primary-navigation">
+          {token ? (
+            <>
               <Item>
-                <NavButton to={routingPath.homeView} onClick={close} $active={isActive(routingPath.homeView)}>
+                <NavButton to={routingPath.createPostView} $active={isActive(routingPath.createPostView)}>
                   <ButtonIcon>
-                    <HomeSharpIcon fontSize="medium" />
+                    <PostAddSharpIcon fontSize="medium" />
                   </ButtonIcon>
-                  Home
+                  Create
                 </NavButton>
               </Item>
 
-              {token ? (
-                <>
-                  <Item>
-                    <NavButton
-                      to={routingPath.createPostView}
-                      onClick={close}
-                      $active={isActive(routingPath.createPostView)}
-                    >
-                      <ButtonIcon>
-                        <PostAddSharpIcon fontSize="medium" />
-                      </ButtonIcon>
-                      Create post
-                    </NavButton>
-                  </Item>
+              <Item>
+                <NavButton to={routingPath.profileView} $active={isActive(routingPath.profileView)}>
+                  <ButtonIcon>
+                    <PersonRoundedIcon fontSize="medium" />
+                  </ButtonIcon>
+                  Profile
+                </NavButton>
+              </Item>
 
-                  <Item>
-                    <NavButton to={routingPath.profileView} onClick={close} $active={isActive(routingPath.profileView)}>
-                      <ButtonIcon>
-                        <PersonRoundedIcon fontSize="medium" />
-                      </ButtonIcon>
-                      Profile
-                    </NavButton>
-                  </Item>
+              <Item>
+                <NavButton to={routingPath.settingsView} $active={isActive(routingPath.settingsView)}>
+                  <ButtonIcon>
+                    <SettingsRoundedIcon fontSize="medium" />
+                  </ButtonIcon>
+                  Settings
+                </NavButton>
+              </Item>
 
-                  <Item>
-                    <NavButton to={routingPath.settingsView} onClick={close} $active={isActive(routingPath.settingsView)}>
-                      <ButtonIcon>
-                        <SettingsRoundedIcon fontSize="medium" />
-                      </ButtonIcon>
-                      Settings
-                    </NavButton>
-                  </Item>
+              <Item>
+                <ActionBtn type="button" onClick={doLogout} aria-label="Log out">
+                  <LogoutRoundedIcon fontSize="small" />
+                  Logout
+                </ActionBtn>
+              </Item>
+            </>
+          ) : (
+            <Item>
+              <NavButton to={routingPath.usersLogInView} $active={isActive(routingPath.usersLogInView)}>
+                <ButtonIcon>
+                  <LoginSharpIcon fontSize="medium" />
+                </ButtonIcon>
+                Log in
+              </NavButton>
+            </Item>
+          )}
+        </Menu>
+      </nav>
+    );
+  }
 
-                  <Hr />
+  // Mobile: anchored popover panel
+  const gap = 10;
+  const panelTop = (anchorPos?.bottom ?? 72) + gap;
 
-                  <Item>
-                    <ActionBtn type="button" onClick={doLogout} aria-label="Log out">
-                      <LogoutRoundedIcon fontSize="small" />
-                      Logout
-                    </ActionBtn>
-                  </Item>
-                </>
-              ) : (
+  return (
+    <Overlay $open={open} aria-hidden={!open} onClick={close}>
+      <FloatingPanel
+        $open={open}
+        onClick={stop}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        style={{
+          top: panelTop,
+          right: anchorPos?.right ?? 12
+        }}
+      >
+        <UserHeader>
+          {token ? (
+            <UserRow>
+              <Avatar src={user?.avatarUrl} name={user?.username} alt="Profile avatar" size={44} />
+              <UserText>
+                <UserName>{user?.username ?? "Me"}</UserName>
+                <UserMeta>{user?.email ?? "Signed in"}</UserMeta>
+              </UserText>
+            </UserRow>
+          ) : (
+            <UserRow>
+              <Avatar src={null} name="Guest" alt="Guest" size={44} />
+              <UserText>
+                <UserName>Guest</UserName>
+                <UserMeta>Log in to post & customize</UserMeta>
+              </UserText>
+            </UserRow>
+          )}
+        </UserHeader>
+
+        <Section>
+          <Menu id="primary-navigation">
+            <Item>
+              <NavButton to={routingPath.homeView} onClick={close} $active={isActive(routingPath.homeView)}>
+                <ButtonIcon>
+                  <HomeSharpIcon fontSize="medium" />
+                </ButtonIcon>
+                Home
+              </NavButton>
+            </Item>
+
+            {token ? (
+              <>
                 <Item>
-                  <NavButton to={routingPath.usersLogInView} onClick={close} $active={isActive(routingPath.usersLogInView)}>
+                  <NavButton to={routingPath.createPostView} onClick={close} $active={isActive(routingPath.createPostView)}>
                     <ButtonIcon>
-                      <LoginSharpIcon fontSize="medium" />
+                      <PostAddSharpIcon fontSize="medium" />
                     </ButtonIcon>
-                    Log in
+                    Create post
                   </NavButton>
                 </Item>
-              )}
-            </Menu>
-          </Section>
-        </div>
-      </Drawer>
+
+                <Item>
+                  <NavButton to={routingPath.profileView} onClick={close} $active={isActive(routingPath.profileView)}>
+                    <ButtonIcon>
+                      <PersonRoundedIcon fontSize="medium" />
+                    </ButtonIcon>
+                    Profile
+                  </NavButton>
+                </Item>
+
+                <Item>
+                  <NavButton to={routingPath.settingsView} onClick={close} $active={isActive(routingPath.settingsView)}>
+                    <ButtonIcon>
+                      <SettingsRoundedIcon fontSize="medium" />
+                    </ButtonIcon>
+                    Settings
+                  </NavButton>
+                </Item>
+
+                <Hr />
+
+                <Item>
+                  <ActionBtn type="button" onClick={doLogout} aria-label="Log out">
+                    <LogoutRoundedIcon fontSize="small" />
+                    Logout
+                  </ActionBtn>
+                </Item>
+              </>
+            ) : (
+              <Item>
+                <NavButton to={routingPath.usersLogInView} onClick={close} $active={isActive(routingPath.usersLogInView)}>
+                  <ButtonIcon>
+                    <LoginSharpIcon fontSize="medium" />
+                  </ButtonIcon>
+                  Log in
+                </NavButton>
+              </Item>
+            )}
+          </Menu>
+        </Section>
+      </FloatingPanel>
     </Overlay>
   );
 };
