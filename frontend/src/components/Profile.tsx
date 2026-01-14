@@ -1,58 +1,40 @@
 // frontend/src/components/Profile.tsx
 
 import React from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import LogoutSharpIcon from "@mui/icons-material/LogoutSharp";
-import { ListItemIcon, ListItemText } from "@mui/material";
+import LogoutRoundedIcon from "@mui/icons-material/LogoutRounded";
+import SettingsRoundedIcon from "@mui/icons-material/SettingsRounded";
+import PersonRoundedIcon from "@mui/icons-material/PersonRounded";
 import PostAddSharpIcon from "@mui/icons-material/PostAddSharp";
+import Avatar from "./Avatar";
 import routingPath from "../routes/routingPath";
 import { useUserContext } from "../provider/UserProvider";
-import Avatar from "./Avatar";
 
 
-const Wrapper = styled.div`
-  display: flex;
+const Button = styled.button`
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-`;
+  gap: 10px;
 
-const AddPostLink = styled.div`
-  a {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: ${({ theme }) => theme.colors.fourthly};
-    text-decoration: none;
-    font-weight: 900;
-    padding: 8px 10px;
-    border-radius: 12px;
-  }
-
-  a:hover {
-    background: ${({ theme }) => theme.colors.thirdly};
-  }
-`;
-
-const ProfileWrapper = styled.section`
-  display: flex;
-  align-items: center;
-  position: relative;
+  border: 1px solid rgba(97, 97, 97, 0.18);
+  background: transparent;
+  border-radius: 14px;
+  padding: 6px 10px;
   cursor: pointer;
-  padding: 6px 8px;
-  border-radius: 12px;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.thirdly};
+    background: ${({ theme }) => theme.colors.primary};
+    border-color: ${({ theme }) => theme.colors.secondary};
   }
 
-  &:hover .profileDropdown {
-    display: block;
+  &:focus-visible {
+    outline: 2px solid ${({ theme }) => theme.colors.secondary};
+    outline-offset: 3px;
   }
 `;
 
-const SpanUserName = styled.span`
-  padding-left: 10px;
+const Name = styled.span`
   color: ${({ theme }) => theme.colors.secondary};
   font-family: "Oleo Script", sans-serif;
   font-weight: 900;
@@ -63,84 +45,116 @@ const SpanUserName = styled.span`
 `;
 
 const Dropdown = styled.div`
-  display: none;
   position: absolute;
-  top: 54px;
   right: 0;
-  background-color: ${({ theme }) => theme.colors.primary};
-  min-width: 190px;
+  top: calc(100% + 10px);
+
+  width: 220px;
   padding: 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(97, 97, 97, 0.2);
+  border-radius: 16px;
+
+  background: ${({ theme }) => theme.colors.fourthly};
+  border: 1px solid rgba(97, 97, 97, 0.18);
   box-shadow: ${({ theme }) => theme.colors.card_shadow};
-  z-index: 30;
+
+  display: grid;
+  gap: 8px;
+  z-index: 80;
 `;
 
-const DropdownItem = styled.button`
+const Item = styled.button`
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+
   padding: 12px 12px;
-  border-radius: 12px;
-  border: none;
-  background: ${({ theme }) => theme.colors.fourthly};
-  text-align: left;
-  font-weight: 900;
+  border-radius: 14px;
+
+  border: 1px solid rgba(97, 97, 97, 0.16);
+  background: ${({ theme }) => theme.colors.primary};
   color: ${({ theme }) => theme.colors.text_primary};
+
+  font-weight: 900;
   cursor: pointer;
 
   &:hover {
-    background: ${({ theme }) => theme.colors.secondary};
+    border-color: ${({ theme }) => theme.colors.secondary};
+    color: ${({ theme }) => theme.colors.secondary};
   }
 `;
 
 const Hr = styled.hr`
   border: none;
-  border-top: 1px solid rgba(97, 97, 97, 0.2);
-  margin: 8px 0;
+  border-top: 1px solid rgba(97, 97, 97, 0.18);
+  margin: 6px 0;
+`;
+
+const Pop = styled.div`
+  position: relative;
 `;
 
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useUserContext();
+  const [open, setOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      if (target.closest("[data-profile-pop]")) return;
+      setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const go = (path: string) => {
+    setOpen(false);
+    navigate(path);
+  };
 
   return (
-    <Wrapper>
-      <AddPostLink>
-        <Link to={routingPath.createPostView} aria-label="Add post">
-          <ListItemIcon>
-            <PostAddSharpIcon color="primary" fontSize="medium" />
-          </ListItemIcon>
-          <ListItemText primary="Add Post" />
-        </Link>
-      </AddPostLink>
-
-      <ProfileWrapper>
+    <Pop data-profile-pop>
+      <Button type="button" onClick={() => setOpen((p) => !p)} aria-haspopup="menu" aria-expanded={open}>
         <Avatar src={user?.avatarUrl} name={user?.username} alt="Profile avatar" size={40} />
-        <SpanUserName>{user?.username}</SpanUserName>
+        <Name>{user?.username}</Name>
+      </Button>
 
-        <Dropdown className="profileDropdown" role="menu">
-          <DropdownItem role="menuitem" onClick={() => navigate(routingPath.settingsView)}>
-            Settings
-          </DropdownItem>
-          <DropdownItem role="menuitem" onClick={() => navigate(routingPath.profileView)}>
+      {open ? (
+        <Dropdown role="menu" aria-label="Profile menu">
+          <Item role="menuitem" onClick={() => go(routingPath.createPostView)}>
+            <PostAddSharpIcon fontSize="small" />
+            Create post
+          </Item>
+
+          <Item role="menuitem" onClick={() => go(routingPath.profileView)}>
+            <PersonRoundedIcon fontSize="small" />
             Profile
-          </DropdownItem>
+          </Item>
+
+          <Item role="menuitem" onClick={() => go(routingPath.settingsView)}>
+            <SettingsRoundedIcon fontSize="small" />
+            Settings
+          </Item>
+
           <Hr />
-          <DropdownItem
+
+          <Item
             role="menuitem"
             onClick={() => {
               logout();
+              setOpen(false);
               navigate(routingPath.usersLogInView, { replace: true });
             }}
           >
-            <LogoutSharpIcon color="action" fontSize="small" />
+            <LogoutRoundedIcon fontSize="small" />
             Logout
-          </DropdownItem>
+          </Item>
         </Dropdown>
-      </ProfileWrapper>
-    </Wrapper>
+      ) : null}
+    </Pop>
   );
 };
 
