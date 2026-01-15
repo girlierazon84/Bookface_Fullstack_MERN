@@ -5,7 +5,7 @@ import 'mocha'
 import StatusCode from './config/statusCode'
 import app from './server'
 import chaiHttp from 'chai-http'
-import { createPost } from './interfaces/posts'
+import { CreatePostInput } from './interfaces/posts'
 
 
 Chai.use(chaiHttp)
@@ -13,14 +13,12 @@ const expect = Chai.expect
 
 const randomString = Math.random().toString(36).substring(7)
 let postId: string = '61f003637edcde522526518a'
-const post: createPost = {
+const post: CreatePostInput = {
     author: randomString,
-    title: randomString,
     content: randomString,
 }
-const updatedPost: createPost = {
+const updatedPost: CreatePostInput = {
     author: randomString + randomString,
-    title: randomString + randomString,
     content: randomString + randomString,
 }
 
@@ -48,7 +46,6 @@ const createPost = () => {
                     expect(response.body).be.a('object')
                     postId = response.body._id
                     expect(response.body).have.property('author').eq(post.author)
-                    expect(response.body).have.property('title').eq(post.title)
                     expect(response.body).have.property('content').eq(post.content)
                     done()
                 })
@@ -82,7 +79,6 @@ const updatePost = () => {
                     expect(response.body).be.a('object')
                     expect(response.body).have.property('_id').eq(postId)
                     expect(response.body).have.property('author').eq(updatedPost.author)
-                    expect(response.body).have.property('title').eq(updatedPost.title)
                     expect(response.body).have.property('content').eq(updatedPost.content)
                     done()
                 })
