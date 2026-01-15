@@ -3,12 +3,12 @@
 import React, { useMemo, useState } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import AuthService from "../api/service/AuthService";
+import authService from "../service/authService";
 import {
     PrimaryButton,
     SecondaryButton
 } from "../components/CustomButtonComponent";
-import RoutingPath from "../routes/RoutingPath";
+import routingPath from "../routes/routingPath";
 import { useUserContext } from "../provider/UserProvider";
 import FormInput from "../components/FormInput";
 
@@ -124,7 +124,7 @@ const RegistrationForm: React.FC = () => {
         setStatus("");
 
         try {
-            const res = await AuthService.register({
+            const res = await authService.register({
                 firstname: trimmed.firstname,
                 lastname: trimmed.lastname,
                 email: trimmed.email,
@@ -133,7 +133,7 @@ const RegistrationForm: React.FC = () => {
             });
 
             setAuth(res.data.token, res.data.user);
-            navigate(RoutingPath.homeView, { replace: true });
+            navigate(routingPath.homeView, { replace: true });
         } catch (e: any) {
             const msg = e?.response?.data?.message || e?.message || "Registration failed. Please try again.";
             setStatus(`❌ ${msg}`);
