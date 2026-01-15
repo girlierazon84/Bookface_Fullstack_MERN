@@ -162,6 +162,7 @@ const UsersLogInView: React.FC = () => {
     setIsSubmitting(true);
 
     try {
+      // ✅ expect AuthResponse directly (not AxiosResponse)
       const res = await AuthService.login({
         username: userName.trim(),
         password: passWord
