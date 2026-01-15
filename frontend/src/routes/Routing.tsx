@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
-import RoutingPath from "./RoutingPath";
+import routingPath from "./routingPath";
 import UsersLogInView from "../view/UsersLogInView";
 import SignUpFormView from "../view/SignUpFormView";
 import HomeView from "../view/HomeView";
@@ -14,7 +14,7 @@ import { useUserContext } from "../provider/UserProvider";
 
 const RequireAuth: React.FC<{ children: React.ReactElement }> = ({ children }) => {
     const { token } = useUserContext();
-    return token ? children : <Navigate to={RoutingPath.usersLogInView} replace />;
+    return token ? children : <Navigate to={routingPath.usersLogInView} replace />;
 };
 
 export const Routing: React.FC = () => {
@@ -24,17 +24,17 @@ export const Routing: React.FC = () => {
         <Routes>
             {/* Public */}
             <Route
-                path={RoutingPath.usersLogInView}
-                element={token ? <Navigate to={RoutingPath.homeView} replace /> : <UsersLogInView />}
+                path={routingPath.usersLogInView}
+                element={token ? <Navigate to={routingPath.homeView} replace /> : <UsersLogInView />}
             />
             <Route
-                path={RoutingPath.signUpFormView}
-                element={token ? <Navigate to={RoutingPath.homeView} replace /> : <SignUpFormView />}
+                path={routingPath.signUpFormView}
+                element={token ? <Navigate to={routingPath.homeView} replace /> : <SignUpFormView />}
             />
 
             {/* Protected ("/" is your authenticated home/feed) */}
             <Route
-                path={RoutingPath.homeView}
+                path={routingPath.homeView}
                 element={
                     <RequireAuth>
                         <HomeView />
@@ -42,7 +42,7 @@ export const Routing: React.FC = () => {
                 }
             />
             <Route
-                path={RoutingPath.profileView}
+                path={routingPath.profileView}
                 element={
                     <RequireAuth>
                         <ProfileView />
@@ -50,7 +50,7 @@ export const Routing: React.FC = () => {
                 }
             />
             <Route
-                path={RoutingPath.createPostView}
+                path={routingPath.createPostView}
                 element={
                     <RequireAuth>
                         <CreatePostView />
@@ -58,7 +58,7 @@ export const Routing: React.FC = () => {
                 }
             />
             <Route
-                path={RoutingPath.settingsView}
+                path={routingPath.settingsView}
                 element={
                     <RequireAuth>
                         <SettingsView />
@@ -69,7 +69,7 @@ export const Routing: React.FC = () => {
             {/* Fallback */}
             <Route
                 path="*"
-                element={<Navigate to={token ? RoutingPath.homeView : RoutingPath.usersLogInView} replace />}
+                element={<Navigate to={token ? routingPath.homeView : routingPath.usersLogInView} replace />}
             />
         </Routes>
     );
