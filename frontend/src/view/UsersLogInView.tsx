@@ -1,21 +1,19 @@
 // frontend/src/view/UsersLogInView.tsx
 
-import React, { useState } from "react";
-import { Link, useNavigate, Navigate } from "react-router-dom";
-import styled from "styled-components";
-import RoutingPath from "../routes/RoutingPath";
-import AuthService from "../api/service/AuthService";
+import React, { useMemo, useState } from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import styled, { useTheme } from "styled-components";
+import RoutingPath from "../routes/routingPath";
+import AuthService from "../service/authService";
 import { useUserContext } from "../provider/UserProvider";
-import {
-  PrimaryButton,
-  SecondaryButton
-} from "../components/CustomButtonComponent";
+import { PrimaryButton, SecondaryButton } from "../components/CustomButtonComponent";
 import FormInput from "../components/FormInput";
+import logo from "../assets/logo.png";
 
 
-/**---------------------
-    Styled-Components
-------------------------*/
+/**--------------------
+  Styled Components
+-----------------------*/
 const Page = styled.main`
   background: ${({ theme }) => theme.colors.primary};
   min-height: calc(100vh - 85px);
@@ -41,12 +39,27 @@ const Left = styled.div`
   padding: 12px;
 `;
 
-const Brand = styled.h1`
-  margin: 0;
-  color: ${({ theme }) => theme.colors.text_primary};
-  font-weight: 900;
-  font-size: 3.2rem;
-  font-family: "Oxygen - Regular", sans-serif;
+const BrandRow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+`;
+
+const BrandLogo = styled.img`
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 14px;
+`;
+
+const Wordmark = styled.img`
+  height: 44px;
+  width: auto;
+  display: block;
+
+  @media (max-width: 520px) {
+    height: 38px;
+  }
 `;
 
 const Pitch = styled.p`
@@ -89,21 +102,57 @@ const Divider = styled.hr`
   margin: 8px 0;
 `;
 
-// makes Link behave like a block wrapper without changing your button
 const LinkBlock = styled(Link)`
   text-decoration: none;
   display: block;
 `;
 
+/** ---------------------
+ * Helpers (for FontImg)
+ * --------------------- */
+const toHexNoHash = (color: unknown, fallback: string) => {
+  if (typeof color !== "string") return fallback;
+  const raw = color.trim();
+  const hex = raw.startsWith("#") ? raw.slice(1) : raw;
+  if (/^[0-9a-fA-F]{6}$/.test(hex)) return hex.toUpperCase();
+  return fallback;
+};
+
+const setQueryParam = (url: string, key: string, value: string) => {
+  try {
+    const u = new URL(url);
+    u.searchParams.set(key, value);
+    return u.toString();
+  } catch {
+    return url;
+  }
+};
+
 const UsersLogInView: React.FC = () => {
   const { token, setAuth } = useUserContext();
   const navigate = useNavigate();
+  const theme = useTheme() as any;
 
   const [userName, setUserName] = useState("");
   const [passWord, setPassWord] = useState("");
   const [loginText, setLoginText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ✅ hooks + memo BEFORE any early return
+  const baseWordmark =
+    "https://see.fontimg.com/api/rf5/K74zp/ZjA0ZDIwYjE0YzZmNDIzYjkzNzA1ZTg1OTgwZGM3MTQudHRm/Qm9va0ZhY2U/motterdam.png?r=fs&h=98&w=1500&fg=000000&bg=FFFFFF&tb=1&s=65";
+
+  const fg = toHexNoHash(theme?.colors?.secondary, "0000FF");
+  const bg = toHexNoHash(theme?.colors?.primary, "FFFFFF");
+
+  const wordmarkSrc = useMemo(() => {
+    let u = baseWordmark;
+    u = setQueryParam(u, "fg", fg);
+    u = setQueryParam(u, "bg", bg);
+    return u;
+  }, [fg, bg]);
+
+  // ✅ now safe to early return
   if (token) return <Navigate to={RoutingPath.homeView} replace />;
 
   const login = async () => {
@@ -115,7 +164,7 @@ const UsersLogInView: React.FC = () => {
     try {
       const res = await AuthService.login({
         username: userName.trim(),
-        password: passWord,
+        password: passWord
       });
 
       setAuth(res.data.token, res.data.user);
@@ -136,7 +185,11 @@ const UsersLogInView: React.FC = () => {
     <Page>
       <Shell>
         <Left>
-          <Brand>Bookface</Brand>
+          <BrandRow>
+            <BrandLogo src={logo} alt="Bookface logo" />
+            <Wordmark src={wordmarkSrc} alt="Bookface wordmark" />
+          </BrandRow>
+
           <Pitch>Connect with friends and the world around you.</Pitch>
         </Left>
 
@@ -177,7 +230,6 @@ const UsersLogInView: React.FC = () => {
 
             <Divider />
 
-            {/* SecondaryButton doesn't accept `to`, so wrap with Link */}
             <LinkBlock to={RoutingPath.signUpFormView}>
               <SecondaryButton type="button">Create new account</SecondaryButton>
             </LinkBlock>
