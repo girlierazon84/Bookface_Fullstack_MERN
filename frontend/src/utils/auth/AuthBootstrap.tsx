@@ -1,7 +1,7 @@
 // frontend/src/utils/auth/AuthBootstrap.tsx
 
 import React, { useEffect, useRef, useState } from "react";
-import AuthService from "../../api/service/AuthService";
+import AuthService from "../../service/authService";
 import { useUserContext } from "../../provider/UserProvider";
 
 
