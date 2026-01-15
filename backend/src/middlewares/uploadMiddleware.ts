@@ -22,17 +22,29 @@ const isImage = (mime: string) => mime.startsWith("image/");
 // posts: allow both image + video
 const isPostAllowed = (mime: string) => mime.startsWith("image/") || mime.startsWith("video/");
 
-const avatarFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+const avatarFilter: multer.Options["fileFilter"] = (
+    _req: Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+) => {
     if (!isImage(file.mimetype)) return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "avatar"));
     cb(null, true);
 };
 
-const coverFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+const coverFilter: multer.Options["fileFilter"] = (
+    _req: Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+) => {
     if (!isImage(file.mimetype)) return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "cover"));
     cb(null, true);
 };
 
-const postFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
+const postFilter: multer.Options["fileFilter"] = (
+    _req: Request,
+    file: Express.Multer.File,
+    cb: multer.FileFilterCallback
+) => {
     if (!isPostAllowed(file.mimetype)) return cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE", "media"));
     cb(null, true);
 };
@@ -96,7 +108,13 @@ export const multerErrorHandler = (err: unknown, _req: Request, res: Response, n
         return res.status(statusCode.BAD_REQUEST).send({
             message: makeMulterErrorMessage(err),
             code: err.code,
-            field: err.field
+            field: err.field,
+            limits: {
+                avatarMB: MAX_AVATAR_MB,
+                coverMB: MAX_COVER_MB,
+                postFileMB: MAX_POST_FILE_MB,
+                postMaxFiles: MAX_POST_FILES
+            }
         });
     }
 
