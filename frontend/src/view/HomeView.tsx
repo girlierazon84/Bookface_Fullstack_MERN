@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import styled from "styled-components";
 import { Link, Navigate } from "react-router-dom";
-import RoutingPath from "../routes/RoutingPath";
+import RoutingPath from "../routes/routingPath";
 import { useUserContext } from "../provider/UserProvider";
 import PostService, {
   type PostDTO,
