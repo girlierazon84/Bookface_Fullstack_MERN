@@ -15,7 +15,7 @@
     "semver": "^7.5.4"
   },
   "engines": {
-  "node": "20.x"
+    "node": "20.x"
   },
   "keywords": [
     "MongoDB",
@@ -47,7 +47,7 @@
     "@types/chai-http": "^4.2.0",
     "@types/cors": "^2.8.12",
     "@types/expect": "^24.3.0",
-    "@types/express": "^4.17.13",
+    "@types/express": "^4.17.25",
     "@types/helmet": "^4.0.0",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/mocha": "^10.0.10",
@@ -65,4 +65,3 @@
     "typescript": "^4.5.2"
   }
 }
-
