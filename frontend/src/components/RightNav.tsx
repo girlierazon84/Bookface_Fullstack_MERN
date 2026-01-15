@@ -1,7 +1,7 @@
 // frontend/src/components/RightNav.tsx
 
 import React from "react";
-import styled, { useTheme } from "styled-components";
+import styled from "styled-components";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import HomeSharpIcon from "@mui/icons-material/HomeSharp";
 import LoginSharpIcon from "@mui/icons-material/LoginSharp";
@@ -12,7 +12,6 @@ import PostAddSharpIcon from "@mui/icons-material/PostAddSharp";
 import Avatar from "./Avatar";
 import { useUserContext } from "../provider/UserProvider";
 import routingPath from "../routes/routingPath";
-import logo from "../assets/logo.png";
 
 
 /**-----------------------------
@@ -93,45 +92,6 @@ const FloatingPanel = styled.div<{ $open: boolean }>`
     transform: none;
     transition: none;
   }
-`;
-
-const BrandHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-
-  padding: 12px 14px;
-  border-bottom: 1px solid rgba(97, 97, 97, 0.18);
-
-  @media (min-width: 769px) {
-    display: none;
-  }
-`;
-
-const BrandLogo = styled.img`
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-  display: block;
-`;
-
-const WordmarkLink = styled.a`
-  display: inline-flex;
-  align-items: center;
-  line-height: 0;
-  text-decoration: none;
-
-  &:focus-visible {
-    outline: 2px solid ${({ theme }) => theme.colors.secondary};
-    outline-offset: 4px;
-    border-radius: 10px;
-  }
-`;
-
-const WordmarkImg = styled.img`
-  height: 28px;
-  width: auto;
-  display: block;
 `;
 
 const Section = styled.div`
@@ -281,24 +241,6 @@ const ActionBtn = styled.button`
   }
 `;
 
-const toHexNoHash = (color: unknown, fallback: string) => {
-  if (typeof color !== "string") return fallback;
-  const raw = color.trim();
-  const hex = raw.startsWith("#") ? raw.slice(1) : raw;
-  if (/^[0-9a-fA-F]{6}$/.test(hex)) return hex.toUpperCase();
-  return fallback;
-};
-
-const setQueryParam = (url: string, key: string, value: string) => {
-  try {
-    const u = new URL(url);
-    u.searchParams.set(key, value);
-    return u.toString();
-  } catch {
-    return url;
-  }
-};
-
 type Props = {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -309,7 +251,6 @@ const RightNav: React.FC<Props> = ({ open, setOpen, anchorRef }) => {
   const { token, user, logout } = useUserContext();
   const navigate = useNavigate();
   const location = useLocation();
-  const theme = useTheme() as any;
 
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [anchorPos, setAnchorPos] = React.useState<AnchorPos | null>(null);
@@ -354,20 +295,6 @@ const RightNav: React.FC<Props> = ({ open, setOpen, anchorRef }) => {
     close();
     navigate(routingPath.usersLogInView, { replace: true });
   };
-
-  // same wordmark as NavigationBar
-  const baseWordmark =
-    "https://see.fontimg.com/api/rf5/K74zp/ZjA0ZDIwYjE0YzZmNDIzYjkzNzA1ZTg1OTgwZGM3MTQudHRm/Qm9va0ZhY2U/motterdam.png?r=fs&h=98&w=1500&fg=000000&bg=FFFFFF&tb=1&s=65";
-
-  const fg = toHexNoHash(theme?.colors?.secondary, "000000");
-  const bg = toHexNoHash(theme?.colors?.fourthly, "FFFFFF");
-
-  const wordmarkSrc = React.useMemo(() => {
-    let u = baseWordmark;
-    u = setQueryParam(u, "fg", fg);
-    u = setQueryParam(u, "bg", bg);
-    return u;
-  }, [fg, bg]);
 
   if (isMobile && !open) return null;
 
@@ -450,19 +377,6 @@ const RightNav: React.FC<Props> = ({ open, setOpen, anchorRef }) => {
         aria-label="Navigation menu"
         style={{ top: panelTop, right: anchorPos?.right ?? 12 }}
       >
-        {/* ✅ Same brand as NavigationBar */}
-        <BrandHeader>
-          <BrandLogo src={logo} alt="Bookface logo" />
-          <WordmarkLink
-            href="https://www.fontspace.com/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Font credit: FontSpace (opens in a new tab)"
-            title="Font credit: FontSpace"
-          >
-            <WordmarkImg src={wordmarkSrc} alt="Bookface wordmark" />
-          </WordmarkLink>
-        </BrandHeader>
 
         <UserHeader>
           {token ? (
