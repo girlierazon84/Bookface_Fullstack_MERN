@@ -2,9 +2,7 @@
 
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
-import postService, {
-  normalizeCreatedPost
-} from "../service/postService";
+import postService, { normalizeCreatedPost } from "../service/postService";
 import { useUserContext } from "../provider/UserProvider";
 import { PrimaryButton } from "./CustomButtonComponent";
 import Avatar from "./Avatar";
@@ -91,6 +89,10 @@ type Props = {
 };
 
 const MAX_FILES = 4;
+const MAX_FILE_MB = 25;
+const MAX_BYTES = MAX_FILE_MB * 1024 * 1024;
+
+const isAllowedMime = (mime: string) => mime.startsWith("image/") || mime.startsWith("video/");
 
 const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
   const { user } = useUserContext();
@@ -106,9 +108,25 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
 
   const onFilesSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
     const list = Array.from(e.target.files ?? []);
+    e.target.value = "";
+
+    // filter invalid types
+    const invalidType = list.find((f) => !isAllowedMime(f.type));
+    if (invalidType) {
+      setStatus("Only images/videos are allowed ❌");
+      return;
+    }
+
+    // filter oversized
+    const tooBig = list.find((f) => f.size > MAX_BYTES);
+    if (tooBig) {
+      setStatus(`File too large ❌ Max ${MAX_FILE_MB}MB per file.`);
+      return;
+    }
+
     const next = list.slice(0, MAX_FILES);
     setFiles(next);
-    e.target.value = "";
+    setStatus(next.length ? `${next.length} file(s) selected ✅` : "");
   };
 
   const submit = async () => {
@@ -119,7 +137,15 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
       setStatus("Write something first 🙂");
       return;
     }
+
     if (submitting) return;
+
+    // final safety check (in case files were set another way)
+    const tooBig = files.find((f) => f.size > MAX_BYTES);
+    if (tooBig) {
+      setStatus(`File too large ❌ Max ${MAX_FILE_MB}MB per file.`);
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -131,9 +157,13 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
       setFiles([]);
       setStatus("Posted ✅");
       await onCreated?.();
-    } catch (e) {
+    } catch (e: any) {
+      const msg =
+        e?.response?.data?.message ||
+        e?.message ||
+        "Failed to post ❌";
       console.warn("Failed to create post:", e);
-      setStatus("Failed to post ❌");
+      setStatus(msg);
     } finally {
       setSubmitting(false);
     }
@@ -169,7 +199,9 @@ const CreateNewPost: React.FC<Props> = ({ onCreated }) => {
           Add media
         </PrimaryButton>
         <MediaHint>
-          {files.length ? `${files.length} file(s) selected (max ${MAX_FILES})` : "Optional: images/videos"}
+          {files.length
+            ? `${files.length} file(s) selected (max ${MAX_FILES}, ${MAX_FILE_MB}MB each)`
+            : "Optional: images/videos"}
         </MediaHint>
       </MediaRow>
 
