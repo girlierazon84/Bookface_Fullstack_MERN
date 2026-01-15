@@ -78,14 +78,20 @@ const postService = {
     // Create: supports JSON (no files) or multipart (files)
     createPost: (payload: CreatePostPayload) => {
         const content = payload.content?.trim() ?? "";
+        const hasFiles = Boolean(payload.files?.length);
 
-        if (!payload.files?.length) {
+        // prevent accidental empty posts
+        if (!content && !hasFiles) {
+            return http.post<CreatePostApiResponse>("/posts", { content: "" });
+        }
+
+        if (!hasFiles) {
             return http.post<CreatePostApiResponse>("/posts", { content });
         }
 
         const form = new FormData();
         form.append("content", content);
-        payload.files.forEach((f) => form.append("media", f)); // ✅ backend expects media[]
+        payload.files!.forEach((f) => form.append("media", f)); // ✅ backend expects media[]
 
         return http.post<CreatePostApiResponse>("/posts", form);
     },
