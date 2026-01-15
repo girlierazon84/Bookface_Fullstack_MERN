@@ -2,12 +2,11 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "Final project MERN stack - Bookface",
-  "main": "dist/Server.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "prestart": "npm run build",
     "start": "node dist/server.js",
-    "startts": "tsx watch src/Server.ts",
+    "startts": "tsx watch src/server.ts",
     "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
     "test": "ts-mocha -p tsconfig.json \"src/**/*.spec.ts\""
   },
