@@ -8,7 +8,7 @@ import FooterContainer from "./components/FooterContainer";
 import NavigationBar from "./components/NavigationBar";
 import { UserProvider } from "./provider/UserProvider";
 import AuthBootstrap from "./utils/auth/AuthBootstrap";
-import RoutingPath from "./routes/RoutingPath";
+import RoutingPath from "./routes/routingPath";
 
 
 /**-------------------------------------
