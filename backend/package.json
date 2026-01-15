@@ -6,13 +6,16 @@
   "scripts": {
     "build": "tsc",
     "prestart": "npm run build",
-    "start": "node .",
+    "start": "node dist/server.js",
     "startts": "tsx watch src/Server.ts",
     "start:nodemon": "./node_modules/nodemon/bin/nodemon.js",
     "test": "ts-mocha -p tsconfig.json \"src/**/*.spec.ts\""
   },
   "overrides": {
     "semver": "^7.5.4"
+  },
+  "engines": {
+  "node": "20.x"
   },
   "keywords": [
     "MongoDB",
