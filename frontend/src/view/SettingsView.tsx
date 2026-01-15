@@ -4,7 +4,7 @@ import React from "react";
 import { Navigate } from "react-router-dom";
 import styled from "styled-components";
 import { useUserContext } from "../provider/UserProvider";
-import RoutingPath from "../routes/RoutingPath";
+import RoutingPath from "../routes/routingPath";
 
 
 /**---------------------
