@@ -132,6 +132,7 @@ const RegistrationForm: React.FC = () => {
                 password: trimmed.password,
             });
 
+            // ✅ expect AuthResponse directly (not AxiosResponse)
             setAuth(res.data.token, res.data.user);
             navigate(routingPath.homeView, { replace: true });
         } catch (e: any) {
