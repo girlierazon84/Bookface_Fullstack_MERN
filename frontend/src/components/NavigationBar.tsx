@@ -117,7 +117,7 @@ const NavigationBar: React.FC = () => {
   }, [location.pathname]);
 
   const baseWordmark =
-    "https://see.fontimg.com/api/rf5/OV9ee/MmRkOTg0YTA5Y2U4NDcxMDg4MmM2NWVlNzE2MzgyM2UudHRm/Qm9va0ZhY2U/lucy-said-ok-personal-use-italic.png?r=fs&h=98&w=1500&fg=000000&bg=FFFFFF&tb=1&s=65";
+    "https://see.fontimg.com/api/rf5/K74zp/ZjA0ZDIwYjE0YzZmNDIzYjkzNzA1ZTg1OTgwZGM3MTQudHRm/Qm9va0ZhY2U/motterdam.png?r=fs&h=98&w=1500&fg=000000&bg=FFFFFF&tb=1&s=65";
 
   const fg = toHexNoHash(theme?.colors?.secondary, "000000");
   const bg = toHexNoHash(theme?.colors?.fourthly, "FFFFFF");
