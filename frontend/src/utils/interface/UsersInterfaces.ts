@@ -1,4 +1,4 @@
-// frontend/src/utils/interface/UsersInterfaces.ts
+// frontend/src/utils/interface/usersInterfaces.ts
 
 export type UserDataObject = {
     _id: string;
