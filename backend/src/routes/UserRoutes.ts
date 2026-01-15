@@ -3,28 +3,50 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/authMiddleware";
 import userController from "../controllers/userController";
-import { uploadAvatar, uploadCover, multerErrorHandler } from "../middlewares/uploadMiddleware";
+import {
+    uploadAvatar,
+    uploadCover,
+    multerErrorHandler
+} from "../middlewares/uploadMiddleware";
 
 
 const router = Router();
 
-// Public
-router.get("/users", userController.getAllUsers);
-router.get("/users/search", userController.searchUsers);
-router.get("/users/:userId", userController.getUserById);
+/**-----------------------------------------------------------------------------------
+    IMPORTANT:
+    Put "/users/me" routes BEFORE "/users/:userId"
+    Otherwise "me" gets matched as ":userId" and triggers Invalid ObjectId errors.
+--------------------------------------------------------------------------------------*/
 
 // Protected: me
 router.get("/users/me", requireAuth, userController.getMe);
 router.patch("/users/me", requireAuth, userController.updateMe);
 
 // Protected: avatar / cover
-router.post("/users/me/avatar", requireAuth, uploadAvatar, multerErrorHandler, userController.uploadMyAvatar);
+router.post(
+    "/users/me/avatar",
+    requireAuth,
+    uploadAvatar,
+    multerErrorHandler,
+    userController.uploadMyAvatar
+);
 router.delete("/users/me/avatar", requireAuth, userController.deleteMyAvatar);
 
-router.post("/users/me/cover", requireAuth, uploadCover, multerErrorHandler, userController.uploadMyCover);
+router.post(
+    "/users/me/cover",
+    requireAuth,
+    uploadCover,
+    multerErrorHandler,
+    userController.uploadMyCover
+);
 router.delete("/users/me/cover", requireAuth, userController.deleteMyCover);
 
 // Protected: delete account
 router.delete("/users/me", requireAuth, userController.deleteMe);
+
+// Public
+router.get("/users", userController.getAllUsers);
+router.get("/users/search", userController.searchUsers);
+router.get("/users/:userId", userController.getUserById);
 
 export default router;
