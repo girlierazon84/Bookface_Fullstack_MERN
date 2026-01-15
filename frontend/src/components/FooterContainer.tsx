@@ -110,6 +110,7 @@ const setQueryParam = (url: string, key: string, value: string) => {
 
 export default function FooterContainer() {
   const theme = useTheme() as any;
+  const year = new Date().getFullYear();
 
   const baseWordmark =
     "https://see.fontimg.com/api/rf5/K74zp/ZjA0ZDIwYjE0YzZmNDIzYjkzNzA1ZTg1OTgwZGM3MTQudHRm/Qm9va0ZhY2U/motterdam.png?r=fs&h=98&w=1500&fg=000000&bg=FFFFFF&tb=1&s=65";
@@ -146,7 +147,7 @@ export default function FooterContainer() {
             Created by <strong>Girlie Razon</strong>
           </Creator>
           <Copy>
-            BF <CopyrightIcon fontSize="inherit" /> 2021
+            BF <CopyrightIcon fontSize="inherit" /> {year}
           </Copy>
         </Meta>
       </Inner>
