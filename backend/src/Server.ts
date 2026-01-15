@@ -1,14 +1,13 @@
 // backend/src/server.ts
 
-import "dotenv/config";
+import dotenv from "dotenv";
+dotenv.config({ override: true });
+
 import express from "express";
 import applyMiddleware from "./middlewares/applyMiddleware";
 import configuration from "./config/configuration";
 import routes from "./routes";
-import {
-    notFound,
-    errorHandler
-} from "./middlewares/errorMiddleware";
+import { notFound, errorHandler } from "./middlewares/errorMiddleware";
 import logger from "./utils/logger";
 
 
