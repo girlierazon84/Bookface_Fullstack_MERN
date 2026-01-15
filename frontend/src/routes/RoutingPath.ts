@@ -1,6 +1,6 @@
-// frontend/src/routes/RoutingPath.ts
+// frontend/src/routes/routingPath.ts
 
-const RoutingPath = {
+const routingPath = {
     // Public
     usersLogInView: "/log_in",
     signUpFormView: "/sign_up",
@@ -12,4 +12,4 @@ const RoutingPath = {
     createPostView: "/create_post",
 } as const;
 
-export default RoutingPath;
+export default routingPath;
