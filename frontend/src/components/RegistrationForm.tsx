@@ -57,6 +57,11 @@ type FieldErrors = Partial<Record<"firstname" | "lastname" | "email" | "username
 
 const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+const isValidUsername = (value: string) =>
+    /^[a-zA-Z0-9](?:[a-zA-Z0-9._-]*[a-zA-Z0-9])?$/.test(value) &&
+    value.length >= 3 &&
+    value.length <= 40;
+
 const RegistrationForm: React.FC = () => {
     const navigate = useNavigate();
     const { setAuth } = useUserContext();
@@ -95,6 +100,11 @@ const RegistrationForm: React.FC = () => {
 
         if (!trimmed.password) next.password = "Password is required";
         else if (trimmed.password.length < 6) next.password = "Password must be at least 6 characters";
+
+        if (!trimmed.username) next.username = "Username is required";
+        else if (!isValidUsername(trimmed.username))
+            next.username =
+                "Username must be 3–40 chars, use letters/numbers and . _ -, and start/end with a letter or number.";
 
         return next;
     };
@@ -136,9 +146,22 @@ const RegistrationForm: React.FC = () => {
             setAuth(res.data.token, res.data.user);
             navigate(routingPath.homeView, { replace: true });
         } catch (e: any) {
-            const msg = e?.response?.data?.message || e?.message || "Registration failed. Please try again.";
+            const data = e?.response?.data;
+            const fieldErrors = data?.errors?.fieldErrors;
+
+            const firstFieldError =
+                fieldErrors && typeof fieldErrors === "object"
+                    ? Object.values(fieldErrors).flat()?.[0]
+                    : null;
+
+            const msg =
+                firstFieldError ||
+                data?.message ||
+                e?.message ||
+                "Registration failed. Please try again.";
+
             setStatus(`❌ ${msg}`);
-        } finally {
+        }finally {
             setIsSubmitting(false);
         }
     };
